@@ -1,0 +1,22 @@
+{
+    "name": "Laravel React Starter Kit",
+    "dockerFile": "Dockerfile",
+    "context": "..",
+    "runArgs": ["--init"],
+    "postCreateCommand": "composer install && npm install && npm run dev && php artisan key:generate",
+    "forwardPorts": [8000],
+    "extensions": [
+      "ms-azuretools.vscode-docker",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "bmewburn.vscode-intelephense-client",
+      "amiralizadeh9480.laravel-extra-intellisense",
+      "onecentlin.laravel-blade",
+      "streetsidesoftware.code-spell-checker"
+    ],
+    "settings": {
+      "terminal.integrated.defaultProfile.linux": "bash",
+      "editor.formatOnSave": true
+    },
+    "remoteUser": "vscode"
+  }
