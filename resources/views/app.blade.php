@@ -45,6 +45,17 @@
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
+        <nav class="bg-gray-800 p-4">
+            <ul class="flex space-x-4">
+                <li>
+                    <a href="{{ route('projects.index') }}" class="text-white hover:text-gray-300">
+                        Projektverwaltung
+                    </a>
+                </li>
+                {{-- Weitere Navigationslinks können hier hinzugefügt werden --}}
+            </ul>
+        </nav>
+
         @inertia
     </body>
 </html>
