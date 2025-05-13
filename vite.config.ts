@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
+import fs from 'fs';
+import path from 'path';
 
 export default defineConfig({
     plugins: [
@@ -21,5 +23,17 @@ export default defineConfig({
         alias: {
             'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
         },
+    },
+    server: {
+        host: '0.0.0.0',
+        https: {
+            key: fs.readFileSync(path.resolve(__dirname, 'certs/localhost-key.pem')),
+            cert: fs.readFileSync(path.resolve(__dirname, 'certs/localhost.pem')),
+        },
+        hmr: {
+            host: 'glorious-acorn-5vjwpgjr9rh4j9p-8000.app.github.dev',
+            protocol: 'wss', // WebSocket über HTTPS
+        },
+        cors: true, // CORS aktivieren
     },
 });

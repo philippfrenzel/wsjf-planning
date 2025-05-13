@@ -45,15 +45,28 @@
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
-        <nav class="bg-gray-800 p-4">
-            <ul class="flex space-x-4">
-                <li>
-                    <a href="{{ route('projects.index') }}" class="text-white hover:text-gray-300">
-                        Projektverwaltung
-                    </a>
-                </li>
-                {{-- Weitere Navigationslinks können hier hinzugefügt werden --}}
-            </ul>
+        <nav class="bg-gray-900 shadow-lg">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <!-- Logo -->
+                    <div class="text-white text-2xl font-bold">
+                        <a href="{{ url('/') }}">Laravel App</a>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <ul class="flex space-x-6">
+                        <li class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z" />
+                            </svg>
+                            <a href="{{ route('projects.index') }}" class="text-gray-300 hover:text-white transition">
+                                Projektverwaltung
+                            </a>
+                        </li>
+                        {{-- Weitere Navigationslinks können hier hinzugefügt werden --}}
+                    </ul>
+                </div>
+            </div>
         </nav>
 
         @inertia

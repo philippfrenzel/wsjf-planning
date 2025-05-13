@@ -1,10 +1,10 @@
 {
-    "name": "Laravel React Starter Kit",
+    "name": "WSJF Planning",
     "dockerFile": "Dockerfile",
     "context": "..",
     "runArgs": ["--init"],
     "postCreateCommand": "composer install && npm install && npm run dev && php artisan key:generate",
-    "forwardPorts": [8000],
+    "forwardPorts": [8000, 5174],
     "extensions": [
       "ms-azuretools.vscode-docker",
       "dbaeumer.vscode-eslint",
