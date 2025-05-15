@@ -31,7 +31,7 @@ export default defineConfig({
             cert: fs.readFileSync(path.resolve(__dirname, 'certs/localhost.pem')),
         },
         hmr: {
-            host: 'glorious-acorn-5vjwpgjr9rh4j9p-8000.app.github.dev',
+            host: 'fictional-barnacle-xr7jq57447f9xwx-8000.app.github.dev',
             protocol: 'wss', // WebSocket über HTTPS
         },
         cors: true, // CORS aktivieren
