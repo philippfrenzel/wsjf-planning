@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ProjectController extends Controller
 {
@@ -14,7 +15,10 @@ class ProjectController extends Controller
     public function index()
     {
         $projects = Project::all();
-        return view('projects.index', compact('projects'));
+        return Inertia::render('Projects/Index', [
+            'projects' => $projects,
+            'csrf_token' => csrf_token(),
+        ]);
     }
 
     /**
@@ -22,8 +26,10 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        $users = User::all(); // Für Projektleiter und Stellvertreter
-        return view('projects.create', compact('users'));
+        $users = User::all();
+        return Inertia::render('Projects/Create', [
+            'users' => $users,
+        ]);
     }
 
     /**
@@ -50,7 +56,9 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        return view('projects.show', compact('project'));
+        return Inertia::render('Projects/Show', [
+            'project' => $project,
+        ]);
     }
 
     /**
@@ -59,7 +67,10 @@ class ProjectController extends Controller
     public function edit(Project $project)
     {
         $users = User::all();
-        return view('projects.edit', compact('project', 'users'));
+        return Inertia::render('Projects/Edit', [
+            'project' => $project,
+            'users' => $users,
+        ]);
     }
 
     /**
