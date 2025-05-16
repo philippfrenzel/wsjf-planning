@@ -63,6 +63,14 @@
                                 Projektverwaltung
                             </a>
                         </li>
+                        <li class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M8 9a3 3 0 116 0 3 3 0 01-6 0zm8 7a6 6 0 10-12 0h12z" />
+                            </svg>
+                            <a href="{{ route('users.index') }}" class="text-gray-300 hover:text-white transition">
+                                Benutzerverwaltung
+                            </a>
+                        </li>
                         {{-- Weitere Navigationslinks können hier hinzugefügt werden --}}
                     </ul>
                 </div>
