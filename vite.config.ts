@@ -26,14 +26,7 @@ export default defineConfig({
     },
     server: {
         host: true, // wichtig für Codespaces
-        https: {
-            key: fs.readFileSync(path.resolve(__dirname, 'certs/localhost-key.pem')),
-            cert: fs.readFileSync(path.resolve(__dirname, 'certs/localhost.pem')),
-        },
-        hmr: {
-            host: process.env.CODESPACE_NAME ? process.env.CODESPACE_NAME + '-5173.' + process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN : null,
-            clientPort: process.env.CODESPACE_NAME ? 443 : null,
-            protocol: process.env.CODESPACE_NAME ? 'wss' : null
-        },
+        port: 5173,
+        https: false,
     },
 });

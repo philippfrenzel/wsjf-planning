@@ -15,9 +15,8 @@ class ProjectController extends Controller
     public function index()
     {
         $projects = Project::all();
-        return Inertia::render('Projects/Index', [
+        return \Inertia\Inertia::render('projects/Index', [
             'projects' => $projects,
-            'csrf_token' => csrf_token(),
         ]);
     }
 
