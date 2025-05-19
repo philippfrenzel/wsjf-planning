@@ -1,6 +1,6 @@
 {
     "name": "WSJF Planning",
-    "image":"mcr.microsoft.com/devcontainers/universal:2",
+    "dockerFile": "Dockerfile",
     "forwardPorts": [8000, 5173],
     "portsAttributes": {
       "8000": {
@@ -20,19 +20,23 @@
         "vite": "bash .devcontainer/postAttach/vite.sh",
         "laravel": "bash .devcontainer/postAttach/laravel.sh"
     },
-    "extensions": [
-      "ms-azuretools.vscode-docker",
-      "dbaeumer.vscode-eslint",
-      "esbenp.prettier-vscode",
-      "bmewburn.vscode-intelephense-client",
-      "amiralizadeh9480.laravel-extra-intellisense",
-      "onecentlin.laravel-blade",
-      "streetsidesoftware.code-spell-checker",
-      "GitHub.copilot" // GitHub Copilot Extension hinzugefügt
-    ],
-    "settings": {
-      "terminal.integrated.defaultProfile.linux": "bash",
-      "editor.formatOnSave": true
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "ms-azuretools.vscode-docker",
+          "dbaeumer.vscode-eslint",
+          "esbenp.prettier-vscode",
+          "bmewburn.vscode-intelephense-client",
+          "amiralizadeh9480.laravel-extra-intellisense",
+          "onecentlin.laravel-blade",
+          "streetsidesoftware.code-spell-checker",
+          "GitHub.copilot" // GitHub Copilot Extension hinzugefügt
+        ],
+        "settings": {
+          "terminal.integrated.defaultProfile.linux": "bash",
+          "editor.formatOnSave": true
+        }
+      }
     },
     "remoteUser": "vscode"
   }

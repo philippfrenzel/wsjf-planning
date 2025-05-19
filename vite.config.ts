@@ -25,7 +25,22 @@ export default defineConfig({
         },
     },
     server: {
-        host: '0.0.0.0',
+        cors: {
+            origin: (origin, _cb) => {
+                // Erlaube alle *.github.dev Subdomains und localhost:8000
+                if (
+                    !origin ||
+                    /^https:\/\/.*\.github\.dev$/.test(origin) ||
+                    origin === 'http://localhost:8000' ||
+                    origin === 'http://127.0.0.1:8000'
+                ) {
+                    return true;
+                }
+                return false;
+            },
+            credentials: true,
+        },
+        host: true, // wichtig für Codespaces
         https: {
             key: fs.readFileSync(path.resolve(__dirname, 'certs/localhost-key.pem')),
             cert: fs.readFileSync(path.resolve(__dirname, 'certs/localhost.pem')),
@@ -35,6 +50,5 @@ export default defineConfig({
             clientPort: process.env.CODESPACE_NAME ? 443 : null,
             protocol: process.env.CODESPACE_NAME ? 'wss' : null
         },
-        cors: true, // CORS aktivieren
     },
 });
