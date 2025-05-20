@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\PlanningController;
 use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
@@ -16,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::resource('projects', ProjectController::class);
+Route::resource('plannings', PlanningController::class);
 Route::resource('users', UserController::class);
 
 require __DIR__ . '/settings.php';

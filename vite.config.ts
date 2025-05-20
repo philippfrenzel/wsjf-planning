@@ -25,7 +25,7 @@ export default defineConfig({
         },
     },
     server: {
-        host: true, // wichtig für Codespaces
+        host: '127.0.0.1', // wichtig für Codespaces
         port: 5173,
         https: false,
     },

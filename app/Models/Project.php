@@ -29,7 +29,7 @@ class Project extends Model
      *
      * @return BelongsTo
      */
-    public function projectLeader(): BelongsTo
+    public function projectLeader()
     {
         return $this->belongsTo(User::class, 'project_leader_id');
     }
@@ -39,7 +39,7 @@ class Project extends Model
      *
      * @return BelongsTo
      */
-    public function deputyLeader(): BelongsTo
+    public function deputyLeader()
     {
         return $this->belongsTo(User::class, 'deputy_leader_id');
     }

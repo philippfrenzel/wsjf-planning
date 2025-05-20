@@ -14,9 +14,9 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::all();
-        return \Inertia\Inertia::render('projects/Index', [
-            'projects' => $projects,
+        return Inertia::render('projects/index', [
+            'projects' => Project::with(['projectLeader', 'deputyLeader'])->get(),
+            'hasProjects' => \App\Models\Project::exists(),
         ]);
     }
 
@@ -25,9 +25,8 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        $users = User::all();
-        return Inertia::render('Projects/Create', [
-            'users' => $users,
+        return Inertia::render('projects/create', [
+            'users' => User::all(['id', 'name']),
         ]);
     }
 
@@ -65,10 +64,9 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        $users = User::all();
-        return Inertia::render('Projects/Edit', [
+        return Inertia::render('projects/edit', [
             'project' => $project,
-            'users' => $users,
+            'users' => User::all(['id', 'name']),
         ]);
     }
 
