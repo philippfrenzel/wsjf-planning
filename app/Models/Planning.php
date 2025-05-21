@@ -34,4 +34,13 @@ class Planning extends Model
         return $this->belongsToMany(User::class, 'planning_stakeholder', 'planning_id', 'user_id')
             ->withTimestamps();
     }
+
+    /**
+     * Ein Planning kann mehrere Features haben.
+     */
+    public function features()
+    {
+        return $this->belongsToMany(Feature::class, 'feature_planning', 'planning_id', 'feature_id')
+            ->withTimestamps();
+    }
 }

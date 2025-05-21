@@ -31,6 +31,7 @@ export default function Index({ features }: IndexProps) {
           </Link>
         </Button>
       </div>
+      <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
       <Table>
         <TableHeader>
           <TableRow>
@@ -74,6 +75,7 @@ export default function Index({ features }: IndexProps) {
           ))}
         </TableBody>
       </Table>
+      </div>
     </AppLayout>
   );
 }
