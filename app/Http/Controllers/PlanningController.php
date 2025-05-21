@@ -38,6 +38,8 @@ class PlanningController extends Controller
             'executed_at' => 'nullable|date',
             'stakeholder_ids' => 'array',
             'stakeholder_ids.*' => 'exists:users,id',
+            'feature_ids' => 'array',
+            'feature_ids.*' => 'exists:features,id',
         ]);
 
         $planning = Planning::create($validated);
@@ -50,7 +52,15 @@ class PlanningController extends Controller
 
     public function show(Planning $planning)
     {
-        $planning->load(['project:id,name', 'stakeholders:id,name']);
+        $planning->load([
+            'project:id,name',
+            'stakeholders:id,name',
+            'features' => function ($query) use ($planning) {
+                // Nur Features aus dem gleichen Projekt laden, Spalten explizit mit Tabellennamen
+                $query->where('project_id', $planning->project_id)
+                    ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
+            },
+        ]);
 
         return Inertia::render('plannings/show', [
             'planning' => $planning,
@@ -60,10 +70,12 @@ class PlanningController extends Controller
     public function edit(Planning $planning)
     {
         $planning->load('stakeholders');
+        $features = \App\Models\Feature::where('project_id', $planning->project_id)->get(['id', 'jira_key', 'name', 'project_id']);
         return Inertia::render('plannings/edit', [
-            'planning' => $planning,
+            'planning' => $planning->load(['stakeholders', 'features']),
             'projects' => Project::all(['id', 'name']),
             'users' => User::all(['id', 'name']),
+            'features' => $features,
         ]);
     }
 
@@ -77,10 +89,13 @@ class PlanningController extends Controller
             'executed_at' => 'nullable|date',
             'stakeholder_ids' => 'array',
             'stakeholder_ids.*' => 'exists:users,id',
+            'feature_ids' => 'array',
+            'feature_ids.*' => 'exists:features,id',
         ]);
 
         $planning->update($validated);
         $planning->stakeholders()->sync($validated['stakeholder_ids'] ?? []);
+        $planning->features()->sync($validated['feature_ids'] ?? []);
 
         return redirect()->route('plannings.index')->with('success', 'Planning erfolgreich aktualisiert.');
     }

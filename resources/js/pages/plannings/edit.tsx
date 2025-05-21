@@ -19,6 +19,13 @@ interface User {
   name: string;
 }
 
+interface Feature {
+  id: number;
+  jira_key: string;
+  name: string;
+  project_id: number;
+}
+
 interface Planning {
   id: number;
   project_id: number;
@@ -27,15 +34,17 @@ interface Planning {
   planned_at: string;
   executed_at: string;
   stakeholders: User[];
+  features?: Feature[];
 }
 
 interface EditProps {
   planning: Planning;
   projects: Project[];
   users: User[];
+  features: Feature[]; // Features aus dem gleichen Projekt
 }
 
-export default function Edit({ planning, projects, users }: EditProps) {
+export default function Edit({ planning, projects, users, features }: EditProps) {
   const { errors } = usePage().props as { errors: Record<string, string> };
   const [values, setValues] = useState({
     project_id: planning.project_id ? String(planning.project_id) : "",
@@ -45,6 +54,9 @@ export default function Edit({ planning, projects, users }: EditProps) {
     executed_at: planning.executed_at || "",
     stakeholder_ids: planning.stakeholders
       ? planning.stakeholders.map((u) => String(u.id))
+      : [],
+    feature_ids: planning.features
+      ? planning.features.map((f) => String(f.id))
       : [],
   });
 
@@ -64,6 +76,15 @@ export default function Edit({ planning, projects, users }: EditProps) {
       stakeholder_ids: prev.stakeholder_ids.includes(id)
         ? prev.stakeholder_ids.filter((sid) => sid !== id)
         : [...prev.stakeholder_ids, id],
+    }));
+  };
+
+  const handleFeatureChange = (id: string) => {
+    setValues((prev) => ({
+      ...prev,
+      feature_ids: prev.feature_ids.includes(id)
+        ? prev.feature_ids.filter((fid) => fid !== id)
+        : [...prev.feature_ids, id],
     }));
   };
 
@@ -168,6 +189,27 @@ export default function Edit({ planning, projects, users }: EditProps) {
               </div>
               {errors.stakeholder_ids && (
                 <p className="text-sm text-red-600 mt-1">{errors.stakeholder_ids}</p>
+              )}
+            </div>
+            <div>
+              <Label>Features aus dem gleichen Projekt</Label>
+              <div className="flex flex-wrap gap-2">
+                {features.length === 0 && (
+                  <span className="text-sm text-gray-500">Keine Features im Projekt vorhanden.</span>
+                )}
+                {features.map((feature) => (
+                  <label key={feature.id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={values.feature_ids.includes(feature.id.toString())}
+                      onChange={() => handleFeatureChange(feature.id.toString())}
+                    />
+                    {feature.jira_key} – {feature.name}
+                  </label>
+                ))}
+              </div>
+              {errors.feature_ids && (
+                <p className="text-sm text-red-600 mt-1">{errors.feature_ids}</p>
               )}
             </div>
             <Button type="submit" className="w-full">
