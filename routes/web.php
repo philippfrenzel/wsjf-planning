@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PlanningController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FeatureController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -18,6 +19,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::resource('projects', ProjectController::class);
 Route::resource('plannings', PlanningController::class);
+Route::resource('features', FeatureController::class);
 Route::resource('users', UserController::class);
 
 require __DIR__ . '/settings.php';

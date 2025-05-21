@@ -31,6 +31,12 @@ export function AppSidebar({ hasProjects }: AppSidebarProps) {
                 icon: Folder,
             }]
             : []),
+        // Feature-Link immer anzeigen
+        {
+            title: 'Features',
+            href: '/features',
+            icon: Folder,
+        },
     ];
 
     const footerNavItems: NavItem[] = [
