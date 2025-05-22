@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, ChevronRight } from 'lucide-react';
 import AppLogo from './app-logo';
 
 interface AppSidebarProps {
@@ -23,21 +23,22 @@ export function AppSidebar({ hasProjects }: AppSidebarProps) {
             href: '/projects',
             icon: Folder,
         },
-        // Planning-Link nur anzeigen, wenn Projekte existieren
-        ...(hasProjects
-            ? [{
-                title: 'WSJF Planning',
-                href: '/plannings',
-                icon: Folder,
-            }]
-            : []),
-        // Feature-Link immer anzeigen
+        hasProjects && {
+            title: 'WSJF Verwaltung',
+            href: '/plannings',
+            icon: Folder,
+        },
+        hasProjects && {
+            title: 'Voting Session',
+            href: '/votes/session',
+            icon: ChevronRight,
+        },
         {
             title: 'Features',
             href: '/features',
             icon: Folder,
         },
-    ];
+    ].filter(Boolean) as NavItem[];
 
     const footerNavItems: NavItem[] = [
         {

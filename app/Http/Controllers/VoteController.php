@@ -99,8 +99,13 @@ class VoteController extends Controller
     {
         $user = Auth::user();
 
-        // Alle Features aus dem Planning-Projekt laden
-        $features = Feature::where('project_id', $planning->project_id)->get(['id', 'jira_key', 'name']);
+        // Aktuell: alle Features aus dem Projekt
+        // $features = Feature::where('project_id', $planning->project_id)->get(['id', 'jira_key', 'name']);
+
+        // Korrekt: nur die Features, die mit dem Planning verknüpft sind
+        $features = $planning->features()
+            ->select('features.id', 'features.jira_key', 'features.name')
+            ->get();
 
         // Bereits abgegebene Votes des Users für dieses Planning laden
         $existingVotes = Vote::where('user_id', $user->id)
@@ -111,12 +116,52 @@ class VoteController extends Controller
         // Typen für das Votum
         $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'];
 
+        $plannings = \App\Models\Planning::all(['id', 'title', 'project_id']);
         return Inertia::render('votes/session', [
             'planning' => $planning->only(['id', 'title', 'project_id']),
+            'plannings' => $plannings,
             'features' => $features,
             'types' => $types,
             'existingVotes' => $existingVotes,
-            'user' => $user->only(['id', 'name']),
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+            ],
         ]);
+    }
+
+    public function voteSessionStore(Request $request, Planning $planning)
+    {
+        $user = Auth::user();
+
+        // Erwartet: votes = [ "featureId_type" => value, ... ]
+        $votes = $request->input('votes', []);
+        $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'];
+
+        foreach ($votes as $key => $value) {
+            // Key-Format: featureId_type
+            [$featureId, $type] = explode('_', $key, 2);
+
+            if (!in_array($type, $types)) {
+                continue; // Ungültiger Typ, überspringen
+            }
+
+            // Vote updaten oder neu anlegen
+            \App\Models\Vote::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'feature_id' => $featureId,
+                    'planning_id' => $planning->id,
+                    'type' => $type,
+                ],
+                [
+                    'value' => $value,
+                    'voted_at' => now(),
+                ]
+            );
+        }
+
+        return redirect()->route('votes.session', $planning->id)
+            ->with('success', 'Deine Stimmen wurden gespeichert.');
     }
 }
