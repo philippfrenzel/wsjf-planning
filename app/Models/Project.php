@@ -43,4 +43,12 @@ class Project extends Model
     {
         return $this->belongsTo(User::class, 'deputy_leader_id');
     }
+
+    /**
+     * Der Benutzer, der das Projekt erstellt hat.
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
@@ -14,9 +15,13 @@ class ProjectController extends Controller
      */
     public function index()
     {
+        $userId = auth()->id();
+
         return Inertia::render('projects/index', [
-            'projects' => Project::with(['projectLeader', 'deputyLeader'])->get(),
-            'hasProjects' => \App\Models\Project::exists(),
+            'projects' => Project::with(['projectLeader', 'deputyLeader'])
+                ->where('created_by', $userId)
+                ->get(),
+            'hasProjects' => Project::where('created_by', $userId)->exists(),
         ]);
     }
 
@@ -43,6 +48,8 @@ class ProjectController extends Controller
             'project_leader_id' => 'required|exists:users,id',
             'deputy_leader_id' => 'nullable|exists:users,id',
         ]);
+
+        $validated['created_by'] = auth()->id();
 
         Project::create($validated);
 
