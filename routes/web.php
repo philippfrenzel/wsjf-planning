@@ -2,6 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\PlanningController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\FeatureController;
+use App\Http\Controllers\VoteController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -13,5 +18,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+Route::resource('projects', ProjectController::class);
+Route::resource('plannings', PlanningController::class);
+Route::resource('features', FeatureController::class);
+Route::resource('users', UserController::class);
+Route::resources([
+    'votes' => VoteController::class,
+]);
+
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';

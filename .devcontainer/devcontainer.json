@@ -1,0 +1,41 @@
+{
+    "name": "WSJF Planning",
+    "dockerFile": "Dockerfile",
+    "forwardPorts": [8000, 5173],
+    "portsAttributes": {
+      "8000": {
+        "label": "WSJF Planning"
+      },
+      "5173": {
+        "label": "Vite Dev Server"
+      }
+    },
+    "remoteEnv": {
+        "PATH": "${containerEnv:PATH}:~/.config/composer/vendor/bin",
+        "WORKOS_REDIRECT_URL": "https://${localEnv:CODESPACE_NAME}-8000.${localEnv:GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}/authenticate"
+    },
+    "postCreateCommand": "cp .env.example .env && composer install && npm install && php artisan key:generate && php artisan migrate --force && php artisan migrate:fresh --seed",
+    "postAttachCommand": {
+        "vite": "bash .devcontainer/postAttach/vite.sh",
+        "laravel": "bash .devcontainer/postAttach/laravel.sh"
+    },
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "ms-azuretools.vscode-docker",
+          "dbaeumer.vscode-eslint",
+          "esbenp.prettier-vscode",
+          "bmewburn.vscode-intelephense-client",
+          "amiralizadeh9480.laravel-extra-intellisense",
+          "onecentlin.laravel-blade",
+          "streetsidesoftware.code-spell-checker",
+          "GitHub.copilot" // GitHub Copilot Extension hinzugefügt
+        ],
+        "settings": {
+          "terminal.integrated.defaultProfile.linux": "bash",
+          "editor.formatOnSave": true
+        }
+      }
+    },
+    "remoteUser": "vscode"
+  }

@@ -21,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+        if (env('APP_ENV') == 'local') {
+            $middleware->trustProxies(at: '*');
+        }
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
