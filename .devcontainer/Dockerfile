@@ -12,5 +12,9 @@ RUN apt-get update && apt-get install -y unzip \
 RUN apt-get install -y libpng-dev libonig-dev libxml2-dev zip unzip \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
+# Installiere PostgreSQL-Erweiterung für PHP
+RUN apt-get update && apt-get install -y libpq-dev \
+    && docker-php-ext-install pgsql pdo_pgsql
+
 # Set working directory
 WORKDIR /workspace
