@@ -51,4 +51,13 @@ class Project extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    protected static function booted()
+    {
+        static::saving(function ($project) {
+            if (empty($project->created_by)) {
+                throw new \Exception('Das Feld "created_by" darf nicht leer sein.');
+            }
+        });
+    }
 }
