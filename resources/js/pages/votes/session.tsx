@@ -13,6 +13,7 @@ interface Feature {
   id: number;
   jira_key: string;
   name: string;
+  description?: string; // Beschreibung ergänzen
 }
 
 interface Planning {
@@ -51,6 +52,9 @@ export default function VoteSession({ planning, plannings, features, types, exis
   // Modal-Status, wenn success-Message vorhanden
   const [open, setOpen] = useState(!!props.success);
 
+  // State für das aktuell gehoverte Feature
+  const [hoveredFeature, setHoveredFeature] = useState<Feature | null>(null);
+
   const handleChange = (featureId: number, type: string, value: string) => {
     setVotes((prev) => ({
       ...prev,
@@ -83,6 +87,24 @@ export default function VoteSession({ planning, plannings, features, types, exis
           <div>{props.success}</div>
           <DialogFooter>
             <Button onClick={handleCloseModal}>OK</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Feature-Beschreibung-Dialog */}
+      <Dialog open={!!hoveredFeature} onOpenChange={() => setHoveredFeature(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {hoveredFeature?.jira_key}: {hoveredFeature?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div>
+            {hoveredFeature?.description
+              ? hoveredFeature.description
+              : "Keine Beschreibung vorhanden."}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setHoveredFeature(null)}>Schließen</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -126,7 +148,14 @@ export default function VoteSession({ planning, plannings, features, types, exis
                     <TableRow key={feature.id}>
                       <TableCell>
                         <div>
-                          <span className="font-medium">{feature.jira_key}</span>
+                          <span
+                            className="font-medium cursor-pointer underline decoration-dotted"
+                            onMouseEnter={() => setHoveredFeature(feature)}
+                            onMouseLeave={() => setHoveredFeature(null)}
+                            onClick={() => setHoveredFeature(feature)}
+                          >
+                            {feature.jira_key}
+                          </span>
                           <div className="text-xs text-muted-foreground">{feature.name}</div>
                         </div>
                       </TableCell>
