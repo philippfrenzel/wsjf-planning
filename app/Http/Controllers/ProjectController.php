@@ -27,6 +27,7 @@ class ProjectController extends Controller
                 ->where('created_by', $userId)
                 ->get(),
             'hasProjects' => Project::where('created_by', $userId)->exists(),
+            'currentUserId' => $userId,
         ]);
     }
 
