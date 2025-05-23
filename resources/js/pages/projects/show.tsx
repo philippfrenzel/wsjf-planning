@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import Layout from "@/Layouts/DefaultLayout"; // Passe den Pfad ggf. an
+import AppLayout from "@/layouts/app-layout";
 
 type Project = {
   id: number;
@@ -59,4 +59,4 @@ export default function ProjectShow() {
   );
 }
 
-ProjectShow.layout = (page: React.ReactNode) => <Layout children={page} />;
+ProjectShow.layout = (page: React.ReactNode) => <AppLayout children={page} />;
