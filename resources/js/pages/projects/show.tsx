@@ -1,6 +1,6 @@
 import React from "react";
 import { PageProps } from "@inertiajs/inertia";
-import { Head, usePage } from "@inertiajs/inertia-react";
+import { Head, usePage } from "@inertiajs/react";
 import {
   Card,
   CardHeader,
