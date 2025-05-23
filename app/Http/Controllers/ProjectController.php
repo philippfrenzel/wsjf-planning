@@ -67,6 +67,8 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
+        $project->load(['projectLeader', 'deputyLeader']);
+
         return Inertia::render('projects/show', [
             'project' => $project,
         ]);
