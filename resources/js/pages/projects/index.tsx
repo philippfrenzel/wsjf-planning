@@ -17,16 +17,17 @@ interface Project {
   id: number;
   project_number: string;
   name: string;
-  project_leader?: { id: number; name: string }; // Leader-Objekt
-  deputy_leader?: { id: number; name: string };  // Deputy-Objekt
-  // Weitere Felder falls benötigt
+  project_leader?: { id: number; name: string };
+  deputy_leader?: { id: number; name: string };
+  created_by?: number;
 }
 
 interface IndexProps {
   projects: Project[];
+  currentUserId: number; // <--- aktuelle User-ID als Prop
 }
 
-export default function Index({ projects }: IndexProps) {
+export default function Index({ projects, currentUserId }: IndexProps) {
   return (
     <AppLayout>
       <div className="flex items-center justify-between mb-6">
@@ -51,41 +52,52 @@ export default function Index({ projects }: IndexProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {projects.map((project) => (
-            <TableRow key={project.id}>
-              <TableCell>{project.id}</TableCell>
-              <TableCell>{project.project_number}</TableCell>
-              <TableCell>{project.name}</TableCell>
-              <TableCell>
-                {project.project_leader ? project.project_leader.name : "-"}
-              </TableCell>
-              <TableCell>
-                {project.deputy_leader ? project.deputy_leader.name : "-"}
-              </TableCell>
-              <TableCell className="flex gap-2">
-                <Button asChild size="icon" variant="outline">
-                  <Link href={route("projects.show", project)}>
-                    <Eye className="w-4 h-4" />
-                  </Link>
-                </Button>
-                <Button asChild size="icon" variant="outline">
-                  <Link href={route("projects.edit", project)}>
-                    <Pencil className="w-4 h-4" />
-                  </Link>
-                </Button>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    Inertia.delete(route("projects.destroy", project));
-                  }}
-                >
-                  <Button type="submit" size="icon" variant="destructive">
-                    <Trash2 className="w-4 h-4" />
+          {projects.map((project) => {
+            const canEdit =
+              project.created_by === currentUserId ||
+              project.project_leader?.id === currentUserId ||
+              project.deputy_leader?.id === currentUserId;
+
+            return (
+              <TableRow key={project.id}>
+                <TableCell>{project.id}</TableCell>
+                <TableCell>{project.project_number}</TableCell>
+                <TableCell>{project.name}</TableCell>
+                <TableCell>
+                  {project.project_leader ? project.project_leader.name : "-"}
+                </TableCell>
+                <TableCell>
+                  {project.deputy_leader ? project.deputy_leader.name : "-"}
+                </TableCell>
+                <TableCell className="flex gap-2">
+                  <Button asChild size="icon" variant="outline">
+                    <Link href={route("projects.show", project)}>
+                      <Eye className="w-4 h-4" />
+                    </Link>
                   </Button>
-                </form>
-              </TableCell>
-            </TableRow>
-          ))}
+                  {canEdit && (
+                    <>
+                      <Button asChild size="icon" variant="outline">
+                        <Link href={route("projects.edit", project)}>
+                          <Pencil className="w-4 h-4" />
+                        </Link>
+                      </Button>
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          Inertia.delete(route("projects.destroy", project));
+                        }}
+                      >
+                        <Button type="submit" size="icon" variant="destructive">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </form>
+                    </>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
       </div>
