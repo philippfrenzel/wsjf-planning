@@ -9,9 +9,10 @@ import AppLogo from './app-logo';
 
 interface AppSidebarProps {
     hasProjects: boolean;
+    firstPlanningId?: number; // oder firstProjectId, je nach Routing
 }
 
-export function AppSidebar({ hasProjects }: AppSidebarProps) {
+export function AppSidebar({ hasProjects, firstPlanningId }: AppSidebarProps) {
     const mainNavItems: NavItem[] = [
         {
             title: 'Dashboard',
@@ -27,11 +28,6 @@ export function AppSidebar({ hasProjects }: AppSidebarProps) {
             title: 'WSJF Verwaltung',
             href: '/plannings',
             icon: Folder,
-        },
-        hasProjects && {
-            title: 'Voting Session',
-            href: '/votes/session',
-            icon: ChevronRight,
         },
         {
             title: 'Features',

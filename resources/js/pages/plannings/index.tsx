@@ -2,7 +2,7 @@ import React from "react";
 import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Eye, Pencil, Trash2 } from "lucide-react";
+import { Plus, Eye, Pencil, Trash2, Vote } from "lucide-react";
 import { Link } from "@inertiajs/react";
 
 interface Planning {
@@ -53,6 +53,12 @@ export default function Index({ plannings }: IndexProps) {
                 <Button asChild size="icon" variant="outline">
                   <Link href={route("plannings.show", planning)}>
                     <Eye className="w-4 h-4" />
+                  </Link>
+                </Button>
+                {/* Voting-Button */}
+                <Button asChild size="icon" variant="outline">
+                  <Link href={route("votes.session", { planning: planning.id })}>
+                    <Vote className="w-4 h-4" />
                   </Link>
                 </Button>
                 <Button asChild size="icon" variant="outline">
