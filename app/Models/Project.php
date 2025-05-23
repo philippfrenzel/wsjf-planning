@@ -22,6 +22,7 @@ class Project extends Model
         'start_date',
         'project_leader_id',
         'deputy_leader_id',
+        'created_by', // <--- HINZUGEFÜGT
     ];
 
     /**
