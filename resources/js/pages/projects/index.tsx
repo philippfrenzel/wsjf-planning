@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Eye, Pencil, Trash2 } from "lucide-react";
+import { Plus, Eye, Pencil, Trash2, Vote } from "lucide-react"; // Icon für Voting-Button, falls gewünscht
 import { Link } from "@inertiajs/react";
 
 interface Project {
@@ -73,6 +73,12 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                   <Button asChild size="icon" variant="outline">
                     <Link href={route("projects.show", project)}>
                       <Eye className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                  {/* Voting-Button */}
+                  <Button asChild size="icon" variant="outline">
+                    <Link href={route("voting.session", { project: project.id })}>
+                      <Vote className="w-4 h-4" />
                     </Link>
                   </Button>
                   {canEdit && (
