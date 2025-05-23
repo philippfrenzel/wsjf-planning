@@ -52,8 +52,8 @@ export default function VoteSession({ planning, plannings, features, types, exis
   // Modal-Status, wenn success-Message vorhanden
   const [open, setOpen] = useState(!!props.success);
 
-  // State für das aktuell gehoverte Feature
-  const [hoveredFeature, setHoveredFeature] = useState<Feature | null>(null);
+  // State für das aktuell ausgewählte Feature im Dialog
+  const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
 
   const handleChange = (featureId: number, type: string, value: string) => {
     setVotes((prev) => ({
@@ -91,20 +91,20 @@ export default function VoteSession({ planning, plannings, features, types, exis
         </DialogContent>
       </Dialog>
       {/* Feature-Beschreibung-Dialog */}
-      <Dialog open={!!hoveredFeature} onOpenChange={() => setHoveredFeature(null)}>
+      <Dialog open={!!selectedFeature} onOpenChange={() => setSelectedFeature(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {hoveredFeature?.jira_key}: {hoveredFeature?.name}
+              {selectedFeature?.jira_key}: {selectedFeature?.name}
             </DialogTitle>
           </DialogHeader>
           <div>
-            {hoveredFeature?.description
-              ? hoveredFeature.description
+            {selectedFeature?.description
+              ? selectedFeature.description
               : "Keine Beschreibung vorhanden."}
           </div>
           <DialogFooter>
-            <Button onClick={() => setHoveredFeature(null)}>Schließen</Button>
+            <Button onClick={() => setSelectedFeature(null)}>Schließen</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -150,9 +150,11 @@ export default function VoteSession({ planning, plannings, features, types, exis
                         <div>
                           <span
                             className="font-medium cursor-pointer underline decoration-dotted"
-                            onMouseEnter={() => setHoveredFeature(feature)}
-                            onMouseLeave={() => setHoveredFeature(null)}
-                            onClick={() => setHoveredFeature(feature)}
+                            onClick={() =>
+                              setSelectedFeature(
+                                selectedFeature?.id === feature.id ? null : feature
+                              )
+                            }
                           >
                             {feature.jira_key}
                           </span>
