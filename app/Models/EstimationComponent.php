@@ -16,7 +16,12 @@ class EstimationComponent extends Model
         'name',
         'description',
         'created_by',
+        'status',
     ];
+
+    // Status-Konstanten
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_ARCHIVED = 'archived';
 
     /**
      * Das zugehörige Feature.
@@ -45,9 +50,45 @@ class EstimationComponent extends Model
     /**
      * Die aktuelle/neueste Schätzung für diese Komponente.
      */
-    public function latestEstimation(): BelongsTo
+    public function latestEstimation(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Estimation::class, 'component_id')
             ->latest('created_at');
+    }
+
+    /**
+     * Scope für aktive Komponenten.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
+    }
+
+    /**
+     * Scope für archivierte Komponenten.
+     */
+    public function scopeArchived($query)
+    {
+        return $query->where('status', self::STATUS_ARCHIVED);
+    }
+
+    /**
+     * Archiviere diese Komponente.
+     */
+    public function archive()
+    {
+        $this->status = self::STATUS_ARCHIVED;
+        $this->save();
+        return $this;
+    }
+
+    /**
+     * Setze diese Komponente wieder auf aktiv.
+     */
+    public function activate()
+    {
+        $this->status = self::STATUS_ACTIVE;
+        $this->save();
+        return $this;
     }
 }

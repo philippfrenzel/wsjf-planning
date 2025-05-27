@@ -7,6 +7,8 @@ use App\Http\Controllers\PlanningController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\VoteController;
+use App\Http\Controllers\EstimationComponentController;
+use App\Http\Controllers\EstimationController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -35,6 +37,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Voting Session mit Planning-ID
     Route::get('votes/session/{planning}', [VoteController::class, 'voteSession'])->name('votes.session');
     Route::post('votes/session/{planning}', [VoteController::class, 'voteSessionStore'])->name('votes.session.store');
+
+    // Schätzungskomponenten und Schätzungen
+    Route::resource('estimation-components', EstimationComponentController::class);
+    Route::resource('estimations', EstimationController::class);
+
+    Route::put('estimation-components/{id}/archive', [EstimationComponentController::class, 'archive'])->name('estimation-components.archive');
+    Route::put('estimation-components/{id}/activate', [EstimationComponentController::class, 'activate'])->name('estimation-components.activate');
 });
 
 Route::resource('projects', ProjectController::class);

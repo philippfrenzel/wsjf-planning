@@ -44,10 +44,24 @@ class FeatureController extends Controller
 
     public function show(Feature $feature)
     {
-        $feature->load(['project:id,name', 'requester:id,name']);
+        $feature->load([
+            'project:id,name',
+            'requester:id,name',
+            // Lade standardmäßig nur aktive Komponenten, es sei denn, show_archived ist true
+            'estimationComponents' => function ($query) {
+                if (!request()->has('show_archived') || !request()->show_archived) {
+                    $query->active();
+                }
+                return $query;
+            },
+            'estimationComponents.creator:id,name',
+            'estimationComponents.estimations.creator:id,name',
+            'estimationComponents.latestEstimation'
+        ]);
 
         return Inertia::render('features/show', [
             'feature' => $feature,
+            'showArchived' => request()->has('show_archived') && request()->show_archived,
         ]);
     }
 
