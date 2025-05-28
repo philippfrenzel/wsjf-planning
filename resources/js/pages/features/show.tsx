@@ -363,7 +363,22 @@ export default function Show({ feature, auth }: ShowProps) {
         </CardContent>
       </Card>
 
-      <Dialog open={estimationDialogOpen} onOpenChange={setEstimationDialogOpen}>
+      <Dialog 
+        open={estimationDialogOpen} 
+        onOpenChange={(open) => {
+          setEstimationDialogOpen(open);
+          if (!open) {
+            // Beim Schließen Formular zurücksetzen
+            setEstimationData({
+              best_case: 0,
+              most_likely: 0,
+              worst_case: 0,
+              unit: "hours",
+              notes: "",
+            });
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Neue Schätzung</DialogTitle>

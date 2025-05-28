@@ -98,7 +98,7 @@ class EstimationController extends Controller
             'history.changer'
         ])->findOrFail($id);
 
-        return Inertia::render('Estimations/Show', [
+        return Inertia::render('estimations/show', [
             'estimation' => $estimation
         ]);
     }
@@ -111,7 +111,7 @@ class EstimationController extends Controller
         $estimation = Estimation::findOrFail($id);
         $components = EstimationComponent::with('feature')->get();
 
-        return Inertia::render('Estimations/Edit', [
+        return Inertia::render('estimations/edit', [
             'estimation' => $estimation,
             'components' => $components
         ]);
