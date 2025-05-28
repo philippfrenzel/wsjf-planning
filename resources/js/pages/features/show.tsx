@@ -132,6 +132,8 @@ export default function Show({ feature, auth }: ShowProps) {
       notes: estimationData.notes,
     }, {
       onSuccess: () => {
+        // Dialog schließen und Formular zurücksetzen
+        setEstimationDialogOpen(false);
         setEstimationData({
           best_case: 0,
           most_likely: 0,
@@ -139,7 +141,9 @@ export default function Show({ feature, auth }: ShowProps) {
           unit: "hours",
           notes: "",
         });
-        setEstimationDialogOpen(false);
+        
+        // Seite neu laden, um die aktualisierte Schätzung anzuzeigen
+        router.reload({ preserveScroll: true });
       },
     });
   };
