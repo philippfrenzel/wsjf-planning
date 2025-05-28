@@ -112,11 +112,22 @@ export default function Show({ feature, auth }: ShowProps) {
       feature_id: feature.id,
       name: componentData.name,
       description: componentData.description,
+      // Parameter hinzufügen, um zur Feature-Seite zurückzukehren
+      redirect_to_feature: feature.id
     }, {
       onSuccess: () => {
         setComponentData({ name: "", description: "" });
         setShowComponentForm(false);
+        
+        // Optional: Seite neu laden, um die neue Komponente anzuzeigen
+        // Wenn der Controller korrekt zur Feature-Seite zurückkehrt,
+        // ist dies nicht notwendig
+        // router.reload();
       },
+      onError: (errors) => {
+        console.error("Fehler beim Speichern der Komponente:", errors);
+        alert("Beim Speichern der Komponente ist ein Fehler aufgetreten.");
+      }
     });
   };
 
@@ -130,6 +141,8 @@ export default function Show({ feature, auth }: ShowProps) {
       worst_case: estimationData.worst_case,
       unit: estimationData.unit,
       notes: estimationData.notes,
+      // Parameter hinzufügen, um zur Feature-Seite zurückzukehren
+      redirect_to_feature: feature.id
     }, {
       onSuccess: () => {
         // Dialog schließen und Formular zurücksetzen
@@ -141,10 +154,12 @@ export default function Show({ feature, auth }: ShowProps) {
           unit: "hours",
           notes: "",
         });
-        
-        // Seite neu laden, um die aktualisierte Schätzung anzuzeigen
-        router.reload({ preserveScroll: true });
       },
+      // Bei Fehler Meldung anzeigen
+      onError: (errors) => {
+        console.error("Fehler beim Speichern:", errors);
+        alert("Beim Speichern der Schätzung ist ein Fehler aufgetreten.");
+      }
     });
   };
 
