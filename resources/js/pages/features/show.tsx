@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArchiveIcon, RefreshCwIcon, EyeIcon, EyeOffIcon } from "lucide-react";
+import { ArchiveIcon, RefreshCwIcon, EyeIcon, EyeOffIcon, PencilIcon } from "lucide-react";
 
 interface EstimationHistory {
   id: number;
@@ -104,6 +104,14 @@ export default function Show({ feature, auth }: ShowProps) {
   });
 
   const [showArchived, setShowArchived] = useState<boolean>(false);
+
+  // State für Komponenten-Bearbeitung
+  const [editComponentDialogOpen, setEditComponentDialogOpen] = useState(false);
+  const [editingComponent, setEditingComponent] = useState<EstimationComponent | null>(null);
+  const [editComponentData, setEditComponentData] = useState({
+    name: "",
+    description: "",
+  });
 
   const handleComponentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -194,6 +202,36 @@ export default function Show({ feature, auth }: ShowProps) {
     }, {
       preserveState: true,
       preserveScroll: true,
+    });
+  };
+
+  const openEditComponentDialog = (component: EstimationComponent) => {
+    setEditingComponent(component);
+    setEditComponentData({
+      name: component.name,
+      description: component.description || "",
+    });
+    setEditComponentDialogOpen(true);
+  };
+
+  const handleEditComponentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingComponent) return;
+    
+    router.put(route("estimation-components.update", editingComponent.id), {
+      name: editComponentData.name,
+      description: editComponentData.description,
+      redirect_to_feature: feature.id
+    }, {
+      onSuccess: () => {
+        setEditComponentDialogOpen(false);
+        setEditingComponent(null);
+      },
+      onError: (errors) => {
+        console.error("Fehler beim Aktualisieren der Komponente:", errors);
+        alert("Beim Aktualisieren der Komponente ist ein Fehler aufgetreten.");
+      }
     });
   };
 
@@ -298,15 +336,26 @@ export default function Show({ feature, auth }: ShowProps) {
                       </div>
                       <div className="flex gap-2">
                         {component.status === 'active' ? (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => archiveComponent(component.id)}
-                            className="text-yellow-600 border-yellow-600 hover:bg-yellow-50"
-                          >
-                            <ArchiveIcon className="h-4 w-4 mr-1" />
-                            Archivieren
-                          </Button>
+                          <>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => openEditComponentDialog(component)}
+                              className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                            >
+                              <PencilIcon className="h-4 w-4 mr-1" />
+                              Bearbeiten
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => archiveComponent(component.id)}
+                              className="text-yellow-600 border-yellow-600 hover:bg-yellow-50"
+                            >
+                              <ArchiveIcon className="h-4 w-4 mr-1" />
+                              Archivieren
+                            </Button>
+                          </>
                         ) : (
                           <Button 
                             variant="outline" 
@@ -474,6 +523,56 @@ export default function Show({ feature, auth }: ShowProps) {
             </div>
             
             <Button type="submit" className="w-full">Schätzung speichern</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog 
+        open={editComponentDialogOpen} 
+        onOpenChange={(open) => {
+          setEditComponentDialogOpen(open);
+          if (!open) {
+            setEditingComponent(null);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Komponente bearbeiten</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditComponentSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="edit-name">Name</Label>
+              <Input
+                id="edit-name"
+                value={editComponentData.name}
+                onChange={(e) =>
+                  setEditComponentData({ ...editComponentData, name: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-description">Beschreibung</Label>
+              <Textarea
+                id="edit-description"
+                value={editComponentData.description}
+                onChange={(e) =>
+                  setEditComponentData({ ...editComponentData, description: e.target.value })
+                }
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setEditComponentDialogOpen(false)}
+              >
+                Abbrechen
+              </Button>
+              <Button type="submit">Änderungen speichern</Button>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
