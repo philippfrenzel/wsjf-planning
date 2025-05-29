@@ -46,6 +46,7 @@ class EstimationComponentController extends Controller
             'feature_id' => 'required|exists:features,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'redirect_to_feature' => 'nullable|exists:features,id',
         ]);
 
         $component = EstimationComponent::create([
@@ -53,21 +54,16 @@ class EstimationComponentController extends Controller
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'created_by' => Auth::id(),
+            'status' => EstimationComponent::STATUS_ACTIVE, // Standardmäßig aktiv
         ]);
 
-        // Wenn die Anfrage von einem Inertia-Request kommt (AJAX)
-        if ($request->wantsJson()) {
-            return response()->json(['component' => $component->load('creator')]);
+        if ($request->has('redirect_to_feature')) {
+            return redirect()->route('features.show', $request->redirect_to_feature)
+                ->with('success', 'Komponente wurde erfolgreich erstellt.');
         }
 
-        // Wenn der Request von einer Feature-Detailseite kommt, dorthin zurückkehren
-        if ($request->has('redirect_to_feature') && $request->redirect_to_feature) {
-            return Redirect::route('features.show', $validated['feature_id'])
-                ->with('success', 'Schätzungskomponente wurde erstellt.');
-        }
-
-        return Redirect::route('estimation-components.index')
-            ->with('success', 'Schätzungskomponente wurde erstellt.');
+        return redirect()->route('estimation-components.index')
+            ->with('success', 'Komponente wurde erfolgreich erstellt.');
     }
 
     /**
