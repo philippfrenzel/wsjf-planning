@@ -322,104 +322,106 @@ export default function Show({ feature, auth }: ShowProps) {
           
           {feature.estimation_components && feature.estimation_components.length > 0 ? (
             <div className="space-y-4">
-              {feature.estimation_components.map((component) => (
-                <Card key={component.id}>
-                  <CardHeader>
-                    <CardTitle className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span>{component.name}</span>
-                        {component.status === 'archived' && (
-                          <Badge variant="outline" className="bg-gray-100">
-                            Archiviert
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        {component.status === 'active' ? (
-                          <>
+              {feature.estimation_components
+                .filter(component => showArchived || component.status === 'active')
+                .map((component) => (
+                  <Card key={component.id}>
+                    <CardHeader>
+                      <CardTitle className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span>{component.name}</span>
+                          {component.status === 'archived' && (
+                            <Badge variant="outline" className="bg-gray-100">
+                              Archiviert
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          {component.status === 'active' ? (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => openEditComponentDialog(component)}
+                                className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                              >
+                                <PencilIcon className="h-4 w-4 mr-1" />
+                                Bearbeiten
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => archiveComponent(component.id)}
+                                className="text-yellow-600 border-yellow-600 hover:bg-yellow-50"
+                              >
+                                <ArchiveIcon className="h-4 w-4 mr-1" />
+                                Archivieren
+                              </Button>
+                            </>
+                          ) : (
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              onClick={() => openEditComponentDialog(component)}
-                              className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                              onClick={() => activateComponent(component.id)}
+                              className="text-green-600 border-green-600 hover:bg-green-50"
                             >
-                              <PencilIcon className="h-4 w-4 mr-1" />
-                              Bearbeiten
+                              <RefreshCwIcon className="h-4 w-4 mr-1" />
+                              Wiederherstellen
                             </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => archiveComponent(component.id)}
-                              className="text-yellow-600 border-yellow-600 hover:bg-yellow-50"
-                            >
-                              <ArchiveIcon className="h-4 w-4 mr-1" />
-                              Archivieren
-                            </Button>
-                          </>
-                        ) : (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => activateComponent(component.id)}
-                            className="text-green-600 border-green-600 hover:bg-green-50"
-                          >
-                            <RefreshCwIcon className="h-4 w-4 mr-1" />
-                            Wiederherstellen
+                          )}
+                          <Button onClick={() => openEstimationDialog(component.id)}>
+                            Schätzung hinzufügen
                           </Button>
-                        )}
-                        <Button onClick={() => openEstimationDialog(component.id)}>
-                          Schätzung hinzufügen
-                        </Button>
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="mb-4">{component.description}</p>
-                    
-                    {component.estimations && component.estimations.length > 0 ? (
-                      <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="estimations">
-                          <AccordionTrigger>
-                            Schätzungen ({component.estimations.length})
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>Best Case</TableHead>
-                                  <TableHead>Most Likely</TableHead>
-                                  <TableHead>Worst Case</TableHead>
-                                  <TableHead>Gewichtet</TableHead>
-                                  <TableHead>Einheit</TableHead>
-                                  <TableHead>Erstellt von</TableHead>
-                                  <TableHead>Datum</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {component.estimations.map((estimation) => (
-                                  <TableRow key={estimation.id}>
-                                    <TableCell>{estimation.best_case}</TableCell>
-                                    <TableCell>{estimation.most_likely}</TableCell>
-                                    <TableCell>{estimation.worst_case}</TableCell>
-                                    <TableCell>{estimation.weighted_estimate?.toFixed(2) || '-'}</TableCell>
-                                    <TableCell>{estimation.unit}</TableCell>
-                                    <TableCell>{estimation.creator.name}</TableCell>
-                                    <TableCell>
-                                      {new Date(estimation.created_at).toLocaleDateString()}
-                                    </TableCell>
+                        </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="mb-4">{component.description}</p>
+                      
+                      {component.estimations && component.estimations.length > 0 ? (
+                        <Accordion type="single" collapsible className="w-full">
+                          <AccordionItem value="estimations">
+                            <AccordionTrigger>
+                              Schätzungen ({component.estimations.length})
+                            </AccordionTrigger>
+                            <AccordionContent>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Best Case</TableHead>
+                                    <TableHead>Most Likely</TableHead>
+                                    <TableHead>Worst Case</TableHead>
+                                    <TableHead>Gewichtet</TableHead>
+                                    <TableHead>Einheit</TableHead>
+                                    <TableHead>Erstellt von</TableHead>
+                                    <TableHead>Datum</TableHead>
                                   </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                    ) : (
-                      <p className="text-gray-500">Noch keine Schätzungen vorhanden.</p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+                                </TableHeader>
+                                <TableBody>
+                                  {component.estimations.map((estimation) => (
+                                    <TableRow key={estimation.id}>
+                                      <TableCell>{estimation.best_case}</TableCell>
+                                      <TableCell>{estimation.most_likely}</TableCell>
+                                      <TableCell>{estimation.worst_case}</TableCell>
+                                      <TableCell>{estimation.weighted_estimate?.toFixed(2) || '-'}</TableCell>
+                                      <TableCell>{estimation.unit}</TableCell>
+                                      <TableCell>{estimation.creator.name}</TableCell>
+                                      <TableCell>
+                                        {new Date(estimation.created_at).toLocaleDateString()}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
+                      ) : (
+                        <p className="text-gray-500">Noch keine Schätzungen vorhanden.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
             </div>
           ) : (
             <p className="text-gray-500">Noch keine Komponenten vorhanden.</p>
