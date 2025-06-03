@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class PlanningController extends Controller
 {
@@ -31,9 +32,9 @@ class PlanningController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'project_id' => 'required|exists:projects,id',
             'planned_at' => 'nullable|date',
             'executed_at' => 'nullable|date',
             'stakeholder_ids' => 'array',
@@ -42,7 +43,8 @@ class PlanningController extends Controller
             'feature_ids.*' => 'exists:features,id',
         ]);
 
-        $validated['created_by'] = $request->user()->id;
+        // Aktuellen User als Planning-Ersteller setzen
+        $validated['created_by'] = Auth::id();
 
         $planning = Planning::create($validated);
         if (!empty($validated['stakeholder_ids'])) {
@@ -63,7 +65,10 @@ class PlanningController extends Controller
                 $query->where('project_id', $planning->project_id)
                     ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
             },
-            'features.votes', // Votes für die Features laden
+            'features.votes' => function ($query) use ($planning) {
+                // Nur Votes aus dem aktuellen Planning laden
+                $query->where('planning_id', $planning->id);
+            },
             'features.votes.user:id,name', // Benutzer der Votes laden
         ]);
 
