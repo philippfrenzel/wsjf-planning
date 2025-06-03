@@ -42,6 +42,8 @@ class PlanningController extends Controller
             'feature_ids.*' => 'exists:features,id',
         ]);
 
+        $validated['created_by'] = $request->user()->id;
+
         $planning = Planning::create($validated);
         if (!empty($validated['stakeholder_ids'])) {
             $planning->stakeholders()->sync($validated['stakeholder_ids']);
@@ -55,11 +57,14 @@ class PlanningController extends Controller
         $planning->load([
             'project:id,name',
             'stakeholders:id,name',
+            'creator:id,name', // Ersteller mit laden
             'features' => function ($query) use ($planning) {
-                // Nur Features aus dem gleichen Projekt laden, Spalten explizit mit Tabellennamen
+                // Nur Features aus dem gleichen Projekt laden
                 $query->where('project_id', $planning->project_id)
                     ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
             },
+            'features.votes', // Votes für die Features laden
+            'features.votes.user:id,name', // Benutzer der Votes laden
         ]);
 
         return Inertia::render('plannings/show', [

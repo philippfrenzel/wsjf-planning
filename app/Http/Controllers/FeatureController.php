@@ -10,9 +10,21 @@ use Inertia\Inertia;
 
 class FeatureController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $features = Feature::with(['project:id,name', 'requester:id,name'])->get();
+        $userId = auth()->id();
+
+        // Hole alle Projekt-IDs, bei denen der Nutzer Besitzer, Stellvertreter oder Projektleiter ist
+        $projectIds = Project::where(function ($query) use ($userId) {
+            $query->where('project_leader_id', $userId)
+                ->orWhere('deputy_leader_id', $userId)
+                ->orWhere('created_by', $userId); // Projektleiter-Beziehung hinzugefügt
+        })->pluck('id');
+
+        // Zeige nur Features, die zu diesen Projekten gehören
+        $features = Feature::with(['project:id,name', 'requester:id,name'])
+            ->whereIn('project_id', $projectIds)
+            ->get();
 
         return Inertia::render('features/index', [
             'features' => $features,

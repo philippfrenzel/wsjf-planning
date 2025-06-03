@@ -42,4 +42,12 @@ class Feature extends Model
     {
         return $this->hasMany(EstimationComponent::class);
     }
+
+    /**
+     * Die Stimmen für dieses Feature.
+     */
+    public function votes()
+    {
+        return $this->hasMany(Vote::class);
+    }
 }
