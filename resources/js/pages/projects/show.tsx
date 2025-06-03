@@ -25,7 +25,7 @@ export default function ProjectShow() {
   const { project } = usePage<PageProps & { project: Project }>().props;
 
   return (
-    <div className="max-w-2xl mx-auto mt-10">
+    <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
       <Head title={`Projekt: ${project.name}`} />
       <Card>
         <CardHeader>

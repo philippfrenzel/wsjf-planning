@@ -13,7 +13,7 @@ interface Feature {
   id: number;
   jira_key: string;
   name: string;
-  description?: string; // Beschreibung ergänzen
+  description?: string;
 }
 
 interface Planning {
@@ -55,11 +55,46 @@ export default function VoteSession({ planning, plannings, features, types, exis
   // State für das aktuell ausgewählte Feature im Dialog
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
 
+  // Logik zum Behandeln von Duplikaten in den Voting-Werten
   const handleChange = (featureId: number, type: string, value: string) => {
-    setVotes((prev) => ({
-      ...prev,
-      [`${featureId}_${type}`]: value,
-    }));
+    setVotes((prevVotes) => {
+      // Neuen Wert eintragen
+      const newVotes = { ...prevVotes, [`${featureId}_${type}`]: value };
+      
+      // Wenn der Wert leer ist, keine weitere Prüfung durchführen
+      if (value === "") {
+        return newVotes;
+      }
+
+      // Numerischer Wert für den Vergleich
+      const numValue = parseFloat(value);
+      
+      // Duplikate finden und behandeln
+      // 1. Alle vorhandenen Werte für den gleichen Typ sammeln
+      const typeVotes = Object.entries(newVotes)
+        .filter(([key, _]) => key.endsWith(`_${type}`))
+        .filter(([key, _]) => key !== `${featureId}_${type}`) // Aktuelles Feature ausschließen
+        .map(([key, val]) => ({
+          key,
+          value: parseFloat(val)
+        }))
+        .filter(vote => !isNaN(vote.value)); // Nicht-numerische Werte ausschließen
+      
+      // 2. Prüfen, ob der neue Wert bereits für diesen Typ verwendet wird
+      const duplicates = typeVotes.filter(vote => vote.value === numValue);
+      
+      if (duplicates.length > 0) {
+        // 3. Alle Werte größer oder gleich dem duplizierten Wert um 1 erhöhen
+        typeVotes
+          .filter(vote => vote.value >= numValue)
+          .forEach(vote => {
+            const newValue = vote.value + 1;
+            newVotes[vote.key] = newValue.toString();
+          });
+      }
+      
+      return newVotes;
+    });
   };
 
   const handlePlanningChange = (planningId: string) => {
@@ -108,7 +143,7 @@ export default function VoteSession({ planning, plannings, features, types, exis
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <div className="max-w-5xl mx-auto mt-8">
+      <div className="w-full mx-auto mt-8">
         <Card>
           <CardHeader>
             <CardTitle>

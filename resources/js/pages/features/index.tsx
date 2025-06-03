@@ -176,7 +176,7 @@ export default function Index({ features }: IndexProps) {
 
   return (
     <AppLayout>
-      <div className="flex items-center justify-between mb-6">
+      <div className="p-5 flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Features</h1>
         <Button asChild>
           <Link href={route("features.create")}>
@@ -186,8 +186,9 @@ export default function Index({ features }: IndexProps) {
         </Button>
       </div>
       
+      <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
       <Card className="mb-6">
-        <CardContent className="pt-6">
+        <CardContent className="pt-5 px-5 pb-5">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium mb-1">Jira Key</label>
@@ -412,8 +413,9 @@ export default function Index({ features }: IndexProps) {
           </div>
         </CardContent>
       </Card>
-      
-      <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+      </div>
+
+      <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
         <Table>
           <TableHeader>
             <TableRow>

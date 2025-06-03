@@ -20,7 +20,7 @@ interface IndexProps {
 export default function Index({ plannings }: IndexProps) {
   return (
     <AppLayout>
-      <div className="flex items-center justify-between mb-6">
+      <div className="p-5 flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Plannings</h1>
         <Button asChild>
           <Link href={route("plannings.create")}>

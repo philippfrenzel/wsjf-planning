@@ -100,18 +100,24 @@ class EstimationComponentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, EstimationComponent $estimationComponent)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
 
-        $component = EstimationComponent::findOrFail($id);
-        $component->update($validated);
+        $estimationComponent->update($validated);
 
-        return Redirect::route('estimation-components.show', $component->id)
-            ->with('success', 'Schätzungskomponente wurde aktualisiert.');
+        // Umleitung basierend auf dem Parameter
+        if ($request->has('redirect_to_feature')) {
+            return redirect()->route('features.show', $request->redirect_to_feature)
+                ->with('success', 'Komponente wurde erfolgreich aktualisiert.');
+        }
+
+        // Standard-Umleitung zur Komponenten-Seite
+        return redirect()->route('estimation-components.show', $estimationComponent)
+            ->with('success', 'Komponente wurde erfolgreich aktualisiert.');
     }
 
     /**
