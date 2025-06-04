@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Planning extends Model
 {
@@ -13,23 +15,32 @@ class Planning extends Model
         'project_id',
         'title',
         'description',
-        'planned_at', // Wann geplant
-        'executed_at', // Wann durchgeführt
+        'planned_at',    // Wann geplant
+        'executed_at',   // Wann durchgeführt
+        'created_by',    // ID des Users, der das Planning erstellt hat
         // weitere Felder nach Bedarf
     ];
 
     /**
      * Ein Planning gehört zu genau einem Project.
      */
-    public function project()
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
     /**
+     * Ein Planning gehört zu genau einem Ersteller (User).
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
      * Ein Planning kann mehrere Stakeholder (User) haben.
      */
-    public function stakeholders()
+    public function stakeholders(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'planning_stakeholder', 'planning_id', 'user_id')
             ->withTimestamps();
@@ -38,7 +49,7 @@ class Planning extends Model
     /**
      * Ein Planning kann mehrere Features haben.
      */
-    public function features()
+    public function features(): BelongsToMany
     {
         return $this->belongsToMany(Feature::class, 'feature_planning', 'planning_id', 'feature_id')
             ->withTimestamps();

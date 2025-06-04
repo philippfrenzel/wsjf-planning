@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Planning;
 use App\Models\Vote;
 use App\Models\User;
 use App\Models\Feature;
-use App\Models\Planning;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class VoteController extends Controller
 {
@@ -99,8 +100,13 @@ class VoteController extends Controller
     {
         $user = Auth::user();
 
-        // Alle Features aus dem Planning-Projekt laden
-        $features = Feature::where('project_id', $planning->project_id)->get(['id', 'jira_key', 'name']);
+        // Aktuell: alle Features aus dem Projekt
+        // $features = Feature::where('project_id', $planning->project_id)->get(['id', 'jira_key', 'name']);
+
+        // Korrekt: nur die Features, die mit dem Planning verknüpft sind
+        $features = $planning->features()
+            ->select('features.id', 'features.jira_key', 'features.name', 'features.description')
+            ->get();
 
         // Bereits abgegebene Votes des Users für dieses Planning laden
         $existingVotes = Vote::where('user_id', $user->id)
@@ -111,12 +117,126 @@ class VoteController extends Controller
         // Typen für das Votum
         $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'];
 
+        $plannings = \App\Models\Planning::all(['id', 'title', 'project_id']);
         return Inertia::render('votes/session', [
             'planning' => $planning->only(['id', 'title', 'project_id']),
+            'plannings' => $plannings,
             'features' => $features,
             'types' => $types,
             'existingVotes' => $existingVotes,
-            'user' => $user->only(['id', 'name']),
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+            ],
         ]);
+    }
+
+    public function voteSessionStore(Request $request, Planning $planning)
+    {
+        $user = Auth::user();
+
+        // Erwartet: votes = [ "featureId_type" => value, ... ]
+        $votes = $request->input('votes', []);
+        $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'];
+
+        foreach ($votes as $key => $value) {
+            // Key-Format: featureId_type
+            [$featureId, $type] = explode('_', $key, 2);
+
+            if (!in_array($type, $types)) {
+                continue; // Ungültiger Typ, überspringen
+            }
+
+            // Vote updaten oder neu anlegen
+            \App\Models\Vote::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'feature_id' => $featureId,
+                    'planning_id' => $planning->id,
+                    'type' => $type,
+                ],
+                [
+                    'value' => $value,
+                    'voted_at' => now(),
+                ]
+            );
+        }
+
+        // Automatisch Durchschnitts-Votes für den Planning-Ersteller berechnen
+        $this->calculateAverageVotesForCreator($planning);
+
+        return redirect()->route('votes.session', $planning->id)
+            ->with('success', 'Deine Stimmen wurden gespeichert.');
+    }
+
+    /**
+     * Berechnet Durchschnitts-Votes für den Planning-Ersteller
+     */
+    private function calculateAverageVotesForCreator(Planning $planning)
+    {
+        // Planning-Ersteller identifizieren
+        $creatorId = $planning->created_by;
+        if (!$creatorId) {
+            \Log::warning('Planning ohne Ersteller gefunden (ID: ' . $planning->id . ')');
+            return; // Kein Ersteller definiert, abbrechen
+        }
+
+        // Features dieses Plannings abrufen - Tabellennamen qualifizieren
+        $features = $planning->features()->pluck('features.id');
+
+        if ($features->isEmpty()) {
+            \Log::info('Keine Features für Planning (ID: ' . $planning->id . ') gefunden');
+            return; // Keine Features vorhanden
+        }
+
+        \Log::info('Berechne Durchschnittsvotes für Planning ' . $planning->id .
+            ', Ersteller ' . $creatorId . ', Features: ' . $features->implode(', '));
+
+        // Für jeden Feature-Typ-Kombination Durchschnitt berechnen
+        foreach ($features as $featureId) {
+            foreach (['BusinessValue', 'TimeCriticality', 'RiskOpportunity'] as $type) {
+                // Durchschnitt aller User-Votes berechnen (außer vom Creator selbst)
+                $votes = Vote::where('planning_id', $planning->id)
+                    ->where('feature_id', $featureId)
+                    ->where('type', $type)
+                    ->where('user_id', '!=', $creatorId); // Creator-Votes ausschließen
+
+                // Anzahl der Votes für dieses Feature/Typ protokollieren
+                $voteCount = $votes->count();
+                $averageVote = $votes->avg('value');
+
+                \Log::debug("Feature $featureId, Typ $type: $voteCount Votes, Durchschnitt: $averageVote");
+
+                // Wenn es Votes gibt, den Durchschnitt aufrunden und für den Creator speichern
+                if ($averageVote !== null) {
+                    $roundedAverage = ceil($averageVote);
+
+                    // Bestehenden Vote des Creators prüfen
+                    $existingVote = Vote::where('user_id', $creatorId)
+                        ->where('feature_id', $featureId)
+                        ->where('planning_id', $planning->id)
+                        ->where('type', $type)
+                        ->first();
+
+                    $action = $existingVote ? 'Aktualisiere' : 'Erstelle neuen';
+                    \Log::info("$action Vote für Ersteller $creatorId, Feature $featureId, Typ $type: $roundedAverage");
+
+                    Vote::updateOrCreate(
+                        [
+                            'user_id' => $creatorId,
+                            'feature_id' => $featureId,
+                            'planning_id' => $planning->id,
+                            'type' => $type,
+                        ],
+                        [
+                            'value' => $roundedAverage,
+                            'voted_at' => now(),
+                        ]
+                    );
+                } else {
+                    \Log::info("Keine Votes für Feature $featureId, Typ $type gefunden");
+                }
+            }
+        }
     }
 }

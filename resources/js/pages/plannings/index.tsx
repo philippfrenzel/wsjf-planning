@@ -2,7 +2,7 @@ import React from "react";
 import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Eye, Pencil, Trash2 } from "lucide-react";
+import { Plus, Eye, Pencil, Trash2, Vote } from "lucide-react";
 import { Link } from "@inertiajs/react";
 
 interface Planning {
@@ -20,7 +20,7 @@ interface IndexProps {
 export default function Index({ plannings }: IndexProps) {
   return (
     <AppLayout>
-      <div className="flex items-center justify-between mb-6">
+      <div className="p-5 flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Plannings</h1>
         <Button asChild>
           <Link href={route("plannings.create")}>
@@ -53,6 +53,12 @@ export default function Index({ plannings }: IndexProps) {
                 <Button asChild size="icon" variant="outline">
                   <Link href={route("plannings.show", planning)}>
                     <Eye className="w-4 h-4" />
+                  </Link>
+                </Button>
+                {/* Voting-Button */}
+                <Button asChild size="icon" variant="outline">
+                  <Link href={route("votes.session", { planning: planning.id })}>
+                    <Vote className="w-4 h-4" />
                   </Link>
                 </Button>
                 <Button asChild size="icon" variant="outline">

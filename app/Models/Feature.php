@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Feature extends Model
 {
@@ -14,7 +15,7 @@ class Feature extends Model
         'name',
         'description',
         'requester_id',
-        'project_id', // <--- hinzugefügt
+        'project_id',
         'created_at',
     ];
 
@@ -32,5 +33,21 @@ class Feature extends Model
     public function project()
     {
         return $this->belongsTo(Project::class, 'project_id');
+    }
+
+    /**
+     * Die Schätzungskomponenten dieses Features.
+     */
+    public function estimationComponents(): HasMany
+    {
+        return $this->hasMany(EstimationComponent::class);
+    }
+
+    /**
+     * Die Stimmen für dieses Feature.
+     */
+    public function votes()
+    {
+        return $this->hasMany(Vote::class);
     }
 }

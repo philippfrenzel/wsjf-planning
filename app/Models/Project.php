@@ -22,6 +22,7 @@ class Project extends Model
         'start_date',
         'project_leader_id',
         'deputy_leader_id',
+        'created_by', // <--- HINZUGEFÜGT
     ];
 
     /**
@@ -42,5 +43,22 @@ class Project extends Model
     public function deputyLeader()
     {
         return $this->belongsTo(User::class, 'deputy_leader_id');
+    }
+
+    /**
+     * Der Benutzer, der das Projekt erstellt hat.
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    protected static function booted()
+    {
+        static::saving(function ($project) {
+            if (empty($project->created_by)) {
+                throw new \Exception('Das Feld "created_by" darf nicht leer sein.');
+            }
+        });
     }
 }

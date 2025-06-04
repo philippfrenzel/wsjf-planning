@@ -1,6 +1,8 @@
 {
     "name": "WSJF Planning",
-    "dockerFile": "Dockerfile",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "wsjf-planning",
+    "workspaceFolder": "/workspace",
     "forwardPorts": [8000, 5173],
     "portsAttributes": {
       "8000": {
@@ -14,7 +16,7 @@
         "PATH": "${containerEnv:PATH}:~/.config/composer/vendor/bin",
         "WORKOS_REDIRECT_URL": "https://${localEnv:CODESPACE_NAME}-8000.${localEnv:GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}/authenticate"
     },
-    "postCreateCommand": "cp .env.example .env && composer install && npm install && php artisan key:generate && php artisan migrate --force && php artisan migrate:fresh --seed",
+    "postCreateCommand": "composer install && npm install && php artisan key:generate && sleep 10 && php artisan migrate --force && php artisan migrate:fresh --seed",
     "postAttachCommand": {
         "vite": "bash .devcontainer/postAttach/vite.sh",
         "laravel": "bash .devcontainer/postAttach/laravel.sh"
@@ -29,7 +31,7 @@
           "amiralizadeh9480.laravel-extra-intellisense",
           "onecentlin.laravel-blade",
           "streetsidesoftware.code-spell-checker",
-          "GitHub.copilot" // GitHub Copilot Extension hinzugefügt
+          "GitHub.copilot"
         ],
         "settings": {
           "terminal.integrated.defaultProfile.linux": "bash",

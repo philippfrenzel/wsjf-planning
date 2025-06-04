@@ -6,17 +6,28 @@ use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
+        $userId = auth()->id();
+
         return Inertia::render('projects/index', [
-            'projects' => Project::with(['projectLeader', 'deputyLeader'])->get(),
-            'hasProjects' => \App\Models\Project::exists(),
+            'projects' => Project::with(['projectLeader', 'deputyLeader'])
+                ->where('created_by', $userId)
+                ->get(),
+            'hasProjects' => Project::where('created_by', $userId)->exists(),
+            'currentUserId' => $userId,
         ]);
     }
 
@@ -44,6 +55,8 @@ class ProjectController extends Controller
             'deputy_leader_id' => 'nullable|exists:users,id',
         ]);
 
+        $validated['created_by'] = auth()->id();
+
         Project::create($validated);
 
         return redirect()->route('projects.index')->with('success', 'Projekt erfolgreich erstellt.');
@@ -54,7 +67,9 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        return Inertia::render('Projects/Show', [
+        $project->load(['projectLeader', 'deputyLeader']);
+
+        return Inertia::render('projects/show', [
             'project' => $project,
         ]);
     }

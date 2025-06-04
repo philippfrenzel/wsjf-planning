@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class PlanningController extends Controller
 {
@@ -31,9 +32,9 @@ class PlanningController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'project_id' => 'required|exists:projects,id',
             'planned_at' => 'nullable|date',
             'executed_at' => 'nullable|date',
             'stakeholder_ids' => 'array',
@@ -41,6 +42,9 @@ class PlanningController extends Controller
             'feature_ids' => 'array',
             'feature_ids.*' => 'exists:features,id',
         ]);
+
+        // Aktuellen User als Planning-Ersteller setzen
+        $validated['created_by'] = Auth::id();
 
         $planning = Planning::create($validated);
         if (!empty($validated['stakeholder_ids'])) {
@@ -55,11 +59,17 @@ class PlanningController extends Controller
         $planning->load([
             'project:id,name',
             'stakeholders:id,name',
+            'creator:id,name', // Ersteller mit laden
             'features' => function ($query) use ($planning) {
-                // Nur Features aus dem gleichen Projekt laden, Spalten explizit mit Tabellennamen
+                // Nur Features aus dem gleichen Projekt laden
                 $query->where('project_id', $planning->project_id)
                     ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
             },
+            'features.votes' => function ($query) use ($planning) {
+                // Nur Votes aus dem aktuellen Planning laden
+                $query->where('planning_id', $planning->id);
+            },
+            'features.votes.user:id,name', // Benutzer der Votes laden
         ]);
 
         return Inertia::render('plannings/show', [
