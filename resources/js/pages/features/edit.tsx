@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
 import ReactQuill from "react-quill"; // React Quill importieren
-import "react-quill/dist/quill.snow.css"; // Quill CSS importieren
 
 interface Project {
   id: number;
