@@ -298,13 +298,16 @@ export default function Create({ projects, users }: CreateProps) {
   // Slate Editor erstellen
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
 
-  // Initiale Slate-Werte (leerer Editor)
+  // Initiale Slate-Werte mit Fallback-Wert für Fehlerbehandlung
   const initialValue = useMemo(() => [
     {
       type: 'paragraph',
       children: [{ text: '' }],
     },
   ], []);
+
+  // Sicherstellen, dass initialValue niemals undefined ist
+  const safeInitialValue = initialValue || [{ type: 'paragraph', children: [{ text: '' }] }];
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -371,7 +374,7 @@ export default function Create({ projects, users }: CreateProps) {
               <div className="border rounded overflow-hidden">
                 <Slate 
                   editor={editor} 
-                  value={initialValue}
+                  value={safeInitialValue} // Verwendung des sicheren Werts
                   onChange={handleDescriptionChange}
                 >
                   <Toolbar />
