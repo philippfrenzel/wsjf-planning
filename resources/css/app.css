@@ -157,5 +157,3 @@
         @apply bg-background text-foreground;
     }
 }
-
-@import "react-quill/dist/quill.snow.css";
