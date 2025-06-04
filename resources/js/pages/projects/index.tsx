@@ -77,7 +77,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                   </Button>
                   {/* Voting-Button */}
                   <Button asChild size="icon" variant="outline">
-                    <Link href={route("votes.session", { planning: project.id })}>
+                    <Link href={route("votes.session")}> 
                       <Vote className="w-4 h-4" />
                     </Link>
                   </Button>
