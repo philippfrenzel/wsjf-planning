@@ -16,7 +16,6 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { $generateHtmlFromNodes } from "@lexical/html";
 import { EditorState, LexicalEditor } from "lexical";
-import "lexical/dist/lexical.css"; // Optional: eigenes Styling
 
 interface Project {
   id: number;
