@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,20 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
-// Lexical Imports
-import { LexicalComposer } from "@lexical/react/LexicalComposer";
-import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
-import { ToolbarPlugin } from "@lexical/react/LexicalToolbarPlugin";
-import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { ListItemNode, ListNode } from "@lexical/list";
-import { LinkNode } from "@lexical/link";
-import { ListPlugin } from "@lexical/react/LexicalListPlugin";
-import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
-import { EditorState, LexicalEditor } from "lexical";
+// Slate Imports
+import { createEditor, Descendant, Editor, Transforms, Element as SlateElement, Text } from "slate";
+import { Slate, Editable, withReact, useSlate } from "slate-react";
+import { withHistory } from "slate-history";
+import isHotkey from "is-hotkey";
 
 interface Project {
   id: number;
@@ -36,53 +27,263 @@ interface CreateProps {
   users: User[];
 }
 
-// Einfaches Toolbar-Plugin, das man separat definieren kann
-function ToolbarPlugin() {
-  const formatParagraph = () => {
-    // Hier kommen die Formatierungsaktionen
-  };
+// Slate Editor Custom Types
+type CustomElement = {
+  type: 'paragraph' | 'heading-one' | 'heading-two' | 'bulleted-list' | 'numbered-list' | 'list-item' | 'link';
+  children: CustomText[];
+  url?: string;
+};
 
+type CustomText = {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+};
+
+declare module 'slate' {
+  interface CustomTypes {
+    Editor: Editor;
+    Element: CustomElement;
+    Text: CustomText;
+  }
+}
+
+// Konvertierung von Slate-Format zu HTML
+const serializeToHtml = (nodes: Descendant[]): string => {
+  return nodes.map(node => serializeNodeToHtml(node)).join('');
+};
+
+const serializeNodeToHtml = (node: Descendant): string => {
+  if (Text.isText(node)) {
+    let text = node.text;
+    if (node.bold) {
+      text = `<strong>${text}</strong>`;
+    }
+    if (node.italic) {
+      text = `<em>${text}</em>`;
+    }
+    if (node.underline) {
+      text = `<u>${text}</u>`;
+    }
+    return text;
+  }
+  
+  const element = node as CustomElement;
+  let children = element.children.map(n => serializeNodeToHtml(n)).join('');
+  
+  switch (element.type) {
+    case 'paragraph':
+      return `<p>${children}</p>`;
+    case 'heading-one':
+      return `<h1>${children}</h1>`;
+    case 'heading-two':
+      return `<h2>${children}</h2>`;
+    case 'bulleted-list':
+      return `<ul>${children}</ul>`;
+    case 'numbered-list':
+      return `<ol>${children}</ol>`;
+    case 'list-item':
+      return `<li>${children}</li>`;
+    case 'link':
+      return `<a href="${element.url}">${children}</a>`;
+    default:
+      return children;
+  }
+};
+
+// Toolbar-Komponenten
+const ToolbarButton = ({ format, icon, onClick }) => {
+  const editor = useSlate();
+  const isActive = isFormatActive(editor, format);
+  
+  return (
+    <Button 
+      variant={isActive ? "secondary" : "outline"}
+      size="sm"
+      onClick={onClick}
+      className="px-2 py-1"
+    >
+      {icon}
+    </Button>
+  );
+};
+
+const isFormatActive = (editor, format) => {
+  const [match] = Editor.nodes(editor, {
+    match: n => n[format] === true,
+    mode: 'all',
+  });
+  return !!match;
+};
+
+const isBlockActive = (editor, format) => {
+  const [match] = Editor.nodes(editor, {
+    match: n => !Editor.isEditor(n) && SlateElement.isElement(n) && n.type === format,
+  });
+  return !!match;
+};
+
+const toggleBlock = (editor, format) => {
+  const isActive = isBlockActive(editor, format);
+  const isList = ['bulleted-list', 'numbered-list'].includes(format);
+
+  Transforms.unwrapNodes(editor, {
+    match: n => 
+      !Editor.isEditor(n) && 
+      SlateElement.isElement(n) && 
+      ['bulleted-list', 'numbered-list'].includes(n.type as string),
+    split: true,
+  });
+
+  let newType = isActive ? 'paragraph' : format;
+  if (isList) {
+    if (!isActive) {
+      const listType = format === 'bulleted-list' ? 'bulleted-list' : 'numbered-list';
+      Transforms.wrapNodes(editor, { type: listType, children: [] });
+      newType = 'list-item';
+    } else {
+      newType = 'paragraph';
+    }
+  }
+
+  Transforms.setNodes(editor, {
+    type: newType,
+  });
+};
+
+const toggleFormat = (editor, format) => {
+  const isActive = isFormatActive(editor, format);
+  if (isActive) {
+    Editor.removeMark(editor, format);
+  } else {
+    Editor.addMark(editor, format, true);
+  }
+};
+
+// Toolbar Komponente
+const Toolbar = () => {
+  const editor = useSlate();
+  
+  const addLink = () => {
+    const url = prompt('Link URL eingeben:');
+    if (!url) return;
+    
+    const { selection } = editor;
+    if (selection) {
+      const isLink = isBlockActive(editor, 'link');
+      
+      if (isLink) {
+        unwrapLink(editor);
+      }
+      
+      wrapLink(editor, url);
+    }
+  };
+  
+  const wrapLink = (editor, url) => {
+    const isCollapsed = editor.selection && Range.isCollapsed(editor.selection);
+    
+    if (isCollapsed) {
+      const text = prompt('Link-Text eingeben:') || url;
+      Transforms.insertNodes(editor, {
+        type: 'link',
+        url,
+        children: [{ text }],
+      });
+    } else {
+      Transforms.wrapNodes(editor, {
+        type: 'link',
+        url,
+        children: [],
+      }, { split: true });
+    }
+  };
+  
+  const unwrapLink = (editor) => {
+    Transforms.unwrapNodes(editor, {
+      match: n => 
+        !Editor.isEditor(n) && 
+        SlateElement.isElement(n) && 
+        n.type === 'link',
+    });
+  };
+  
   return (
     <div className="flex gap-2 p-2 bg-muted border-b mb-2">
+      <ToolbarButton 
+        format="bold" 
+        icon="Fett" 
+        onClick={() => toggleFormat(editor, 'bold')} 
+      />
+      <ToolbarButton 
+        format="italic" 
+        icon="Kursiv" 
+        onClick={() => toggleFormat(editor, 'italic')}
+      />
+      <ToolbarButton 
+        format="underline" 
+        icon="Unterstrichen" 
+        onClick={() => toggleFormat(editor, 'underline')}
+      />
+      <ToolbarButton 
+        format="bulleted-list" 
+        icon="Liste" 
+        onClick={() => toggleBlock(editor, 'bulleted-list')}
+      />
       <Button 
         variant="outline" 
         size="sm"
-        onClick={() => {
-          document.execCommand('bold');
-        }}
-      >
-        Fett
-      </Button>
-      <Button 
-        variant="outline" 
-        size="sm"
-        onClick={() => {
-          document.execCommand('italic');
-        }}
-      >
-        Kursiv
-      </Button>
-      <Button 
-        variant="outline" 
-        size="sm"
-        onClick={() => {
-          document.execCommand('insertUnorderedList');
-        }}
-      >
-        Liste
-      </Button>
-      <Button 
-        variant="outline" 
-        size="sm"
-        onClick={() => {
-          document.execCommand('createLink', false, prompt('URL eingeben:'));
-        }}
+        onClick={addLink}
+        className="px-2 py-1"
       >
         Link
       </Button>
     </div>
   );
-}
+};
+
+const HOTKEYS = {
+  'mod+b': 'bold',
+  'mod+i': 'italic',
+  'mod+u': 'underline',
+};
+
+// Element-Renderer
+const Element = ({ attributes, children, element }) => {
+  switch (element.type) {
+    case 'paragraph':
+      return <p {...attributes} className="mb-2">{children}</p>;
+    case 'heading-one':
+      return <h1 {...attributes} className="text-2xl font-bold mb-2">{children}</h1>;
+    case 'heading-two':
+      return <h2 {...attributes} className="text-xl font-bold mb-2">{children}</h2>;
+    case 'bulleted-list':
+      return <ul {...attributes} className="list-disc ml-5 mb-2">{children}</ul>;
+    case 'numbered-list':
+      return <ol {...attributes} className="list-decimal ml-5 mb-2">{children}</ol>;
+    case 'list-item':
+      return <li {...attributes}>{children}</li>;
+    case 'link':
+      return <a {...attributes} href={element.url} className="text-primary underline">{children}</a>;
+    default:
+      return <p {...attributes}>{children}</p>;
+  }
+};
+
+// Leaf-Renderer (für Textformatierungen)
+const Leaf = ({ attributes, children, leaf }) => {
+  if (leaf.bold) {
+    children = <strong>{children}</strong>;
+  }
+  if (leaf.italic) {
+    children = <em>{children}</em>;
+  }
+  if (leaf.underline) {
+    children = <u>{children}</u>;
+  }
+  return <span {...attributes}>{children}</span>;
+};
 
 export default function Create({ projects, users }: CreateProps) {
   const { errors } = usePage().props as { errors: Record<string, string> };
@@ -94,6 +295,17 @@ export default function Create({ projects, users }: CreateProps) {
     project_id: "",
   });
 
+  // Slate Editor erstellen
+  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+
+  // Initiale Slate-Werte (leerer Editor)
+  const initialValue = useMemo(() => [
+    {
+      type: 'paragraph',
+      children: [{ text: '' }],
+    },
+  ], []);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -104,44 +316,15 @@ export default function Create({ projects, users }: CreateProps) {
     setValues({ ...values, [field]: value });
   };
 
-  // Lexical OnChange Handler
-  const handleDescriptionChange = (editorState: EditorState, editor: LexicalEditor) => {
-    editorState.read(() => {
-      const htmlString = $generateHtmlFromNodes(editor, null);
-      setValues((prev) => ({ ...prev, description: htmlString }));
-    });
-  };
+  // Handler für Slate Editor Changes
+  const handleDescriptionChange = useCallback((value: Descendant[]) => {
+    const html = serializeToHtml(value);
+    setValues(prev => ({ ...prev, description: html }));
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     Inertia.post(route("features.store"), values);
-  };
-
-  const lexicalConfig = {
-    namespace: "FeatureDescriptionEditor",
-    theme: {
-      paragraph: "mb-2",
-      heading: {
-        h1: "text-2xl font-bold mb-2",
-        h2: "text-xl font-bold mb-2",
-        h3: "text-lg font-bold mb-2",
-      },
-      list: {
-        ul: "list-disc ml-4 mb-2",
-        ol: "list-decimal ml-4 mb-2",
-      },
-      link: "text-primary underline",
-    },
-    onError(error: Error) {
-      console.error(error);
-    },
-    nodes: [
-      HeadingNode,
-      QuoteNode,
-      ListNode,
-      ListItemNode,
-      LinkNode
-    ]
   };
 
   return (
@@ -186,23 +369,29 @@ export default function Create({ projects, users }: CreateProps) {
             <div>
               <Label htmlFor="description">Beschreibung</Label>
               <div className="border rounded overflow-hidden">
-                <LexicalComposer initialConfig={lexicalConfig}>
-                  <ToolbarPlugin />
-                  <RichTextPlugin
-                    contentEditable={
-                      <ContentEditable
-                        id="description"
-                        name="description"
-                        className="min-h-[120px] bg-white p-2 outline-none"
-                      />
-                    }
-                    placeholder={<div className="absolute text-muted-foreground p-2 pointer-events-none">Beschreibung eingeben…</div>}
+                <Slate 
+                  editor={editor} 
+                  value={initialValue}
+                  onChange={handleDescriptionChange}
+                >
+                  <Toolbar />
+                  <Editable
+                    id="description"
+                    name="description"
+                    className="min-h-[120px] bg-white p-2 outline-none"
+                    renderElement={props => <Element {...props} />}
+                    renderLeaf={props => <Leaf {...props} />}
+                    placeholder="Beschreibung eingeben..."
+                    onKeyDown={event => {
+                      for (const hotkey in HOTKEYS) {
+                        if (isHotkey(hotkey, event as any)) {
+                          event.preventDefault();
+                          toggleFormat(editor, HOTKEYS[hotkey]);
+                        }
+                      }
+                    }}
                   />
-                  <HistoryPlugin />
-                  <ListPlugin />
-                  <LinkPlugin />
-                  <OnChangePlugin onChange={handleDescriptionChange} />
-                </LexicalComposer>
+                </Slate>
               </div>
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
