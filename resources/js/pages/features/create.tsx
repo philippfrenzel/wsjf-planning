@@ -243,10 +243,10 @@ export default function Create({ projects, users }: CreateProps) {
   // Slate Editor erstellen
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
 
-  // Initiale Slate-Werte (leerer Editor)
-  const initialValue = useMemo(() => [
+  // Stelle sicher, dass initialValue immer einen gültigen Wert hat
+  const initialValue: Descendant[] = useMemo(() => [
     {
-      type: 'paragraph',
+      type: 'paragraph' as const,
       children: [{ text: '' }],
     },
   ], []);
@@ -314,29 +314,31 @@ export default function Create({ projects, users }: CreateProps) {
             <div>
               <Label htmlFor="description">Beschreibung</Label>
               <div className="border rounded overflow-hidden">
-                <Slate 
-                  editor={editor} 
-                  value={initialValue}
-                  onChange={handleDescriptionChange}
-                >
-                  <Toolbar />
-                  <Editable
-                    id="description"
-                    name="description"
-                    className="min-h-[120px] bg-white p-2 outline-none"
-                    renderElement={props => <Element {...props} />}
-                    renderLeaf={props => <Leaf {...props} />}
-                    placeholder="Beschreibung eingeben..."
-                    onKeyDown={event => {
-                      for (const hotkey in HOTKEYS) {
-                        if (isHotkey(hotkey, event as any)) {
-                          event.preventDefault();
-                          toggleFormat(editor, HOTKEYS[hotkey]);
+                {initialValue && (  // Sicherheitsabfrage hinzugefügt
+                  <Slate 
+                    editor={editor} 
+                    value={initialValue} 
+                    onChange={handleDescriptionChange}
+                  >
+                    <Toolbar />
+                    <Editable
+                      id="description"
+                      name="description"
+                      className="min-h-[120px] bg-white p-2 outline-none"
+                      renderElement={props => <Element {...props} />}
+                      renderLeaf={props => <Leaf {...props} />}
+                      placeholder="Beschreibung eingeben..."
+                      onKeyDown={event => {
+                        for (const hotkey in HOTKEYS) {
+                          if (isHotkey(hotkey, event as any)) {
+                            event.preventDefault();
+                            toggleFormat(editor, HOTKEYS[hotkey]);
+                          }
                         }
-                      }
-                    }}
-                  />
-                </Slate>
+                      }}
+                    />
+                  </Slate>
+                )}
               </div>
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
