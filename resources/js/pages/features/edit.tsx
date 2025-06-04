@@ -3,13 +3,20 @@ import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// import { Textarea } from "@/components/ui/textarea"; // Entfernt, da nicht mehr benötigt
+// import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
-import ReactQuill from "react-quill"; // React Quill importieren
-import "react-quill/dist/quill.snow.css";
+// Lexical Imports
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import { $generateHtmlFromNodes } from "@lexical/html";
+import { EditorState, LexicalEditor } from "lexical";
+import "lexical/dist/lexical.css"; // Optional: eigenes Styling
 
 interface Project {
   id: number;
@@ -53,9 +60,22 @@ export default function Edit({ feature, projects, users }: EditProps) {
     setValues({ ...values, [field]: value });
   };
 
-  // Handler für React Quill Editor
-  const handleDescriptionChange = (content: string) => {
-    setValues({ ...values, description: content });
+  // Lexical OnChange Handler
+  const handleDescriptionChange = (editorState: EditorState, editor: LexicalEditor) => {
+    editorState.read(() => {
+      const htmlString = $generateHtmlFromNodes(editor, null);
+      setValues((prev) => ({ ...prev, description: htmlString }));
+    });
+  };
+
+  const lexicalConfig = {
+    namespace: "FeatureDescriptionEditor",
+    theme: {
+      paragraph: "mb-2",
+    },
+    onError(error: Error) {
+      throw error;
+    },
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -65,14 +85,12 @@ export default function Edit({ feature, projects, users }: EditProps) {
 
   return (
     <AppLayout>
-      {/* Volle Breite statt max-w-2xl */}
       <Card className="w-full mt-8">
         <CardHeader>
           <CardTitle>Feature bearbeiten</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Anordnung von Jira Key und Name nebeneinander für bessere Platzausnutzung */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="jira_key">Jira Key</Label>
@@ -106,19 +124,24 @@ export default function Edit({ feature, projects, users }: EditProps) {
             
             <div>
               <Label htmlFor="description">Beschreibung</Label>
-              <ReactQuill
-                id="description"
-                value={values.description}
-                onChange={handleDescriptionChange}
-                theme="snow"
-                className="bg-white"
-              />
+              <LexicalComposer initialConfig={lexicalConfig}>
+                <RichTextPlugin
+                  contentEditable={
+                    <ContentEditable
+                      id="description"
+                      className="min-h-[120px] border rounded bg-white p-2"
+                    />
+                  }
+                  placeholder={<div className="text-muted-foreground">Beschreibung eingeben…</div>}
+                />
+                <HistoryPlugin />
+                <OnChangePlugin onChange={handleDescriptionChange} />
+              </LexicalComposer>
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
               )}
             </div>
             
-            {/* Projekt und Anforderer nebeneinander für bessere Platzausnutzung */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="project_id">Projekt</Label>
@@ -167,7 +190,6 @@ export default function Edit({ feature, projects, users }: EditProps) {
               </div>
             </div>
             
-            {/* Bessere Button-Leiste am Ende mit Abbrechen-Option */}
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => window.history.back()}>
                 Abbrechen

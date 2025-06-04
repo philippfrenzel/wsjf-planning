@@ -8,8 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
-import ReactQuill from "react-quill"; // React Quill importieren
-import "react-quill/dist/quill.snow.css";
+// Lexical Imports
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import { $generateHtmlFromNodes } from "@lexical/html";
+import { EditorState, LexicalEditor } from "lexical";
+import "lexical/dist/lexical.css"; // Optional: eigenes Styling
 
 interface Project {
   id: number;
@@ -44,14 +51,28 @@ export default function Create({ projects, users }: CreateProps) {
     setValues({ ...values, [field]: value });
   };
 
-  // Handler für React Quill Editor
-  const handleDescriptionChange = (content: string) => {
-    setValues({ ...values, description: content });
+  // Lexical OnChange Handler
+  const handleDescriptionChange = (editorState: EditorState, editor: LexicalEditor) => {
+    editorState.read(() => {
+      const htmlString = $generateHtmlFromNodes(editor, null);
+      setValues((prev) => ({ ...prev, description: htmlString }));
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     Inertia.post(route("features.store"), values);
+  };
+
+  const lexicalConfig = {
+    namespace: "FeatureDescriptionEditor",
+    theme: {
+      // Optional: eigenes Styling
+      paragraph: "mb-2",
+    },
+    onError(error: Error) {
+      throw error;
+    },
   };
 
   return (
@@ -95,13 +116,19 @@ export default function Create({ projects, users }: CreateProps) {
             
             <div>
               <Label htmlFor="description">Beschreibung</Label>
-              <ReactQuill
-                id="description"
-                value={values.description}
-                onChange={handleDescriptionChange}
-                theme="snow"
-                className="bg-white"
-              />
+              <LexicalComposer initialConfig={lexicalConfig}>
+                <RichTextPlugin
+                  contentEditable={
+                    <ContentEditable
+                      id="description"
+                      className="min-h-[120px] border rounded bg-white p-2"
+                    />
+                  }
+                  placeholder={<div className="text-muted-foreground">Beschreibung eingeben…</div>}
+                />
+                <HistoryPlugin />
+                <OnChangePlugin onChange={handleDescriptionChange} />
+              </LexicalComposer>
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
               )}
