@@ -3,11 +3,12 @@ import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+// import { Textarea } from "@/components/ui/textarea"; // Entfernt, da nicht mehr benötigt
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
+import { Editor } from "@tinymce/tinymce-react"; // TinyMCE Editor importieren
 
 interface Project {
   id: number;
@@ -33,13 +34,18 @@ export default function Create({ projects, users }: CreateProps) {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
   const handleSelectChange = (field: string, value: string) => {
     setValues({ ...values, [field]: value });
+  };
+
+  // Handler für TinyMCE Editor
+  const handleDescriptionChange = (content: string) => {
+    setValues({ ...values, description: content });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -49,14 +55,12 @@ export default function Create({ projects, users }: CreateProps) {
 
   return (
     <AppLayout>
-      {/* Entfernung der max-w-5xl Klasse für volle Breite */}
       <Card className="w-full mt-8">
         <CardHeader>
           <CardTitle>Neues Feature anlegen</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Anordnung von Jira Key und Name nebeneinander für bessere Platzausnutzung */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="jira_key">Jira Key</Label>
@@ -90,19 +94,29 @@ export default function Create({ projects, users }: CreateProps) {
             
             <div>
               <Label htmlFor="description">Beschreibung</Label>
-              <Textarea
+              <Editor
                 id="description"
-                name="description"
                 value={values.description}
-                onChange={handleChange}
-                className="w-full min-h-[120px]"
+                init={{
+                  height: 200,
+                  menubar: false,
+                  plugins: [
+                    "advlist autolink lists link charmap preview anchor",
+                    "searchreplace visualblocks code fullscreen",
+                    "insertdatetime media table paste code help wordcount"
+                  ],
+                  toolbar:
+                    "undo redo | formatselect | bold italic backcolor | \
+                    alignleft aligncenter alignright alignjustify | \
+                    bullist numlist outdent indent | removeformat | help"
+                }}
+                onEditorChange={handleDescriptionChange}
               />
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
               )}
             </div>
             
-            {/* Projekt und Anforderer nebeneinander für bessere Platzausnutzung */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="project_id">Projekt</Label>
