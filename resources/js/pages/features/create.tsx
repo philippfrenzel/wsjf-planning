@@ -119,7 +119,7 @@ export default function Create({ projects, users }: CreateProps) {
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
-                      id="description"
+                      id="description" // <-- Das id-Attribut stimmt jetzt mit htmlFor überein
                       className="min-h-[120px] border rounded bg-white p-2"
                     />
                   }
