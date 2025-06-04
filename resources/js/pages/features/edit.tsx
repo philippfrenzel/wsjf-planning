@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
-import { Editor } from "@tinymce/tinymce-react"; // TinyMCE Editor importieren
+import ReactQuill from "react-quill"; // React Quill importieren
+import "react-quill/dist/quill.snow.css"; // Quill CSS importieren
 
 interface Project {
   id: number;
@@ -52,7 +53,7 @@ export default function Edit({ feature, projects, users }: EditProps) {
     setValues({ ...values, [field]: value });
   };
 
-  // Handler für TinyMCE Editor
+  // Handler für React Quill Editor
   const handleDescriptionChange = (content: string) => {
     setValues({ ...values, description: content });
   };
@@ -105,23 +106,12 @@ export default function Edit({ feature, projects, users }: EditProps) {
             
             <div>
               <Label htmlFor="description">Beschreibung</Label>
-              <Editor
+              <ReactQuill
                 id="description"
                 value={values.description}
-                init={{
-                  height: 200,
-                  menubar: false,
-                  plugins: [
-                    "advlist autolink lists link charmap preview anchor",
-                    "searchreplace visualblocks code fullscreen",
-                    "insertdatetime media table paste code help wordcount"
-                  ],
-                  toolbar:
-                    "undo redo | formatselect | bold italic backcolor | \
-                    alignleft aligncenter alignright alignjustify | \
-                    bullist numlist outdent indent | removeformat | help"
-                }}
-                onEditorChange={handleDescriptionChange}
+                onChange={handleDescriptionChange}
+                theme="snow"
+                className="bg-white"
               />
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
