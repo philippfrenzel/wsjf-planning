@@ -211,6 +211,7 @@ export default function Edit({ feature, projects, users }: EditProps) {
                     contentEditable={
                       <ContentEditable
                         id="description"
+                        name="description"
                         className="min-h-[120px] bg-white p-2 outline-none"
                       />
                     }
