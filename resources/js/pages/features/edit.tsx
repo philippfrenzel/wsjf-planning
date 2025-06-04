@@ -3,11 +3,12 @@ import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea"; // Textarea-Import hinzugefügt
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
+// React Simple WYSIWYG Import
+import { Editor } from "react-simple-wysiwyg";
 
 interface Project {
   id: number;
@@ -42,13 +43,18 @@ export default function Edit({ feature, projects, users }: EditProps) {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
   const handleSelectChange = (field: string, value: string) => {
     setValues({ ...values, [field]: value });
+  };
+  
+  // Handler für den WYSIWYG Editor
+  const handleEditorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValues(prev => ({ ...prev, description: e.target.value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -97,14 +103,15 @@ export default function Edit({ feature, projects, users }: EditProps) {
             
             <div>
               <Label htmlFor="description">Beschreibung</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={values.description}
-                onChange={handleChange}
-                className="min-h-[120px] w-full"
-                placeholder="Beschreibung eingeben..."
-              />
+              <div className="border rounded overflow-hidden">
+                <Editor 
+                  id="description"
+                  name="description" 
+                  value={values.description} 
+                  onChange={handleEditorChange}
+                  containerProps={{ className: 'min-h-[120px] bg-white' }}
+                />
+              </div>
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
               )}
