@@ -14,7 +14,13 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
-import { $generateHtmlFromNodes } from "@lexical/html";
+import { ToolbarPlugin } from "@lexical/react/LexicalToolbarPlugin";
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { LinkNode } from "@lexical/link";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { EditorState, LexicalEditor } from "lexical";
 
 interface Project {
@@ -28,6 +34,54 @@ interface User {
 interface CreateProps {
   projects: Project[];
   users: User[];
+}
+
+// Einfaches Toolbar-Plugin, das man separat definieren kann
+function ToolbarPlugin() {
+  const formatParagraph = () => {
+    // Hier kommen die Formatierungsaktionen
+  };
+
+  return (
+    <div className="flex gap-2 p-2 bg-muted border-b mb-2">
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={() => {
+          document.execCommand('bold');
+        }}
+      >
+        Fett
+      </Button>
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={() => {
+          document.execCommand('italic');
+        }}
+      >
+        Kursiv
+      </Button>
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={() => {
+          document.execCommand('insertUnorderedList');
+        }}
+      >
+        Liste
+      </Button>
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={() => {
+          document.execCommand('createLink', false, prompt('URL eingeben:'));
+        }}
+      >
+        Link
+      </Button>
+    </div>
+  );
 }
 
 export default function Create({ projects, users }: CreateProps) {
@@ -66,12 +120,28 @@ export default function Create({ projects, users }: CreateProps) {
   const lexicalConfig = {
     namespace: "FeatureDescriptionEditor",
     theme: {
-      // Optional: eigenes Styling
       paragraph: "mb-2",
+      heading: {
+        h1: "text-2xl font-bold mb-2",
+        h2: "text-xl font-bold mb-2",
+        h3: "text-lg font-bold mb-2",
+      },
+      list: {
+        ul: "list-disc ml-4 mb-2",
+        ol: "list-decimal ml-4 mb-2",
+      },
+      link: "text-primary underline",
     },
     onError(error: Error) {
-      throw error;
+      console.error(error);
     },
+    nodes: [
+      HeadingNode,
+      QuoteNode,
+      ListNode,
+      ListItemNode,
+      LinkNode
+    ]
   };
 
   return (
@@ -115,19 +185,24 @@ export default function Create({ projects, users }: CreateProps) {
             
             <div>
               <Label htmlFor="description">Beschreibung</Label>
-              <LexicalComposer initialConfig={lexicalConfig}>
-                <RichTextPlugin
-                  contentEditable={
-                    <ContentEditable
-                      id="description" // <-- Das id-Attribut stimmt jetzt mit htmlFor überein
-                      className="min-h-[120px] border rounded bg-white p-2"
-                    />
-                  }
-                  placeholder={<div className="text-muted-foreground">Beschreibung eingeben…</div>}
-                />
-                <HistoryPlugin />
-                <OnChangePlugin onChange={handleDescriptionChange} />
-              </LexicalComposer>
+              <div className="border rounded overflow-hidden">
+                <LexicalComposer initialConfig={lexicalConfig}>
+                  <ToolbarPlugin />
+                  <RichTextPlugin
+                    contentEditable={
+                      <ContentEditable
+                        id="description"
+                        className="min-h-[120px] bg-white p-2 outline-none"
+                      />
+                    }
+                    placeholder={<div className="absolute text-muted-foreground p-2 pointer-events-none">Beschreibung eingeben…</div>}
+                  />
+                  <HistoryPlugin />
+                  <ListPlugin />
+                  <LinkPlugin />
+                  <OnChangePlugin onChange={handleDescriptionChange} />
+                </LexicalComposer>
+              </div>
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
               )}
