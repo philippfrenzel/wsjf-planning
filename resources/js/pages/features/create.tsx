@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useLayoutEffect, useRef } from "react";
 import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -239,17 +239,29 @@ export default function Create({ projects, users }: CreateProps) {
     requester_id: "",
     project_id: "",
   });
-
-  // Slate Editor erstellen
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-
-  // Stelle sicher, dass initialValue immer einen gültigen Wert hat
-  const initialValue: Descendant[] = useMemo(() => [
+  
+  // Editor mit useRef erstellen, um Stabilität zu gewährleisten
+  const editorRef = useRef<Editor | null>(null);
+  if (!editorRef.current) {
+    editorRef.current = withHistory(withReact(createEditor()));
+  }
+  
+  // Sicherer initialValue mit useRef für Stabilität
+  const initialValueRef = useRef<Descendant[]>([
     {
-      type: 'paragraph' as const,
+      type: 'paragraph',
       children: [{ text: '' }],
     },
-  ], []);
+  ]);
+  
+  // State für die verzögerte Anzeige des Editors
+  const [editorReady, setEditorReady] = useState(false);
+  
+  // useLayoutEffect wird vor dem Browser-Painting ausgeführt
+  useLayoutEffect(() => {
+    // Editor wird erst angezeigt, wenn er vollständig initialisiert ist
+    setEditorReady(true);
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -314,10 +326,10 @@ export default function Create({ projects, users }: CreateProps) {
             <div>
               <Label htmlFor="description">Beschreibung</Label>
               <div className="border rounded overflow-hidden">
-                {initialValue && (  // Sicherheitsabfrage hinzugefügt
+                {editorReady && (
                   <Slate 
-                    editor={editor} 
-                    value={initialValue} 
+                    editor={editorRef.current} 
+                    value={initialValueRef.current}
                     onChange={handleDescriptionChange}
                   >
                     <Toolbar />
@@ -332,12 +344,17 @@ export default function Create({ projects, users }: CreateProps) {
                         for (const hotkey in HOTKEYS) {
                           if (isHotkey(hotkey, event as any)) {
                             event.preventDefault();
-                            toggleFormat(editor, HOTKEYS[hotkey]);
+                            toggleFormat(editorRef.current, HOTKEYS[hotkey]);
                           }
                         }
                       }}
                     />
                   </Slate>
+                )}
+                {!editorReady && (
+                  <div className="min-h-[120px] bg-white p-2 flex items-center justify-center text-muted-foreground">
+                    Editor wird geladen...
+                  </div>
                 )}
               </div>
               {errors.description && (
