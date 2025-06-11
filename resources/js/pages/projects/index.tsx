@@ -75,9 +75,9 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                       <Eye className="w-4 h-4" />
                     </Link>
                   </Button>
-                  {/* Voting-Button */}
+                  {/* Voting-Button - Zur Plannings-Übersicht für dieses Projekt */}
                   <Button asChild size="icon" variant="outline">
-                    <Link href={route("votes.session")}> 
+                    <Link href={route("plannings.index", { project_id: project.id })}>
                       <Vote className="w-4 h-4" />
                     </Link>
                   </Button>
