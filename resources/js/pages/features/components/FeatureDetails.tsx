@@ -23,7 +23,15 @@ export default function FeatureDetails({
         <strong>Anforderer:</strong> {requesterName ?? "-"}
       </div>
       <div>
-        <strong>Beschreibung:</strong> {description ?? "-"}
+        <strong>Beschreibung:</strong>{" "}
+        {description ? (
+          <span
+            // Achtung: HTML wird direkt eingefügt, stelle sicher, dass description sicher ist!
+            dangerouslySetInnerHTML={{ __html: description }}
+          />
+        ) : (
+          "-"
+        )}
       </div>
     </div>
   );

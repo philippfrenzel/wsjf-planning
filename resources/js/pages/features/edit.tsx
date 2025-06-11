@@ -3,11 +3,12 @@ import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
+// React Simple WYSIWYG Import - EditorProvider hinzugefügt
+import { Editor, EditorProvider } from "react-simple-wysiwyg";
 
 interface Project {
   id: number;
@@ -42,13 +43,18 @@ export default function Edit({ feature, projects, users }: EditProps) {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
   const handleSelectChange = (field: string, value: string) => {
     setValues({ ...values, [field]: value });
+  };
+  
+  // Handler für den WYSIWYG Editor
+  const handleEditorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValues(prev => ({ ...prev, description: e.target.value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -58,14 +64,12 @@ export default function Edit({ feature, projects, users }: EditProps) {
 
   return (
     <AppLayout>
-      {/* Volle Breite statt max-w-2xl */}
       <Card className="w-full mt-8">
         <CardHeader>
           <CardTitle>Feature bearbeiten</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Anordnung von Jira Key und Name nebeneinander für bessere Platzausnutzung */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="jira_key">Jira Key</Label>
@@ -99,19 +103,22 @@ export default function Edit({ feature, projects, users }: EditProps) {
             
             <div>
               <Label htmlFor="description">Beschreibung</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={values.description}
-                onChange={handleChange}
-                className="w-full min-h-[120px]"
-              />
+              <div className="border rounded overflow-hidden">
+                <EditorProvider>
+                  <Editor 
+                    id="description"
+                    name="description" 
+                    value={values.description} 
+                    onChange={handleEditorChange}
+                    containerProps={{ className: 'min-h-[120px] bg-white' }}
+                  />
+                </EditorProvider>
+              </div>
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
               )}
             </div>
             
-            {/* Projekt und Anforderer nebeneinander für bessere Platzausnutzung */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="project_id">Projekt</Label>
@@ -160,7 +167,6 @@ export default function Edit({ feature, projects, users }: EditProps) {
               </div>
             </div>
             
-            {/* Bessere Button-Leiste am Ende mit Abbrechen-Option */}
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => window.history.back()}>
                 Abbrechen
