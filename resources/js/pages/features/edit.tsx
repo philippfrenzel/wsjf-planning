@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
-// React Simple WYSIWYG Import - EditorProvider hinzugefügt
-import { Editor, EditorProvider } from "react-simple-wysiwyg";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 interface Project {
   id: number;
@@ -53,8 +53,8 @@ export default function Edit({ feature, projects, users }: EditProps) {
   };
   
   // Handler für den WYSIWYG Editor
-  const handleEditorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValues(prev => ({ ...prev, description: e.target.value }));
+  const handleEditorChange = (value: string) => {
+    setValues(prev => ({ ...prev, description: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -104,15 +104,13 @@ export default function Edit({ feature, projects, users }: EditProps) {
             <div>
               <Label htmlFor="description">Beschreibung</Label>
               <div className="border rounded overflow-hidden">
-                <EditorProvider>
-                  <Editor 
-                    id="description"
-                    name="description" 
-                    value={values.description} 
-                    onChange={handleEditorChange}
-                    containerProps={{ className: 'min-h-[120px] bg-white' }}
-                  />
-                </EditorProvider>
+                <ReactQuill
+                  id="description"
+                  theme="snow"
+                  value={values.description}
+                  onChange={handleEditorChange}
+                  className="min-h-[120px] bg-white"
+                />
               </div>
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>

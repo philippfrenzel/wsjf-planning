@@ -8,6 +8,10 @@ Inertia allows you to build modern, single-page React applications using classic
 
 This React starter kit utilizes React 19, TypeScript, Tailwind, and the [shadcn/ui](https://ui.shadcn.com) and [radix-ui](https://www.radix-ui.com) component libraries.
 
+## Installation
+
+Run `npm install` after pulling new changes to ensure all dependencies are available.
+
 ## Official Documentation
 
 Documentation for all Laravel starter kits can be found on the [Laravel website](https://laravel.com/docs/starter-kits).
