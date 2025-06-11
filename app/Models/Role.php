@@ -1,6 +1,4 @@
 <?php
-// filepath: /workspaces/react-starter-kit/app/Models/Role.php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
