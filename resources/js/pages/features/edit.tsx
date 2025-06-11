@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
 
 interface Project {
   id: number;
@@ -42,6 +42,15 @@ export default function Edit({ feature, projects, users }: EditProps) {
     project_id: feature.project_id ? String(feature.project_id) : "",
   });
 
+  // TipTap Editor initialisieren
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: values.description,
+    onUpdate: ({ editor }) => {
+      setValues(prev => ({ ...prev, description: editor.getHTML() }));
+    }
+  });
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -52,11 +61,6 @@ export default function Edit({ feature, projects, users }: EditProps) {
     setValues({ ...values, [field]: value });
   };
   
-  // Handler für den WYSIWYG Editor
-  const handleEditorChange = (value: string) => {
-    setValues(prev => ({ ...prev, description: value }));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     Inertia.put(route("features.update", feature.id), values);
@@ -104,12 +108,9 @@ export default function Edit({ feature, projects, users }: EditProps) {
             <div>
               <Label htmlFor="description">Beschreibung</Label>
               <div className="border rounded overflow-hidden">
-                <ReactQuill
-                  id="description"
-                  theme="snow"
-                  value={values.description}
-                  onChange={handleEditorChange}
-                  className="min-h-[120px] bg-white"
+                <EditorContent 
+                  editor={editor} 
+                  className="min-h-[120px] bg-white p-2"
                 />
               </div>
               {errors.description && (

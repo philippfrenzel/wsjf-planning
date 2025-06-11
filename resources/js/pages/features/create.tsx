@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+// TipTap Imports statt ReactQuill
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 
 interface Project {
   id: number;
@@ -33,6 +34,48 @@ export default function Create({ projects, users }: CreateProps) {
     project_id: "",
   });
   
+  // TipTap Editor initialisieren
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: values.description,
+    onUpdate: ({ editor }) => {
+      setValues(prev => ({ ...prev, description: editor.getHTML() }));
+    }
+  });
+  
+  const addToolbar = () => {
+    if (!editor) return null;
+    
+    return (
+      <div className="flex gap-1 p-1 border-b bg-gray-50">
+        <Button 
+          type="button" 
+          size="sm" 
+          variant={editor.isActive('bold') ? "default" : "outline"}
+          onClick={() => editor.chain().focus().toggleBold().run()}
+        >
+          B
+        </Button>
+        <Button 
+          type="button" 
+          size="sm" 
+          variant={editor.isActive('italic') ? "default" : "outline"}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+        >
+          I
+        </Button>
+        <Button 
+          type="button" 
+          size="sm" 
+          variant={editor.isActive('bulletList') ? "default" : "outline"}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        >
+          • Liste
+        </Button>
+      </div>
+    );
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -41,11 +84,6 @@ export default function Create({ projects, users }: CreateProps) {
 
   const handleSelectChange = (field: string, value: string) => {
     setValues({ ...values, [field]: value });
-  };
-
-  // Handler für den WYSIWYG Editor
-  const handleEditorChange = (value: string) => {
-    setValues(prev => ({ ...prev, description: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -95,11 +133,9 @@ export default function Create({ projects, users }: CreateProps) {
             <div>
               <Label htmlFor="description">Beschreibung</Label>
               <div className="border rounded overflow-hidden">
-                <ReactQuill
-                  id="description"
-                  theme="snow"
-                  value={values.description}
-                  onChange={handleEditorChange}
+                {addToolbar()}
+                <EditorContent
+                  editor={editor}
                   className="min-h-[120px] bg-white"
                 />
               </div>

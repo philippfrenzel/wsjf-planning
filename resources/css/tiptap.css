@@ -1,0 +1,24 @@
+/* TipTap Editor Styling */
+.ProseMirror {
+  padding: 1rem;
+  min-height: 120px;
+  outline: none;
+}
+
+.ProseMirror p {
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror ul, .ProseMirror ol {
+  padding-left: 1.5rem;
+}
+
+.ProseMirror h1, .ProseMirror h2, .ProseMirror h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
