@@ -4,7 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
@@ -95,7 +108,7 @@ export default function Edit({ planning, projects, users, features }: EditProps)
 
   return (
     <AppLayout>
-      <Card className="max-w-3xl mx-auto mt-8">
+      <Card className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
         <CardHeader>
           <CardTitle>Planning bearbeiten</CardTitle>
         </CardHeader>
@@ -197,16 +210,33 @@ export default function Edit({ planning, projects, users, features }: EditProps)
                 {features.length === 0 && (
                   <span className="text-sm text-gray-500">Keine Features im Projekt vorhanden.</span>
                 )}
-                {features.map((feature) => (
-                  <label key={feature.id} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={values.feature_ids.includes(feature.id.toString())}
-                      onChange={() => handleFeatureChange(feature.id.toString())}
-                    />
-                    {feature.jira_key} – {feature.name}
-                  </label>
-                ))}
+                {features.length > 0 && (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-24">Auswählen</TableHead>
+                        <TableHead>Jira Key</TableHead>
+                        <TableHead>Name</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {features.map((feature) => (
+                        <TableRow key={feature.id}>
+                          <TableCell className="text-center">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4"
+                              checked={values.feature_ids.includes(feature.id.toString())}
+                              onChange={() => handleFeatureChange(feature.id.toString())}
+                            />
+                          </TableCell>
+                          <TableCell>{feature.jira_key}</TableCell>
+                          <TableCell>{feature.name}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </div>
               {errors.feature_ids && (
                 <p className="text-sm text-red-600 mt-1">{errors.feature_ids}</p>

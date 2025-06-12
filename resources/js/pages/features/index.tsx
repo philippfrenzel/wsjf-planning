@@ -36,6 +36,11 @@ interface Feature {
   description: string;
   requester?: { id: number; name: string } | null;
   project?: { id: number; name: string } | null;
+  // Neue Status-Eigenschaft hinzufügen
+  status?: {
+    name: string;
+    color: string;
+  };
 }
 
 interface IndexProps {
@@ -442,6 +447,8 @@ export default function Index({ features }: IndexProps) {
                   {getSortIcon("name")}
                 </span>
               </TableHead>
+              {/* Status-Spalte hinzufügen */}
+              <TableHead>Status</TableHead>
               <TableHead 
                 className="cursor-pointer hover:bg-gray-50" 
                 onClick={() => handleSortChange("project")}
@@ -466,7 +473,8 @@ export default function Index({ features }: IndexProps) {
           <TableBody>
             {paginatedFeatures.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
+                <TableCell colSpan={6} className="text-center py-8">
+                  {/* Erhöhe colSpan auf 6, da wir eine Spalte hinzugefügt haben */}
                   <div className="flex flex-col items-center justify-center">
                     <Search className="w-8 h-8 text-gray-300 mb-2" />
                     <p className="text-gray-500">Keine Features gefunden</p>
@@ -487,6 +495,18 @@ export default function Index({ features }: IndexProps) {
                 <TableRow key={feature.id}>
                   <TableCell className="font-medium">{feature.jira_key}</TableCell>
                   <TableCell>{feature.name}</TableCell>
+                  {/* Status-Badge hinzufügen */}
+                  <TableCell>
+                    {feature.status ? (
+                      <Badge 
+                        className={feature.status.color}
+                      >
+                        {feature.status.name}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline">Unbekannt</Badge>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {feature.project ? (
                       <Badge variant="outline">{feature.project.name}</Badge>
