@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, ChevronRight } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, ChevronRight, BarChart3 as Donut, Route, Shirt } from 'lucide-react';
 import AppLogo from './app-logo';
 
 interface AppSidebarProps {
@@ -22,17 +22,17 @@ export function AppSidebar({ hasProjects, firstPlanningId }: AppSidebarProps) {
         {
             title: 'Projekte',
             href: '/projects',
-            icon: Folder,
+            icon: Donut,
         },
         hasProjects && {
             title: 'WSJF Verwaltung',
             href: '/plannings',
-            icon: Folder,
+            icon: Route,
         },
         {
             title: 'Features',
             href: '/features',
-            icon: Folder,
+            icon: Shirt,
         },
     ].filter(Boolean) as NavItem[];
 
