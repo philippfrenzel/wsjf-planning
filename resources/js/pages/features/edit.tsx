@@ -9,6 +9,7 @@ import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import TextAlign from '@tiptap/extension-text-align'
 
 interface Project {
   id: number;
@@ -44,12 +45,163 @@ export default function Edit({ feature, projects, users }: EditProps) {
 
   // TipTap Editor initialisieren
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      TextAlign.configure({
+        types: ['heading', 'paragraph']
+      })
+    ],
     content: values.description,
     onUpdate: ({ editor }) => {
       setValues(prev => ({ ...prev, description: editor.getHTML() }));
     }
   });
+
+  const addToolbar = () => {
+    if (!editor) return null;
+
+    return (
+      <div className="flex flex-wrap gap-1 p-2 border-b bg-gray-50">
+        {/* Textformatierungen */}
+        <div className="flex gap-1 mr-2 border-r pr-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={editor.isActive('bold') ? "default" : "outline"}
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            title="Fett"
+          >
+            <span className="font-bold">B</span>
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={editor.isActive('italic') ? "default" : "outline"}
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            title="Kursiv"
+          >
+            <span className="italic">I</span>
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={editor.isActive('strike') ? "default" : "outline"}
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            title="Durchgestrichen"
+          >
+            <span className="line-through">S</span>
+          </Button>
+        </div>
+        
+        {/* Überschriften */}
+        <div className="flex gap-1 mr-2 border-r pr-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={editor.isActive('heading', { level: 1 }) ? "default" : "outline"}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            title="Überschrift 1"
+          >
+            H1
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={editor.isActive('heading', { level: 2 }) ? "default" : "outline"}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            title="Überschrift 2"
+          >
+            H2
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={editor.isActive('heading', { level: 3 }) ? "default" : "outline"}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            title="Überschrift 3"
+          >
+            H3
+          </Button>
+        </div>
+        
+        {/* Listen */}
+        <div className="flex gap-1 mr-2 border-r pr-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={editor.isActive('bulletList') ? "default" : "outline"}
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            title="Aufzählungsliste"
+          >
+            • Liste
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={editor.isActive('orderedList') ? "default" : "outline"}
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            title="Nummerierte Liste"
+          >
+            1. Liste
+          </Button>
+        </div>
+        
+        {/* Einzug */}
+        <div className="flex gap-1 mr-2 border-r pr-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => editor.chain().focus().outdent().run()}
+            title="Einzug verringern"
+            disabled={!editor.can().outdent()}
+          >
+            ←
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => editor.chain().focus().indent().run()}
+            title="Einzug erhöhen"
+          >
+            →
+          </Button>
+        </div>
+        
+        {/* Zitate und Code */}
+        <div className="flex gap-1">
+          <Button
+            type="button"
+            size="sm"
+            variant={editor.isActive('blockquote') ? "default" : "outline"}
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            title="Zitat"
+          >
+            "
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={editor.isActive('codeBlock') ? "default" : "outline"}
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            title="Code-Block"
+          >
+            &lt;/&gt;
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            title="Horizontale Linie einfügen"
+          >
+            ―
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -108,6 +260,7 @@ export default function Edit({ feature, projects, users }: EditProps) {
             <div>
               <Label htmlFor="description">Beschreibung</Label>
               <div className="border rounded overflow-hidden">
+                {addToolbar()}
                 <EditorContent 
                   editor={editor} 
                   className="min-h-[120px] bg-white p-2"
