@@ -195,27 +195,38 @@ export default function Show({ planning }: ShowProps) {
                 <TabsTrigger value="features">Features & Votes</TabsTrigger>
               </TabsList>
               <TabsContent value="details">
-                <div className="mb-2">
-                  <strong>Projekt:</strong> {planning.project?.name ?? "-"}
-                </div>
-                <div className="mb-2">
-                  <strong>Geplant am:</strong> {planning.planned_at ?? "-"}
-                </div>
-                <div className="mb-2">
-                  <strong>Durchgeführt am:</strong> {planning.executed_at ?? "-"}
-                </div>
-                <div className="mb-2">
-                  <strong>Beschreibung:</strong> {planning.description ?? "-"}
-                </div>
-                <div className="mb-2">
-                  <strong>Erstellt von:</strong> {planning.creator?.name ?? "-"}
-                </div>
-                <div className="mb-2">
-                  <strong>Stakeholder:</strong>{" "}
-                  {planning.stakeholders.length > 0
-                    ? planning.stakeholders.map((u) => u.name).join(", ")
-                    : "-"}
-                </div>
+                <Table>
+                  <TableBody>
+                    <TableRow>
+                      <TableHead className="w-1/4">Projekt</TableHead>
+                      <TableCell>{planning.project?.name ?? "-"}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableHead className="w-1/4">Geplant am</TableHead>
+                      <TableCell>{planning.planned_at ?? "-"}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableHead className="w-1/4">Durchgeführt am</TableHead>
+                      <TableCell>{planning.executed_at ?? "-"}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableHead className="w-1/4">Beschreibung</TableHead>
+                      <TableCell>{planning.description ?? "-"}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableHead className="w-1/4">Erstellt von</TableHead>
+                      <TableCell>{planning.creator?.name ?? "-"}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableHead className="w-1/4">Stakeholder</TableHead>
+                      <TableCell>
+                        {planning.stakeholders.length > 0
+                          ? planning.stakeholders.map((u) => u.name).join(", ")
+                          : "-"}
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </TabsContent>
               <TabsContent value="features">
                 <FeaturesTable features={planning.features} />
