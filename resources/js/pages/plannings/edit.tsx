@@ -189,16 +189,36 @@ export default function Edit({ planning, projects, users, features }: EditProps)
             <div>
               <Label>Stakeholder</Label>
               <div className="flex flex-wrap gap-2">
-                {users.map((user) => (
-                  <label key={user.id} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={values.stakeholder_ids.includes(user.id.toString())}
-                      onChange={() => handleStakeholderChange(user.id.toString())}
-                    />
-                    {user.name}
-                  </label>
-                ))}
+                {users.length === 0 && (
+                  <span className="text-sm text-gray-500">Keine Benutzer vorhanden.</span>
+                )}
+                {users.length > 0 && (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-24">Auswählen</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>E-Mail</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="text-center">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4"
+                              checked={values.stakeholder_ids.includes(user.id.toString())}
+                              onChange={() => handleStakeholderChange(user.id.toString())}
+                            />
+                          </TableCell>
+                          <TableCell>{user.name}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </div>
               {errors.stakeholder_ids && (
                 <p className="text-sm text-red-600 mt-1">{errors.stakeholder_ids}</p>

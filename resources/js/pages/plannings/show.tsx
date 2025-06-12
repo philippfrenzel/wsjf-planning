@@ -192,7 +192,7 @@ export default function Show({ planning }: ShowProps) {
             <Tabs defaultValue="details" className="w-full">
               <TabsList>
                 <TabsTrigger value="details">Details</TabsTrigger>
-                <TabsTrigger value="features">Features & Votes</TabsTrigger>
+                <TabsTrigger value="features">Features & Individual Votes</TabsTrigger>
               </TabsList>
               <TabsContent value="details">
                 <Table>

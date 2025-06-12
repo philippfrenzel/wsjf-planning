@@ -58,7 +58,7 @@ class PlanningController extends Controller
     {
         $planning->load([
             'project:id,name',
-            'stakeholders:id,name',
+            'stakeholders:id,name,email',
             'creator:id,name', // Ersteller mit laden
             'features' => function ($query) use ($planning) {
                 // Nur Features aus dem gleichen Projekt laden
@@ -84,7 +84,7 @@ class PlanningController extends Controller
         return Inertia::render('plannings/edit', [
             'planning' => $planning->load(['stakeholders', 'features']),
             'projects' => Project::all(['id', 'name']),
-            'users' => User::all(['id', 'name']),
+            'users' => User::all(['id', 'name', 'email']),
             'features' => $features,
         ]);
     }
