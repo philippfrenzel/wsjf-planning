@@ -95,7 +95,8 @@ export default function Show({ feature, auth }: ShowProps) {
 
   return (
     <AppLayout>
-      <Card className="max-w-4xl mx-auto mt-8">
+      <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
+      <Card className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
         <FeatureHeader
           featureName={feature.name}
           showComponentForm={showComponentForm}
@@ -181,6 +182,7 @@ export default function Show({ feature, auth }: ShowProps) {
         }
         onSubmit={handleEditComponentSubmit}
       />
+      </div>
     </AppLayout>
   );
 }

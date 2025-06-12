@@ -11,6 +11,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
 
+
 interface Project {
   id: number;
   name: string;
@@ -143,29 +144,6 @@ export default function Edit({ feature, projects, users }: EditProps) {
             title="Nummerierte Liste"
           >
             1. Liste
-          </Button>
-        </div>
-        
-        {/* Einzug */}
-        <div className="flex gap-1 mr-2 border-r pr-2">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => editor.chain().focus().outdent().run()}
-            title="Einzug verringern"
-            disabled={!editor.can().outdent()}
-          >
-            ←
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => editor.chain().focus().indent().run()}
-            title="Einzug erhöhen"
-          >
-            →
           </Button>
         </div>
         
