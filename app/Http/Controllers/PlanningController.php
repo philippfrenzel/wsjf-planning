@@ -58,18 +58,29 @@ class PlanningController extends Controller
     {
         $planning->load([
             'project:id,name',
-            'stakeholders:id,name',
+            'stakeholders:id,name,email',
             'creator:id,name', // Ersteller mit laden
             'features' => function ($query) use ($planning) {
                 // Nur Features aus dem gleichen Projekt laden
                 $query->where('project_id', $planning->project_id)
                     ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
             },
+            // Bestehende Votes-Abfrage für andere Stakeholder beibehalten
             'features.votes' => function ($query) use ($planning) {
-                // Nur Votes aus dem aktuellen Planning laden
-                $query->where('planning_id', $planning->id);
+                // Nur Votes aus dem aktuellen Planning laden, die NICHT vom Ersteller des Plannings sind
+                $query->where('planning_id', $planning->id)
+                    ->whereHas('user', function ($subQuery) use ($planning) {
+                        $subQuery->where('id', '!=', $planning->created_by);
+                    });
             },
             'features.votes.user:id,name', // Benutzer der Votes laden
+
+            // Common Votes (Ersteller-Votes) separat laden
+            'features.commonvotes' => function ($query) use ($planning) {
+                // Nur Votes vom Ersteller des Plannings
+                $query->where('planning_id', $planning->id)
+                    ->where('user_id', $planning->created_by);
+            },
         ]);
 
         return Inertia::render('plannings/show', [
@@ -84,7 +95,7 @@ class PlanningController extends Controller
         return Inertia::render('plannings/edit', [
             'planning' => $planning->load(['stakeholders', 'features']),
             'projects' => Project::all(['id', 'name']),
-            'users' => User::all(['id', 'name']),
+            'users' => User::all(['id', 'name', 'email']),
             'features' => $features,
         ]);
     }
