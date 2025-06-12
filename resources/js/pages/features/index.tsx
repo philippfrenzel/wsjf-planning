@@ -187,7 +187,7 @@ export default function Index({ features }: IndexProps) {
       </div>
       
       <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
-      <Card className="mb-6">
+      <Card className="mb-6  bg-gray-50 border border-gray-200">
         <CardContent className="pt-5 px-5 pb-5">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
