@@ -26,7 +26,7 @@ export function AppSidebar({ hasProjects, firstPlanningId }: AppSidebarProps) {
         },
         hasProjects && {
             title: 'WSJF Verwaltung',
-            href: '/plannings',
+            href: '/plannings?project_id=' + (firstPlanningId || ''),
             icon: Route,
         },
         {

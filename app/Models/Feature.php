@@ -5,10 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\ModelStates\HasStates;
+use App\States\Feature\FeatureState;
+use App\States\Feature\InPlanning;
+use App\States\Feature\Approved;
 
 class Feature extends Model
 {
     use HasFactory;
+    use HasStates;
 
     protected $fillable = [
         'jira_key',
@@ -18,6 +23,16 @@ class Feature extends Model
         'project_id',
         'created_at',
     ];
+
+    /**
+     * Konfiguration für Status
+     */
+    protected function registerStates(): void
+    {
+        $this->addState('status', FeatureState::class)
+            ->default(InPlanning::class)
+            ->allowTransition(InPlanning::class, Approved::class);
+    }
 
     /**
      * Der anfordernde User (optional).

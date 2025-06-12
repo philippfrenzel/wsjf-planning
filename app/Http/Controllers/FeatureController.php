@@ -24,7 +24,37 @@ class FeatureController extends Controller
         // Zeige nur Features, die zu diesen Projekten gehören
         $features = Feature::with(['project:id,name', 'requester:id,name'])
             ->whereIn('project_id', $projectIds)
-            ->get();
+            ->get()
+            ->map(function ($feature) {
+                return [
+                    'id' => $feature->id,
+                    'jira_key' => $feature->jira_key,
+                    'name' => $feature->name,
+                    'description' => $feature->description,
+                    'requester' => $feature->requester ? [
+                        'id' => $feature->requester->id,
+                        'name' => $feature->requester->name,
+                    ] : null,
+                    'project' => $feature->project ? [
+                        'id' => $feature->project->id,
+                        'name' => $feature->project->name,
+                    ] : null,
+                    'status' => isset($feature->status) ? (
+                        // Prüfen, ob es ein Objekt oder ein String ist
+                        is_object($feature->status) ? [
+                            'name' => $feature->status->name(),
+                            'color' => $feature->status->color(),
+                        ] : [
+                            // Fallback für String-Status
+                            'name' => ucfirst($feature->status),
+                            'color' => 'bg-gray-100 text-gray-800',
+                        ]
+                    ) : [
+                        'name' => 'In Planung',
+                        'color' => 'bg-gray-100 text-gray-800',
+                    ],
+                ];
+            });
 
         return Inertia::render('features/index', [
             'features' => $features,
