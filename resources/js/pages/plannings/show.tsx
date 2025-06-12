@@ -30,6 +30,7 @@ interface Feature {
   name: string;
   project_id: number;
   votes?: Vote[];
+  commonvotes?: Vote[]; // Vom Controller dediziert geladene Common Votes
 }
 
 interface Planning {
@@ -161,6 +162,63 @@ function FeaturesTable({ features }: { features?: Feature[] }) {
   );
 }
 
+// Neue CommonVotesTable Komponente
+function CommonVotesTable({ features }: { features?: Feature[] }) {
+  if (!features || features.length === 0) {
+    return <div className="mt-6">Keine Features verknüpft.</div>;
+  }
+  
+  // console.log("Features für CommonVotesTable:", features);
+
+  // Alle Features mit mindestens einem Common Vote filtern
+  const featuresWithCommonVotes = features
+    .filter(feature => feature.commonvotes && feature.commonvotes.length > 0);
+  
+  if (featuresWithCommonVotes.length === 0) {
+    return <div className="mt-6">Keine Common Votes vorhanden.</div>;
+  }
+  
+  // Die Vote-Typen, die wir anzeigen wollen
+  const voteTypes = ["BusinessValue", "TimeCriticality", "RiskOpportunity"];
+  
+  return (
+    <div className="mt-6">
+      <h2 className="text-lg font-semibold mb-2">Common Votes (Ersteller)</h2>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Jira Key</TableHead>
+            <TableHead>Name</TableHead>
+            {voteTypes.map(type => (
+              <TableHead key={type}>{translateVoteType(type)}</TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {featuresWithCommonVotes.map((feature) => (
+            <TableRow key={feature.id}>
+              <TableCell>{feature.jira_key}</TableCell>
+              <TableCell>{feature.name}</TableCell>
+              {voteTypes.map(type => {
+                const vote = feature.commonvotes?.find(v => v.type === type);
+                return (
+                  <TableCell key={type}>
+                    {vote ? (
+                      <Badge className={getScoreBadgeClass(vote.value)}>
+                        {vote.value}
+                      </Badge>
+                    ) : "-"}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 // Hilfsfunktion zur Übersetzung der Vote-Typen
 function translateVoteType(type: string): string {
   const translations: {[key: string]: string} = {
@@ -227,6 +285,11 @@ export default function Show({ planning }: ShowProps) {
                     </TableRow>
                   </TableBody>
                 </Table>
+                
+                {/* Common Votes Tabelle unter den Details einfügen */}
+                {planning.creator && planning.features && (
+                  <CommonVotesTable features={planning.features} />
+                )}
               </TabsContent>
               <TabsContent value="features">
                 <FeaturesTable features={planning.features} />

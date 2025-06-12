@@ -211,28 +211,32 @@ class VoteController extends Controller
                 if ($averageVote !== null) {
                     $roundedAverage = ceil($averageVote);
 
-                    // Bestehenden Vote des Creators prüfen
-                    $existingVote = Vote::where('user_id', $creatorId)
-                        ->where('feature_id', $featureId)
-                        ->where('planning_id', $planning->id)
-                        ->where('type', $type)
-                        ->first();
+                    // Bestehenden Vote des Creators aktualisieren oder erstellen
+                    $existingVote = Vote::where([
+                        'user_id' => $creatorId,
+                        'feature_id' => $featureId,
+                        'planning_id' => $planning->id,
+                        'type' => $type
+                    ])->first();
 
-                    $action = $existingVote ? 'Aktualisiere' : 'Erstelle neuen';
-                    \Log::info("$action Vote für Ersteller $creatorId, Feature $featureId, Typ $type: $roundedAverage");
-
-                    Vote::updateOrCreate(
-                        [
+                    if ($existingVote) {
+                        // Existierenden Vote aktualisieren
+                        \Log::info("Aktualisiere Vote ID {$existingVote->id} für Ersteller $creatorId, Feature $featureId, Typ $type: $roundedAverage");
+                        $existingVote->value = $roundedAverage;
+                        $existingVote->voted_at = now();
+                        $existingVote->save();
+                    } else {
+                        // Neuen Vote erstellen
+                        \Log::info("Erstelle neuen Vote für Ersteller $creatorId, Feature $featureId, Typ $type: $roundedAverage");
+                        Vote::create([
                             'user_id' => $creatorId,
                             'feature_id' => $featureId,
                             'planning_id' => $planning->id,
                             'type' => $type,
-                        ],
-                        [
                             'value' => $roundedAverage,
-                            'voted_at' => now(),
-                        ]
-                    );
+                            'voted_at' => now()
+                        ]);
+                    }
                 } else {
                     \Log::info("Keine Votes für Feature $featureId, Typ $type gefunden");
                 }

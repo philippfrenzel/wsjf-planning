@@ -65,11 +65,22 @@ class PlanningController extends Controller
                 $query->where('project_id', $planning->project_id)
                     ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
             },
+            // Bestehende Votes-Abfrage für andere Stakeholder beibehalten
             'features.votes' => function ($query) use ($planning) {
-                // Nur Votes aus dem aktuellen Planning laden
-                $query->where('planning_id', $planning->id);
+                // Nur Votes aus dem aktuellen Planning laden, die NICHT vom Ersteller des Plannings sind
+                $query->where('planning_id', $planning->id)
+                    ->whereHas('user', function ($subQuery) use ($planning) {
+                        $subQuery->where('id', '!=', $planning->created_by);
+                    });
             },
             'features.votes.user:id,name', // Benutzer der Votes laden
+
+            // Common Votes (Ersteller-Votes) separat laden
+            'features.commonvotes' => function ($query) use ($planning) {
+                // Nur Votes vom Ersteller des Plannings
+                $query->where('planning_id', $planning->id)
+                    ->where('user_id', $planning->created_by);
+            },
         ]);
 
         return Inertia::render('plannings/show', [

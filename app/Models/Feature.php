@@ -65,4 +65,13 @@ class Feature extends Model
     {
         return $this->hasMany(Vote::class);
     }
+
+    /**
+     * Die Common Votes (vom Ersteller des zugehörigen Plannings)
+     * Diese Version stellt sicher, dass die Einschränkungen direkt in der Relation definiert sind
+     */
+    public function commonvotes()
+    {
+        return $this->hasMany(Vote::class);
+    }
 }
