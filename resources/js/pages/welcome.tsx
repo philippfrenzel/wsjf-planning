@@ -103,9 +103,64 @@ export default function Welcome() {
                     </div>
                 </section>
 
+                <section className="mt-16 w-full max-w-4xl space-y-12 text-[#1b1b18] dark:text-[#EDEDEC]">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start">
+                        <Gauge className="mx-auto h-12 w-12 text-orange-500 md:mx-0" />
+                        <div>
+                            <h2 className="text-2xl font-semibold">WSJF-Priorisierung</h2>
+                            <p className="mb-2 text-sm text-[#706f6c] dark:text-[#A1A09A]">
+                                Priorisieren Sie Features anhand des <strong>Weighted Shortest Job First</strong> Prinzips.
+                            </p>
+                            <ul className="list-disc pl-5 text-sm text-[#706f6c] dark:text-[#A1A09A] space-y-1">
+                                <li>Individual Vote</li>
+                                <li>Common Vote</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start">
+                        <CalendarCheck2 className="mx-auto h-12 w-12 text-orange-500 md:mx-0" />
+                        <div>
+                            <h2 className="text-2xl font-semibold">Sprint Planung</h2>
+                            <p className="mb-2 text-sm text-[#706f6c] dark:text-[#A1A09A]">
+                                Nutzen Sie die Priorisierung direkt zur Planung Ihrer nächsten Sprints.
+                            </p>
+                            <ul className="list-disc pl-5 text-sm text-[#706f6c] dark:text-[#A1A09A] space-y-1">
+                                <li>Job-Size Estimation als Basis für Sprint Umfang</li>
+                                <li>Zerlegung von Epics in kleinere Komponenten</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start">
+                        <Users className="mx-auto h-12 w-12 text-orange-500 md:mx-0" />
+                        <div>
+                            <h2 className="text-2xl font-semibold">Transparente Zusammenarbeit</h2>
+                            <p className="mb-2 text-sm text-[#706f6c] dark:text-[#A1A09A]">
+                                Beziehen Sie alle Stakeholder in den Bewertungsprozess mit ein.
+                            </p>
+                            <ul className="list-disc pl-5 text-sm text-[#706f6c] dark:text-[#A1A09A] space-y-1">
+                                <li>Schätzung und Priorisierung pro Stakeholder</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start">
+                        <BarChart3 className="mx-auto h-12 w-12 text-orange-500 md:mx-0" />
+                        <div>
+                            <h2 className="text-2xl font-semibold">Auswertung</h2>
+                            <p className="mb-2 text-sm text-[#706f6c] dark:text-[#A1A09A]">
+                                Verfolgen Sie den Erfolg Ihrer Planung mit klaren Kennzahlen.
+                            </p>
+                            <ul className="list-disc pl-5 text-sm text-[#706f6c] dark:text-[#A1A09A] space-y-1">
+                                <li>KPIs zum Tracken aus Comitted zu Delivered</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
                 <div className="hidden h-14.5 lg:block"></div>
             </div>
         </>
     );
 }
-
