@@ -134,17 +134,22 @@ export default function VoteSession({ planning, plannings, features, types, exis
       </Dialog>
       {/* Feature-Beschreibung-Dialog */}
       <Dialog open={!!selectedFeature} onOpenChange={() => setSelectedFeature(null)}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>
               {selectedFeature?.jira_key}: {selectedFeature?.name}
             </DialogTitle>
           </DialogHeader>
-          <div>
-            {selectedFeature?.description
-              ? selectedFeature.description
-              : "Keine Beschreibung vorhanden."}
+          
+          {/* Hier die Änderung: Verwenden von dangerouslySetInnerHTML */}
+          <div className="prose prose-sm max-w-none overflow-auto">
+            {selectedFeature?.description ? (
+              <div dangerouslySetInnerHTML={{ __html: selectedFeature.description }} />
+            ) : (
+              <p>Keine Beschreibung vorhanden.</p>
+            )}
           </div>
+          
           <DialogFooter>
             <Button onClick={() => setSelectedFeature(null)}>Schließen</Button>
           </DialogFooter>
