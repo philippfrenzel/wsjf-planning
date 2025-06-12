@@ -187,89 +187,88 @@ export default function Index({ features }: IndexProps) {
       </div>
       
       <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
-      <Card className="mb-6">
-        <CardContent className="pt-5 px-5 pb-5">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Jira Key</label>
-              <div className="relative">
-                <Input
-                  placeholder="Jira Key filtern..."
-                  value={filters.jira_key}
-                  onChange={(e) => handleFilterChange("jira_key", e.target.value)}
-                />
-                {filters.jira_key && (
-                  <button 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    onClick={() => handleFilterChange("jira_key", "")}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
+        <Card className="mb-6 bg-gray-50 border border-gray-200">
+          <CardContent>
+            {/* Neue Position für den Filter-Button in der oberen Zeile */}
+            <div className="flex items-center gap-2 mb-4">
+              <Search className="w-4 h-4 text-gray-500" />
+              <h2 className="font-medium">Filter</h2>
+              
+              {/* Dauerhaft sichtbarer Reset-Button */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={resetFilters}
+                className="ml-auto"
+              >
+                <X className="w-4 h-4 mr-1" />
+                Filter zurücksetzen
+              </Button>
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Feature Name</label>
-              <div className="relative">
-                <Input
-                  placeholder="Name filtern..."
-                  value={filters.name}
-                  onChange={(e) => handleFilterChange("name", e.target.value)}
-                />
-                {filters.name && (
-                  <button 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    onClick={() => handleFilterChange("name", "")}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-            
-            {/* Projekt mit Type-Ahead */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Projekt</label>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <div>
-                <Popover open={projectPopoverOpen} onOpenChange={setProjectPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={projectPopoverOpen}
-                      className="w-full justify-between"
+                <label className="block text-sm font-medium mb-1">Jira Key</label>
+                <div className="relative">
+                  <Input
+                    placeholder="Jira Key filtern..."
+                    value={filters.jira_key}
+                    onChange={(e) => handleFilterChange("jira_key", e.target.value)}
+                  />
+                  {filters.jira_key && (
+                    <button 
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      onClick={() => handleFilterChange("jira_key", "")}
                     >
-                      {filters.project || "Projekt wählen..."}
-                      <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Projekt suchen..." className="h-9" />
-                      <CommandEmpty>Kein Projekt gefunden.</CommandEmpty>
-                      <CommandGroup className="max-h-64 overflow-y-auto">
-                        <CommandItem
-                          onSelect={() => {
-                            handleFilterChange("project", "");
-                            setProjectPopoverOpen(false);
-                          }}
-                          className="text-sm"
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              filters.project === "" ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          Alle anzeigen
-                        </CommandItem>
-                        {uniqueProjects.map((project) => (
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Feature Name</label>
+                <div className="relative">
+                  <Input
+                    placeholder="Name filtern..."
+                    value={filters.name}
+                    onChange={(e) => handleFilterChange("name", e.target.value)}
+                  />
+                  {filters.name && (
+                    <button 
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      onClick={() => handleFilterChange("name", "")}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              {/* Projekt mit Type-Ahead */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Projekt</label>
+                <div>
+                  <Popover open={projectPopoverOpen} onOpenChange={setProjectPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={projectPopoverOpen}
+                        className="w-full justify-between"
+                      >
+                        {filters.project || "Projekt wählen..."}
+                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Projekt suchen..." className="h-9" />
+                        <CommandEmpty>Kein Projekt gefunden.</CommandEmpty>
+                        <CommandGroup className="max-h-64 overflow-y-auto">
                           <CommandItem
-                            key={project}
-                            value={project}
                             onSelect={() => {
-                              handleFilterChange("project", project);
+                              handleFilterChange("project", "");
                               setProjectPopoverOpen(false);
                             }}
                             className="text-sm"
@@ -277,72 +276,72 @@ export default function Index({ features }: IndexProps) {
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                filters.project === project ? "opacity-100" : "opacity-0"
+                                filters.project === "" ? "opacity-100" : "opacity-0"
                               )}
                             />
-                            {project}
+                            Alle anzeigen
                           </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                {filters.project && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-1 h-auto p-0 text-xs text-muted-foreground"
-                    onClick={() => handleFilterChange("project", "")}
-                  >
-                    <X className="mr-1 h-3 w-3" />
-                    Filter zurücksetzen
-                  </Button>
-                )}
-              </div>
-            </div>
-            
-            {/* Anforderer mit Type-Ahead */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Anforderer</label>
-              <div>
-                <Popover open={requesterPopoverOpen} onOpenChange={setRequesterPopoverOpen}>
-                  <PopoverTrigger asChild>
+                          {uniqueProjects.map((project) => (
+                            <CommandItem
+                              key={project}
+                              value={project}
+                              onSelect={() => {
+                                handleFilterChange("project", project);
+                                setProjectPopoverOpen(false);
+                              }}
+                              className="text-sm"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  filters.project === project ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {project}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {filters.project && (
                     <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={requesterPopoverOpen}
-                      className="w-full justify-between"
+                      variant="ghost"
+                      size="sm"
+                      className="mt-1 h-auto p-0 text-xs text-muted-foreground"
+                      onClick={() => handleFilterChange("project", "")}
                     >
-                      {filters.requester || "Anforderer wählen..."}
-                      <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      <X className="mr-1 h-3 w-3" />
+                      Filter zurücksetzen
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Anforderer suchen..." className="h-9" />
-                      <CommandEmpty>Kein Anforderer gefunden.</CommandEmpty>
-                      <CommandGroup className="max-h-64 overflow-y-auto">
-                        <CommandItem
-                          onSelect={() => {
-                            handleFilterChange("requester", "");
-                            setRequesterPopoverOpen(false);
-                          }}
-                          className="text-sm"
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              filters.requester === "" ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          Alle anzeigen
-                        </CommandItem>
-                        {uniqueRequesters.map((requester) => (
+                  )}
+                </div>
+              </div>
+              
+              {/* Anforderer mit Type-Ahead */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Anforderer</label>
+                <div>
+                  <Popover open={requesterPopoverOpen} onOpenChange={setRequesterPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={requesterPopoverOpen}
+                        className="w-full justify-between"
+                      >
+                        {filters.requester || "Anforderer wählen..."}
+                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Anforderer suchen..." className="h-9" />
+                        <CommandEmpty>Kein Anforderer gefunden.</CommandEmpty>
+                        <CommandGroup className="max-h-64 overflow-y-auto">
                           <CommandItem
-                            key={requester}
-                            value={requester}
                             onSelect={() => {
-                              handleFilterChange("requester", requester);
+                              handleFilterChange("requester", "");
                               setRequesterPopoverOpen(false);
                             }}
                             className="text-sm"
@@ -350,72 +349,78 @@ export default function Index({ features }: IndexProps) {
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                filters.requester === requester ? "opacity-100" : "opacity-0"
+                                filters.requester === "" ? "opacity-100" : "opacity-0"
                               )}
                             />
-                            {requester}
+                            Alle anzeigen
                           </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                {filters.requester && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-1 h-auto p-0 text-xs text-muted-foreground"
-                    onClick={() => handleFilterChange("requester", "")}
-                  >
-                    <X className="mr-1 h-3 w-3" />
-                    Filter zurücksetzen
-                  </Button>
-                )}
+                          {uniqueRequesters.map((requester) => (
+                            <CommandItem
+                              key={requester}
+                              value={requester}
+                              onSelect={() => {
+                                handleFilterChange("requester", requester);
+                                setRequesterPopoverOpen(false);
+                              }}
+                              className="text-sm"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  filters.requester === requester ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {requester}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {filters.requester && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-1 h-auto p-0 text-xs text-muted-foreground"
+                      onClick={() => handleFilterChange("requester", "")}
+                    >
+                      <X className="mr-1 h-3 w-3" />
+                      Filter zurücksetzen
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={resetFilters}
-                className="text-sm"
-              >
-                Alle Filter zurücksetzen
-              </Button>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">
-                {filteredAndSortedFeatures.length} {filteredAndSortedFeatures.length === 1 ? 'Feature' : 'Features'}
-              </span>
-              
-              <Select
-                value={itemsPerPage.toString()}
-                onValueChange={(value) => {
-                  setItemsPerPage(parseInt(value));
-                  setCurrentPage(1);
-                }}
-              >
-                <SelectTrigger className="w-[110px]">
-                  <SelectValue placeholder="10" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5 / Seite</SelectItem>
-                  <SelectItem value="10">10 / Seite</SelectItem>
-                  <SelectItem value="25">25 / Seite</SelectItem>
-                  <SelectItem value="50">50 / Seite</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
+        {/* Ergebnisanzeige mit Paginierung */}
+        <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
+          <div className="text-sm text-gray-500">
+              Zeige {Math.min(filteredAndSortedFeatures.length, (currentPage - 1) * itemsPerPage + 1)} bis{" "}
+              {Math.min(filteredAndSortedFeatures.length, currentPage * itemsPerPage)} von{" "}
+              {filteredAndSortedFeatures.length} Einträgen
+            </div>
+            {/* Seitenauswahl */}
+          <div className="flex items-center gap-2">
+            <select 
+              className="border rounded px-2 py-1"
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1); // Zurück zur ersten Seite
+              }}
+            >
+              <option value={5}>5 pro Seite</option>
+              <option value={10}>10 pro Seite</option>
+              <option value={25}>25 pro Seite</option>
+              <option value={50}>50 pro Seite</option>
+            </select>
+          </div>
+        </div>
+
         <Table>
           <TableHeader>
             <TableRow>
