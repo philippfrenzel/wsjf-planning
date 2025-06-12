@@ -288,13 +288,16 @@ export default function Index({ projects, currentUserId }: IndexProps) {
           </TableBody>
         </Table>
         
-        {/* Paginierungs-Navigation */}
+        {/* Verbesserte Paginierungs-Navigation */}
         {filteredProjects.length > 0 && (
-          <div className="flex justify-between items-center mt-4">
+          <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-gray-500">
-              Seite {currentPage} von {totalPages}
+              Zeige {Math.min(filteredProjects.length, (currentPage - 1) * itemsPerPage + 1)} bis{" "}
+              {Math.min(filteredProjects.length, currentPage * itemsPerPage)} von{" "}
+              {filteredProjects.length} Einträgen
             </div>
-            <div className="flex gap-2">
+            
+            <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -304,6 +307,36 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Zurück
               </Button>
+              
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let pageNumber: number;
+                
+                if (totalPages <= 5) {
+                  // Wenn wir 5 oder weniger Seiten haben, zeige alle
+                  pageNumber = i + 1;
+                } else if (currentPage <= 3) {
+                  // Wenn wir auf den ersten 3 Seiten sind
+                  pageNumber = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  // Wenn wir auf den letzten 3 Seiten sind
+                  pageNumber = totalPages - 4 + i;
+                } else {
+                  // Sonst zeige die aktuelle Seite in der Mitte an
+                  pageNumber = currentPage - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNumber}
+                    variant={currentPage === pageNumber ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNumber)}
+                  >
+                    {pageNumber}
+                  </Button>
+                );
+              })}
+              
               <Button
                 variant="outline"
                 size="sm"
