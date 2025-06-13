@@ -22,10 +22,21 @@ class FeatureController extends Controller
         })->pluck('id');
 
         // Zeige nur Features, die zu diesen Projekten gehören
-        $features = Feature::with(['project:id,name', 'requester:id,name'])
+        $features = Feature::with([
+            'project:id,name',
+            'requester:id,name',
+            'estimationComponents',  // Lade alle Komponenten
+            'estimationComponents.estimations'  // Lade alle Schätzungen der Komponenten
+        ])
+            ->withCount('estimationComponents as estimation_components_count')
             ->whereIn('project_id', $projectIds)
             ->get()
             ->map(function ($feature) {
+                // Berechne die Summe der weighted_case manuell
+                $totalWeightedCase = $feature->estimationComponents->flatMap(function ($component) {
+                    return $component->estimations;
+                })->sum('weighted_case');
+
                 return [
                     'id' => $feature->id,
                     'jira_key' => $feature->jira_key,
@@ -53,6 +64,8 @@ class FeatureController extends Controller
                         'name' => 'In Planung',
                         'color' => 'bg-gray-100 text-gray-800',
                     ],
+                    'estimation_components_count' => $feature->estimation_components_count,
+                    'total_weighted_case' => $totalWeightedCase,
                 ];
             });
 

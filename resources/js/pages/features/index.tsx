@@ -36,11 +36,13 @@ interface Feature {
   description: string;
   requester?: { id: number; name: string } | null;
   project?: { id: number; name: string } | null;
-  // Neue Status-Eigenschaft hinzufügen
   status?: {
     name: string;
     color: string;
   };
+  // Neue Eigenschaften für Schätzungen
+  estimation_components_count?: number;
+  total_weighted_case?: number;
 }
 
 interface IndexProps {
@@ -452,6 +454,9 @@ export default function Index({ features }: IndexProps) {
                 </TableHead>
                 {/* Status-Spalte hinzufügen */}
                 <TableHead>Status</TableHead>
+                {/* Neue Spalten für Schätzungsinformationen */}
+                <TableHead>Komponenten</TableHead>
+                <TableHead>Gesamtschätzung</TableHead>
                 <TableHead 
                   className="cursor-pointer hover:bg-gray-50" 
                   onClick={() => handleSortChange("project")}
@@ -498,26 +503,37 @@ export default function Index({ features }: IndexProps) {
                   <TableRow key={feature.id}>
                     <TableCell className="font-medium">{feature.jira_key}</TableCell>
                     <TableCell>{feature.name}</TableCell>
-                    {/* Status-Badge hinzufügen */}
+                    {/* Status-Badge */}
                     <TableCell>
                       {feature.status ? (
-                        <Badge 
-                          className={feature.status.color}
-                        >
+                        <Badge className={feature.status.color}>
                           {feature.status.name}
                         </Badge>
                       ) : (
                         <Badge variant="outline">Unbekannt</Badge>
                       )}
                     </TableCell>
+                    {/* Anzahl der Schätzungskomponenten */}
                     <TableCell>
-                      {feature.project ? (
-                        <Badge variant="outline">{feature.project.name}</Badge>
-                      ) : (
-                        "-"
-                      )}
+                      <Badge variant="outline" className="bg-blue-50">
+                        {feature.estimation_components_count || 0}
+                      </Badge>
                     </TableCell>
-                    <TableCell>{feature.requester?.name ?? "-"}</TableCell>
+                    {/* Summe aller gewichteten Schätzungen */}
+                    <TableCell>
+                      {feature.total_weighted_case 
+                        ? `${feature.total_weighted_case.toFixed(2)} Std.` 
+                        : '-'}
+                    </TableCell>
+                    {/* Projekt - Diese Zelle fehlt */}
+                    <TableCell>
+                      {feature.project?.name || '-'}
+                    </TableCell>
+                    {/* Anforderer - Diese Zelle fehlt */}
+                    <TableCell>
+                      {feature.requester?.name || '-'}
+                    </TableCell>
+                    {/* Aktionen */}
                     <TableCell className="flex gap-2">
                       <Button asChild size="icon" variant="outline">
                         <Link href={route("features.show", feature)}>

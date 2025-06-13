@@ -13,7 +13,7 @@ interface Estimation {
   most_likely: number;
   worst_case: number;
   unit: string;
-  weighted_estimate?: number;
+  weighted_case?: number; // Geändert von weighted_estimate zu weighted_case
   creator: { id: number; name: string };
   created_at: string;
 }
@@ -44,7 +44,7 @@ export default function EstimationTable({ estimations }: EstimationTableProps) {
               <TableCell>{estimation.best_case}</TableCell>
               <TableCell>{estimation.most_likely}</TableCell>
               <TableCell>{estimation.worst_case}</TableCell>
-              <TableCell>{estimation.weighted_estimate?.toFixed(2) || '-'}</TableCell>
+              <TableCell>{estimation.weighted_case?.toFixed(2) || '-'}</TableCell>
               <TableCell>{estimation.unit}</TableCell>
               <TableCell>{estimation.creator.name}</TableCell>
               <TableCell>

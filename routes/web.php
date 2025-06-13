@@ -53,10 +53,10 @@ Route::resources([
     'votes' => VoteController::class,
 ]);
 
-Route::group(['middleware' => ['role:admin']], function () {
-    Route::get('/admin/users', [UserController::class, 'index'])->name('users.index');
-    // Weitere Admin-Routen...
-});
+//Route::group(['middleware' => ['role:admin']], function () {
+Route::get('/admin/users', [UserController::class, 'index'])->name('users.index');
+// Weitere Admin-Routen...
+//});
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
