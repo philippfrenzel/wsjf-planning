@@ -54,5 +54,15 @@ Route::resources([
     'votes' => VoteController::class,
 ]);
 
+Route::group(['middleware' => ['role:admin']], function () {
+    Route::get('/admin/users', [UserController::class, 'index'])->name('users.index');
+    // Weitere Admin-Routen...
+});
+
+Route::group(['middleware' => ['permission:plannings.view']], function () {
+    Route::get('/plannings', [PlanningController::class, 'index'])->name('plannings.index');
+    // Weitere Routen, die diese Berechtigung erfordern...
+});
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
