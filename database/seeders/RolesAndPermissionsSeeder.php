@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Models\User;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -45,5 +46,14 @@ class RolesAndPermissionsSeeder extends Seeder
             'plannings.view',
             'features.view'
         ]);
+
+        // Admin-Rolle erstellen
+        $role = Role::firstOrCreate(['name' => 'admin']);
+
+        // Optional: Dem ersten Benutzer die Admin-Rolle zuweisen
+        $user = User::first();
+        if ($user) {
+            $user->assignRole('admin');
+        }
     }
 }

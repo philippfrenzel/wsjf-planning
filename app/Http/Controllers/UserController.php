@@ -14,7 +14,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
-        return Inertia::render('Users/Index', [
+        return Inertia::render('users/index', [
             'users' => $users,
         ]);
     }
@@ -24,7 +24,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Users/Create');
+        return Inertia::render('users/create');
     }
 
     /**
@@ -51,7 +51,7 @@ class UserController extends Controller
     public function show(string $id)
     {
         $user = User::findOrFail($id);
-        return Inertia::render('Users/Show', [
+        return Inertia::render('users/show', [
             'user' => $user,
         ]);
     }
@@ -62,7 +62,7 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::findOrFail($id);
-        return Inertia::render('Users/Edit', [
+        return Inertia::render('users/edit', [
             'user' => $user,
         ]);
     }
