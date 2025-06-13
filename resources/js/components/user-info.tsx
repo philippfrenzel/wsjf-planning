@@ -1,22 +1,35 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useInitials } from '@/hooks/use-initials';
-import { type User } from '@/types';
+import React from 'react';
 
-export function UserInfo({ user, showEmail = false }: { user: User; showEmail?: boolean }) {
-    const getInitials = useInitials();
+interface User {
+  name: string;
+  avatar: string | null;
+  // andere User-Properties...
+}
 
-    return (
+interface UserInfoProps {
+  user: User | null;
+}
+
+export function UserInfo({ user }: UserInfoProps) {
+  // Rendering mit Null-Check für user und avatar
+  return (
+    <div className="user-info">
+      {user ? (
         <>
-            <Avatar className="h-8 w-8 overflow-hidden rounded-full">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                    {getInitials(user.name)}
-                </AvatarFallback>
-            </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                {showEmail && <span className="text-muted-foreground truncate text-xs">{user.email}</span>}
-            </div>
+          <div className="user-avatar">
+            {user.avatar ? (
+              <img src={user.avatar} alt={`${user.name}'s avatar`} />
+            ) : (
+              <div className="default-avatar">
+                {user.name ? user.name.charAt(0).toUpperCase() : '?'}
+              </div>
+            )}
+          </div>
+          <div className="user-name">{user.name}</div>
         </>
-    );
+      ) : (
+        <div className="loading-user">Loading user information...</div>
+      )}
+    </div>
+  );
 }
