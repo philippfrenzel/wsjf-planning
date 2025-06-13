@@ -181,6 +181,7 @@ export default function Index({ features }: IndexProps) {
 
   return (
     <AppLayout>
+      {/* Titel-Bereich bleibt unverändert */}
       <div className="p-5 flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Features</h1>
         <Button asChild>
@@ -191,8 +192,10 @@ export default function Index({ features }: IndexProps) {
         </Button>
       </div>
       
-      <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
-        <Card className="mb-6 bg-gray-50 border border-gray-200">
+      {/* Gesamtcontainer für Filter und Tabelle */}
+      <div className="flex flex-col gap-4 p-5">
+        {/* Filter-Bereich */}
+        <Card className="bg-gray-50 border border-gray-200">
           <CardContent>
             {/* Neue Position für den Filter-Button in der oberen Zeile */}
             <div className="flex items-center gap-2 mb-4">
@@ -398,12 +401,12 @@ export default function Index({ features }: IndexProps) {
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
-        {/* Ergebnisanzeige mit Paginierung */}
-        <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
-          <div className="text-sm text-gray-500">
+        
+        {/* Tabellen-Bereich ohne eigene Flexbox-Container-Eigenschaften */}
+        <div className="mt-4">
+          {/* Ergebnisanzeige mit Paginierung */}
+          <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
+            <div className="text-sm text-gray-500">
               Zeige {Math.min(filteredAndSortedFeatures.length, (currentPage - 1) * itemsPerPage + 1)} bis{" "}
               {Math.min(filteredAndSortedFeatures.length, currentPage * itemsPerPage)} von{" "}
               {filteredAndSortedFeatures.length} Einträgen
@@ -426,184 +429,185 @@ export default function Index({ features }: IndexProps) {
           </div>
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead 
-                className="cursor-pointer hover:bg-gray-50" 
-                onClick={() => handleSortChange("jira_key")}
-              >
-                <span className="flex items-center">
-                  Jira Key
-                  {getSortIcon("jira_key")}
-                </span>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-gray-50" 
-                onClick={() => handleSortChange("name")}
-              >
-                <span className="flex items-center">
-                  Name
-                  {getSortIcon("name")}
-                </span>
-              </TableHead>
-              {/* Status-Spalte hinzufügen */}
-              <TableHead>Status</TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-gray-50" 
-                onClick={() => handleSortChange("project")}
-              >
-                <span className="flex items-center">
-                  Projekt
-                  {getSortIcon("project")}
-                </span>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-gray-50" 
-                onClick={() => handleSortChange("requester")}
-              >
-                <span className="flex items-center">
-                  Anforderer
-                  {getSortIcon("requester")}
-                </span>
-              </TableHead>
-              <TableHead>Aktionen</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedFeatures.length === 0 ? (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
-                  {/* Erhöhe colSpan auf 6, da wir eine Spalte hinzugefügt haben */}
-                  <div className="flex flex-col items-center justify-center">
-                    <Search className="w-8 h-8 text-gray-300 mb-2" />
-                    <p className="text-gray-500">Keine Features gefunden</p>
-                    {Object.values(filters).some(f => f !== "") && (
-                      <Button 
-                        variant="link"
-                        onClick={resetFilters}
-                        className="mt-2"
-                      >
-                        Filter zurücksetzen
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50" 
+                  onClick={() => handleSortChange("jira_key")}
+                >
+                  <span className="flex items-center">
+                    Jira Key
+                    {getSortIcon("jira_key")}
+                  </span>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50" 
+                  onClick={() => handleSortChange("name")}
+                >
+                  <span className="flex items-center">
+                    Name
+                    {getSortIcon("name")}
+                  </span>
+                </TableHead>
+                {/* Status-Spalte hinzufügen */}
+                <TableHead>Status</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50" 
+                  onClick={() => handleSortChange("project")}
+                >
+                  <span className="flex items-center">
+                    Projekt
+                    {getSortIcon("project")}
+                  </span>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50" 
+                  onClick={() => handleSortChange("requester")}
+                >
+                  <span className="flex items-center">
+                    Anforderer
+                    {getSortIcon("requester")}
+                  </span>
+                </TableHead>
+                <TableHead>Aktionen</TableHead>
               </TableRow>
-            ) : (
-              paginatedFeatures.map((feature) => (
-                <TableRow key={feature.id}>
-                  <TableCell className="font-medium">{feature.jira_key}</TableCell>
-                  <TableCell>{feature.name}</TableCell>
-                  {/* Status-Badge hinzufügen */}
-                  <TableCell>
-                    {feature.status ? (
-                      <Badge 
-                        className={feature.status.color}
-                      >
-                        {feature.status.name}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">Unbekannt</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {feature.project ? (
-                      <Badge variant="outline">{feature.project.name}</Badge>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell>{feature.requester?.name ?? "-"}</TableCell>
-                  <TableCell className="flex gap-2">
-                    <Button asChild size="icon" variant="outline">
-                      <Link href={route("features.show", feature)}>
-                        <Eye className="w-4 h-4" />
-                      </Link>
-                    </Button>
-                    <Button asChild size="icon" variant="outline">
-                      <Link href={route("features.edit", feature)}>
-                        <Pencil className="w-4 h-4" />
-                      </Link>
-                    </Button>
-                    <form
-                      onSubmit={e => {
-                        e.preventDefault();
-                        if (confirm('Sind Sie sicher, dass Sie dieses Feature löschen möchten?')) {
-                          Inertia.delete(route("features.destroy", feature));
-                        }
-                      }}
-                    >
-                      <Button type="submit" size="icon" variant="destructive">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </form>
+            </TableHeader>
+            <TableBody>
+              {paginatedFeatures.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    {/* Erhöhe colSpan auf 6, da wir eine Spalte hinzugefügt haben */}
+                    <div className="flex flex-col items-center justify-center">
+                      <Search className="w-8 h-8 text-gray-300 mb-2" />
+                      <p className="text-gray-500">Keine Features gefunden</p>
+                      {Object.values(filters).some(f => f !== "") && (
+                        <Button 
+                          variant="link"
+                          onClick={resetFilters}
+                          className="mt-2"
+                        >
+                          Filter zurücksetzen
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-        
-        {/* Pagination UI */}
-        {filteredAndSortedFeatures.length > 0 && (
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-gray-500">
-              Zeige {Math.min(filteredAndSortedFeatures.length, (currentPage - 1) * itemsPerPage + 1)} bis{" "}
-              {Math.min(filteredAndSortedFeatures.length, currentPage * itemsPerPage)} von{" "}
-              {filteredAndSortedFeatures.length} Einträgen
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                Zurück
-              </Button>
+              ) : (
+                paginatedFeatures.map((feature) => (
+                  <TableRow key={feature.id}>
+                    <TableCell className="font-medium">{feature.jira_key}</TableCell>
+                    <TableCell>{feature.name}</TableCell>
+                    {/* Status-Badge hinzufügen */}
+                    <TableCell>
+                      {feature.status ? (
+                        <Badge 
+                          className={feature.status.color}
+                        >
+                          {feature.status.name}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">Unbekannt</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {feature.project ? (
+                        <Badge variant="outline">{feature.project.name}</Badge>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell>{feature.requester?.name ?? "-"}</TableCell>
+                    <TableCell className="flex gap-2">
+                      <Button asChild size="icon" variant="outline">
+                        <Link href={route("features.show", feature)}>
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                      </Button>
+                      <Button asChild size="icon" variant="outline">
+                        <Link href={route("features.edit", feature)}>
+                          <Pencil className="w-4 h-4" />
+                        </Link>
+                      </Button>
+                      <form
+                        onSubmit={e => {
+                          e.preventDefault();
+                          if (confirm('Sind Sie sicher, dass Sie dieses Feature löschen möchten?')) {
+                            Inertia.delete(route("features.destroy", feature));
+                          }
+                        }}
+                      >
+                        <Button type="submit" size="icon" variant="destructive">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </form>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+          
+          {/* Pagination UI */}
+          {filteredAndSortedFeatures.length > 0 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-gray-500">
+                Zeige {Math.min(filteredAndSortedFeatures.length, (currentPage - 1) * itemsPerPage + 1)} bis{" "}
+                {Math.min(filteredAndSortedFeatures.length, currentPage * itemsPerPage)} von{" "}
+                {filteredAndSortedFeatures.length} Einträgen
+              </div>
               
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                let pageNumber: number;
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  Zurück
+                </Button>
                 
-                if (totalPages <= 5) {
-                  // Wenn wir 5 oder weniger Seiten haben, zeige alle
-                  pageNumber = i + 1;
-                } else if (currentPage <= 3) {
-                  // Wenn wir auf den ersten 3 Seiten sind
-                  pageNumber = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  // Wenn wir auf den letzten 3 Seiten sind
-                  pageNumber = totalPages - 4 + i;
-                } else {
-                  // Sonst zeige die aktuelle Seite in der Mitte an
-                  pageNumber = currentPage - 2 + i;
-                }
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNumber: number;
+                  
+                  if (totalPages <= 5) {
+                    // Wenn wir 5 oder weniger Seiten haben, zeige alle
+                    pageNumber = i + 1;
+                  } else if (currentPage <= 3) {
+                    // Wenn wir auf den ersten 3 Seiten sind
+                    pageNumber = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    // Wenn wir auf den letzten 3 Seiten sind
+                    pageNumber = totalPages - 4 + i;
+                  } else {
+                    // Sonst zeige die aktuelle Seite in der Mitte an
+                    pageNumber = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Button
+                      key={pageNumber}
+                      variant={currentPage === pageNumber ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNumber)}
+                    >
+                      {pageNumber}
+                    </Button>
+                  );
+                })}
                 
-                return (
-                  <Button
-                    key={pageNumber}
-                    variant={currentPage === pageNumber ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(pageNumber)}
-                  >
-                    {pageNumber}
-                  </Button>
-                );
-              })}
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages || totalPages === 0}
-              >
-                Weiter
-              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                >
+                  Weiter
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </AppLayout>
   );
