@@ -48,6 +48,10 @@ interface Planning {
   executed_at: string;
   stakeholders: User[];
   features?: Feature[];
+  owner_id?: number;    // Neu: Owner ID
+  deputy_id?: number;   // Neu: Deputy ID
+  owner?: User;         // Neu: Owner-Beziehung
+  deputy?: User;        // Neu: Deputy-Beziehung
 }
 
 interface EditProps {
@@ -65,6 +69,8 @@ export default function Edit({ planning, projects, users, features }: EditProps)
     description: planning.description || "",
     planned_at: planning.planned_at || "",
     executed_at: planning.executed_at || "",
+    owner_id: planning.owner_id ? String(planning.owner_id) : "",     // Neu: Owner-ID
+    deputy_id: planning.deputy_id ? String(planning.deputy_id) : "",  // Neu: Deputy-ID
     stakeholder_ids: planning.stakeholders
       ? planning.stakeholders.map((u) => String(u.id))
       : [],
@@ -158,6 +164,49 @@ export default function Edit({ planning, projects, users, features }: EditProps)
               />
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="owner_id">Hauptverantwortlicher</Label>
+              <Select
+                value={values.owner_id}
+                onValueChange={(value) => handleSelectChange("owner_id", value)}
+              >
+                <SelectTrigger id="owner_id">
+                  <SelectValue placeholder="Hauptverantwortlichen wählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id.toString()}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.owner_id && (
+                <p className="text-sm text-red-600 mt-1">{errors.owner_id}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="deputy_id">Stellvertreter</Label>
+              <Select
+                value={values.deputy_id}
+                onValueChange={(value) => handleSelectChange("deputy_id", value)}
+              >
+                <SelectTrigger id="deputy_id">
+                  <SelectValue placeholder="Stellvertreter wählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Keinen Stellvertreter</SelectItem>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id.toString()}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.deputy_id && (
+                <p className="text-sm text-red-600 mt-1">{errors.deputy_id}</p>
               )}
             </div>
             <div>
