@@ -92,10 +92,14 @@ class PlanningController extends Controller
 
     public function edit(Planning $planning)
     {
-        $users = User::all(['id', 'name']);
+        $users = User::all(['id', 'name', 'email']); // E-Mail für alle Benutzer hinzugefügt
 
         return Inertia::render('plannings/edit', [
-            'planning' => $planning->load(['owner', 'deputy']),
+            'planning' => $planning->load([
+                'owner',
+                'deputy',
+                'stakeholders:id,name,email' // Stakeholders mit E-Mail laden
+            ]),
             'users' => $users,
             'projects' => Project::all(['id', 'name']),
         ]);
