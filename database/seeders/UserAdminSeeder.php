@@ -18,7 +18,7 @@ class UserAdminSeeder extends Seeder
             'email' => 'admin@example.com',
             'password' => bcrypt('password'),
         ]);
-        $admin->assignRole('admin');
+        //$admin->assignRole('admin');
 
         // Einen Projekt-Manager erstellen
         $manager =  User::factory()->create([
@@ -26,6 +26,6 @@ class UserAdminSeeder extends Seeder
             'email' => 'manager@example.com',
             'password' => bcrypt('password'),
         ]);
-        $manager->assignRole('project-manager');
+        //$manager->assignRole('project-manager');
     }
 }

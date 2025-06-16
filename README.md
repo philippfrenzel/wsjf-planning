@@ -1,29 +1,37 @@
-# Laravel + React Starter Kit
+# WSJF Planning Tool
 
-## Introduction
+## Übersicht
 
-Our React starter kit provides a robust, modern starting point for building Laravel applications with a React frontend using [Inertia](https://inertiajs.com).
+Das WSJF Planning Tool ist eine umfassende Anwendung zur Planung, Priorisierung und Schätzung von Features im agilen Projektmanagement mit besonderem Fokus auf die Weighted Shortest Job First (WSJF) Methodik.
 
-Inertia allows you to build modern, single-page React applications using classic server-side routing and controllers. This lets you enjoy the frontend power of React combined with the incredible backend productivity of Laravel and lightning-fast Vite compilation.
+Diese Anwendung ermöglicht es Teams, Planungszyklen zu organisieren, Aufwände zu schätzen und Features basierend auf Geschäftswert, Zeit- und Risikokriterien zu priorisieren.
 
-This React starter kit utilizes React 19, TypeScript, Tailwind, and the [shadcn/ui](https://ui.shadcn.com) and [radix-ui](https://www.radix-ui.com) component libraries.
+## Hauptfunktionen
+
+- **Planning-Verwaltung**: Erstellen und verwalten Sie Planungssitzungen mit zugewiesenen Verantwortlichen (Owner) und Stellvertretern
+- **Feature-Management**: Organisieren Sie Features nach Projekten und verfolgen Sie deren Status
+- **Schätzungen**: Erfassen Sie Aufwandsschätzungen mit Best Case, Most Likely und Worst Case und berechnen Sie den gewichteten Durchschnitt
+- **Stakeholder-Integration**: Binden Sie relevante Teammitglieder in den Planungsprozess ein
+- **Filter und Suche**: Finden Sie schnell relevante Planungen und Features durch umfangreiche Filtermöglichkeiten
 
 ## Installation
 
-Run `npm install` after pulling new changes to ensure all dependencies are available.
+1. Klonen Sie das Repository:
+    ```bash
+    git clone [repository-url]
+    ```
 
-## Official Documentation
+Technologien
+Backend: Laravel (PHP)
+Frontend: React 19, TypeScript, Inertia.js
+UI-Komponenten: Tailwind CSS, shadcn/ui, radix-ui
+Datenbank: MySQL/PostgreSQL
+Berechtigungen
+Das System unterstützt folgende Berechtigungen:
 
-Documentation for all Laravel starter kits can be found on the [Laravel website](https://laravel.com/docs/starter-kits).
-
-## Contributing
-
-Thank you for considering contributing to our starter kit! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## License
-
-The Laravel + React starter kit is open-sourced software licensed under the MIT license.
+Projektleiter: Voller Zugriff auf alle Funktionen
+Owner: Können Planungen verwalten, für die sie verantwortlich sind
+Deputies: Können Planungen bearbeiten, für die sie als Stellvertreter eingetragen sind
+Stakeholder: Können an Planungen teilnehmen und Schätzungen abgeben
+Lizenz
+Das WSJF Planning Tool ist eine proprietäre Software. Alle Rechte vorbehalten.

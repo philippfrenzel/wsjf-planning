@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Planning;
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Feature; // Feature Model importieren
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -39,6 +40,8 @@ class PlanningController extends Controller
             'project_id' => 'required|exists:projects,id',
             'planned_at' => 'nullable|date',
             'executed_at' => 'nullable|date',
+            'owner_id' => 'nullable|exists:users,id',    // Hinzugefügt
+            'deputy_id' => 'nullable|exists:users,id',   // Hinzugefügt
             'stakeholder_ids' => 'array',
             'stakeholder_ids.*' => 'exists:users,id',
             'feature_ids' => 'array',
@@ -51,6 +54,11 @@ class PlanningController extends Controller
         $planning = Planning::create($validated);
         if (!empty($validated['stakeholder_ids'])) {
             $planning->stakeholders()->sync($validated['stakeholder_ids']);
+        }
+
+        // Features synchronisieren, wenn vorhanden
+        if (!empty($validated['feature_ids'])) {
+            $planning->features()->sync($validated['feature_ids']);
         }
 
         return redirect()->route('plannings.index')->with('success', 'Planning erfolgreich erstellt.');
@@ -93,15 +101,18 @@ class PlanningController extends Controller
     public function edit(Planning $planning)
     {
         $users = User::all(['id', 'name', 'email']); // E-Mail für alle Benutzer hinzugefügt
+        $features = Feature::where('project_id', $planning->project_id)->get(); // Features des Projekts laden
 
         return Inertia::render('plannings/edit', [
             'planning' => $planning->load([
-                'owner',
-                'deputy',
-                'stakeholders:id,name,email' // Stakeholders mit E-Mail laden
+                'owner:id,name',
+                'deputy:id,name',
+                'stakeholders:id,name,email',
+                'features:id,name,jira_key,project_id'
             ]),
             'users' => $users,
             'projects' => Project::all(['id', 'name']),
+            'features' => $features, // Features an die Komponente übergeben
         ]);
     }
 
@@ -113,6 +124,8 @@ class PlanningController extends Controller
             'description' => 'nullable|string',
             'planned_at' => 'nullable|date',
             'executed_at' => 'nullable|date',
+            'owner_id' => 'nullable|exists:users,id',
+            'deputy_id' => 'nullable|exists:users,id',
             'stakeholder_ids' => 'array',
             'stakeholder_ids.*' => 'exists:users,id',
             'feature_ids' => 'array',
