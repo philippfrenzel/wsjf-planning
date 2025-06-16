@@ -61,7 +61,12 @@ interface EditProps {
   features: Feature[]; // Features aus dem gleichen Projekt
 }
 
-export default function Edit({ planning, projects, users, features }: EditProps) {
+export default function Edit({ 
+  planning, 
+  projects, 
+  users, 
+  features = [] // Standardwert als leeres Array
+}: EditProps) {
   const { errors } = usePage().props as { errors: Record<string, string> };
   const [values, setValues] = useState({
     project_id: planning.project_id ? String(planning.project_id) : "",
@@ -109,7 +114,11 @@ export default function Edit({ planning, projects, users, features }: EditProps)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    Inertia.put(route("plannings.update", planning.id), values);
+    Inertia.put(route("plannings.update", planning.id), {
+      ...values,
+      // Konvertiere "none" zu null für das Backend
+      deputy_id: values.deputy_id === "none" ? null : values.deputy_id,
+    });
   };
 
   return (
@@ -197,7 +206,7 @@ export default function Edit({ planning, projects, users, features }: EditProps)
                   <SelectValue placeholder="Stellvertreter wählen" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Keinen Stellvertreter</SelectItem>
+                  <SelectItem value="none">Keinen Stellvertreter</SelectItem>
                   {users.map((user) => (
                     <SelectItem key={user.id} value={user.id.toString()}>
                       {user.name}

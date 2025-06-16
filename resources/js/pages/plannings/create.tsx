@@ -60,6 +60,8 @@ export default function Create({ projects, users }: CreateProps) {
     e.preventDefault();
     Inertia.post(route("plannings.store"), {
       ...values,
+      // Konvertiere "none" zu null für das Backend
+      deputy_id: values.deputy_id === "none" ? null : values.deputy_id,
       stakeholder_ids: values.stakeholder_ids ?? [],
     });
   };
@@ -152,7 +154,7 @@ export default function Create({ projects, users }: CreateProps) {
                   <SelectValue placeholder="Stellvertreter wählen" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Keinen Stellvertreter</SelectItem>
+                  <SelectItem value="none">Keinen Stellvertreter</SelectItem>
                   {users.map((user) => (
                     <SelectItem key={user.id} value={user.id.toString()}>
                       {user.name}
