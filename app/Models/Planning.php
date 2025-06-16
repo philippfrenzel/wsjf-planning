@@ -18,6 +18,8 @@ class Planning extends Model
         'planned_at',    // Wann geplant
         'executed_at',   // Wann durchgeführt
         'created_by',    // ID des Users, der das Planning erstellt hat
+        'owner_id',      // ID des Hauptverantwortlichen
+        'deputy_id',     // ID des Stellvertreters
         // weitere Felder nach Bedarf
     ];
 
@@ -35,6 +37,22 @@ class Planning extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Ein Planning gehört zu einem Hauptverantwortlichen (User).
+     */
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * Ein Planning gehört zu einem Stellvertreter (User).
+     */
+    public function deputy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deputy_id');
     }
 
     /**

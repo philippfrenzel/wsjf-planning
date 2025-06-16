@@ -23,9 +23,11 @@ class PlanningController extends Controller
 
     public function create()
     {
+        $users = User::all(['id', 'name']);
+
         return Inertia::render('plannings/create', [
+            'users' => $users,
             'projects' => Project::all(['id', 'name']),
-            'users' => User::all(['id', 'name']),
         ]);
     }
 
@@ -90,13 +92,12 @@ class PlanningController extends Controller
 
     public function edit(Planning $planning)
     {
-        $planning->load('stakeholders');
-        $features = \App\Models\Feature::where('project_id', $planning->project_id)->get(['id', 'jira_key', 'name', 'project_id']);
+        $users = User::all(['id', 'name']);
+
         return Inertia::render('plannings/edit', [
-            'planning' => $planning->load(['stakeholders', 'features']),
+            'planning' => $planning->load(['owner', 'deputy']),
+            'users' => $users,
             'projects' => Project::all(['id', 'name']),
-            'users' => User::all(['id', 'name', 'email']),
-            'features' => $features,
         ]);
     }
 

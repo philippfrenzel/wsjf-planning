@@ -32,6 +32,8 @@ export default function Create({ projects, users }: CreateProps) {
     description: "",
     planned_at: "",
     executed_at: "",
+    owner_id: "", // Neu: Owner-ID
+    deputy_id: "", // Neu: Deputy-ID
     stakeholder_ids: [] as string[],
   });
 
@@ -116,6 +118,53 @@ export default function Create({ projects, users }: CreateProps) {
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
               )}
             </div>
+            
+            {/* Neue Felder für Owner und Deputy */}
+            <div>
+              <Label htmlFor="owner_id">Hauptverantwortlicher</Label>
+              <Select
+                value={values.owner_id}
+                onValueChange={(value) => handleSelectChange("owner_id", value)}
+              >
+                <SelectTrigger id="owner_id">
+                  <SelectValue placeholder="Hauptverantwortlichen wählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id.toString()}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.owner_id && (
+                <p className="text-sm text-red-600 mt-1">{errors.owner_id}</p>
+              )}
+            </div>
+            
+            <div>
+              <Label htmlFor="deputy_id">Stellvertreter</Label>
+              <Select
+                value={values.deputy_id}
+                onValueChange={(value) => handleSelectChange("deputy_id", value)}
+              >
+                <SelectTrigger id="deputy_id">
+                  <SelectValue placeholder="Stellvertreter wählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Keinen Stellvertreter</SelectItem>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id.toString()}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.deputy_id && (
+                <p className="text-sm text-red-600 mt-1">{errors.deputy_id}</p>
+              )}
+            </div>
+            
             <div>
               <Label htmlFor="planned_at">Geplant am</Label>
               <Input

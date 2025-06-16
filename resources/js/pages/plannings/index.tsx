@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Eye, Pencil, Trash2, Vote } from "lucide-react";
 import { Link, usePage } from "@inertiajs/react";
+import { Inertia } from "@inertiajs/inertia";
 
 interface Planning {
   id: number;
@@ -12,6 +13,8 @@ interface Planning {
   executed_at: string;
   project?: { id: number; name: string };
   created_by: number; // ID des Erstellers
+  owner_id?: number; // ID des Hauptverantwortlichen
+  deputy_id?: number; // ID des Stellvertreters
 }
 
 interface IndexProps {
@@ -26,6 +29,15 @@ interface IndexProps {
 export default function Index({ plannings }: IndexProps) {
   // Aktuellen Benutzer aus dem Page-Props holen
   const { auth } = usePage().props as IndexProps;
+  
+  // Hilfsfunktion zum Prüfen, ob der Benutzer Bearbeitungsrechte hat
+  const canEditPlanning = (planning: Planning) => {
+    return (
+      planning.created_by === auth.user.id || 
+      planning.owner_id === auth.user.id || 
+      planning.deputy_id === auth.user.id
+    );
+  };
   
   return (
     <AppLayout>
@@ -73,8 +85,8 @@ export default function Index({ plannings }: IndexProps) {
                   </Link>
                 </Button>
                 
-                {/* Bearbeitungs-Button nur für den Ersteller */}
-                {planning.created_by === auth.user.id && (
+                {/* Bearbeitungs-Button für Ersteller, Owner und Deputy */}
+                {canEditPlanning(planning) && (
                   <Button asChild size="icon" variant="outline">
                     <Link href={route("plannings.edit", planning)}>
                       <Pencil className="w-4 h-4" />
@@ -82,8 +94,8 @@ export default function Index({ plannings }: IndexProps) {
                   </Button>
                 )}
                 
-                {/* Lösch-Button nur für den Ersteller */}
-                {planning.created_by === auth.user.id && (
+                {/* Lösch-Button für Ersteller, Owner und Deputy */}
+                {canEditPlanning(planning) && (
                   <form
                     onSubmit={e => {
                       e.preventDefault();
