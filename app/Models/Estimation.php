@@ -17,9 +17,34 @@ class Estimation extends Model
         'most_likely',
         'worst_case',
         'unit',
-        'created_by',
         'notes',
+        'created_by'
     ];
+
+    /**
+     * Boot-Methode des Models
+     * Hier registrieren wir die Events
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Vor dem Speichern (sowohl create als auch update)
+        static::saving(function ($estimation) {
+            // Überprüfe, ob die notwendigen Felder gesetzt sind
+            if (isset($estimation->best_case) && isset($estimation->most_likely) && isset($estimation->worst_case)) {
+                // Berechne den gewichteten Durchschnitt
+                $estimation->weighted_case = (
+                    $estimation->best_case +
+                    $estimation->most_likely +
+                    $estimation->worst_case
+                ) / 3;
+
+                // Optional: Auf 2 Nachkommastellen runden
+                $estimation->weighted_case = round($estimation->weighted_case, 2);
+            }
+        });
+    }
 
     /**
      * Die geschätzte Feature-Komponente.
@@ -50,7 +75,7 @@ class Estimation extends Model
      */
     public function getWeightedEstimateAttribute(): float
     {
-        return ($this->best_case + 4 * $this->most_likely + $this->worst_case) / 6;
+        return ($this->best_case * $this->most_likely + $this->worst_case) / 3;
     }
 
     /**
@@ -58,6 +83,6 @@ class Estimation extends Model
      */
     public function getStandardDeviationAttribute(): float
     {
-        return ($this->worst_case - $this->best_case) / 6;
+        return ($this->worst_case - $this->best_case) / 2;
     }
 }

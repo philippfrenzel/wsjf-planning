@@ -49,10 +49,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::resource('projects', ProjectController::class);
 Route::resource('plannings', PlanningController::class);
 Route::resource('features', FeatureController::class);
-Route::resource('users', UserController::class);
 Route::resources([
     'votes' => VoteController::class,
 ]);
+
+//Route::group(['middleware' => ['role:admin']], function () {
+Route::get('/admin/users', [UserController::class, 'index'])->name('users.index');
+// Weitere Admin-Routen...
+//});
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
