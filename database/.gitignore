@@ -1,3 +1,4 @@
 *.sqlite*
 *.db
 *.db-journal
+*.sqlite
