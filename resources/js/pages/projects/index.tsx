@@ -29,6 +29,12 @@ interface IndexProps {
 }
 
 export default function Index({ projects, currentUserId }: IndexProps) {
+  // Breadcrumbs definieren
+  const breadcrumbs = [
+    { title: "Startseite", href: "/" },
+    { title: "Projekte", href: "#" },
+  ];
+
   // Filter-Zustand
   const [filters, setFilters] = useState({
     projectNumber: "",
@@ -115,7 +121,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
   const endItem = Math.min(startItem + itemsPerPage - 1, filteredProjects.length);
 
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <div className="p-5 flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Projekte</h1>
         <Button asChild>
@@ -221,7 +227,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
               <TableHead>Name</TableHead>
               <TableHead>Projektleiter</TableHead>
               <TableHead>Stellvertretung</TableHead>
-              <TableHead>Aktionen</TableHead>
+                <TableHead className="text-right">Aktionen</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -242,7 +248,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                   <TableCell>
                     {project.deputy_leader ? project.deputy_leader.name : "-"}
                   </TableCell>
-                  <TableCell className="flex gap-2">
+                  <TableCell className="flex gap-2 justify-end">
                     <Button asChild size="icon" variant="outline">
                       <Link href={route("projects.show", project)}>
                         <Eye className="w-4 h-4" />

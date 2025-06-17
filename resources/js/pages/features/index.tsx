@@ -53,6 +53,12 @@ type SortField = "jira_key" | "name" | "project" | "requester";
 type SortDirection = "asc" | "desc";
 
 export default function Index({ features }: IndexProps) {
+  // Breadcrumbs definieren
+  const breadcrumbs = [
+    { title: "Startseite", href: "/" },
+    { title: "Features", href: "#" },
+  ];
+
   // Filter-Zustände
   const [filters, setFilters] = useState({
     jira_key: "",
@@ -129,7 +135,7 @@ export default function Index({ features }: IndexProps) {
   // Gefilterte und sortierte Features
   const filteredAndSortedFeatures = useMemo(() => {
     // Filtern
-    let result = features.filter(feature => {
+    const result = features.filter(feature => {
       return (
         feature.jira_key.toLowerCase().includes(filters.jira_key.toLowerCase()) &&
         feature.name.toLowerCase().includes(filters.name.toLowerCase()) &&
@@ -182,7 +188,7 @@ export default function Index({ features }: IndexProps) {
   const totalPages = Math.ceil(filteredAndSortedFeatures.length / itemsPerPage);
 
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       {/* Titel-Bereich bleibt unverändert */}
       <div className="p-5 flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Features</h1>
@@ -536,12 +542,12 @@ export default function Index({ features }: IndexProps) {
                     {/* Aktionen */}
                     <TableCell className="flex gap-2">
                       <Button asChild size="icon" variant="outline">
-                        <Link href={route("features.show", feature)}>
+                        <Link href={route("features.show", { feature: feature.id })}>
                           <Eye className="w-4 h-4" />
                         </Link>
                       </Button>
                       <Button asChild size="icon" variant="outline">
-                        <Link href={route("features.edit", feature)}>
+                        <Link href={route("features.edit", { feature: feature.id })}>
                           <Pencil className="w-4 h-4" />
                         </Link>
                       </Button>
@@ -549,7 +555,7 @@ export default function Index({ features }: IndexProps) {
                         onSubmit={e => {
                           e.preventDefault();
                           if (confirm('Sind Sie sicher, dass Sie dieses Feature löschen möchten?')) {
-                            Inertia.delete(route("features.destroy", feature));
+                            Inertia.delete(route("features.destroy", { feature: feature.id }));
                           }
                         }}
                       >

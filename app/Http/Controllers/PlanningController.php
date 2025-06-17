@@ -6,6 +6,7 @@ use App\Models\Planning;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Feature; // Feature Model importieren
+use App\Models\Stakeholder; // Stakeholder Model importieren
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -69,32 +70,41 @@ class PlanningController extends Controller
         $planning->load([
             'project:id,name',
             'stakeholders:id,name,email',
-            'creator:id,name', // Ersteller mit laden
+            'creator:id,name',
             'features' => function ($query) use ($planning) {
-                // Nur Features aus dem gleichen Projekt laden
                 $query->where('project_id', $planning->project_id)
                     ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
             },
-            // Bestehende Votes-Abfrage für andere Stakeholder beibehalten
             'features.votes' => function ($query) use ($planning) {
-                // Nur Votes aus dem aktuellen Planning laden, die NICHT vom Ersteller des Plannings sind
                 $query->where('planning_id', $planning->id)
                     ->whereHas('user', function ($subQuery) use ($planning) {
                         $subQuery->where('id', '!=', $planning->created_by);
                     });
             },
-            'features.votes.user:id,name', // Benutzer der Votes laden
-
-            // Common Votes (Ersteller-Votes) separat laden
+            'features.votes.user:id,name',
             'features.commonvotes' => function ($query) use ($planning) {
-                // Nur Votes vom Ersteller des Plannings
                 $query->where('planning_id', $planning->id)
                     ->where('user_id', $planning->created_by);
             },
         ]);
 
+        // Stakeholder (User) mit ihrer Stimmenanzahl in der aktuellen Planning-Session laden
+        $stakeholders = User::select('users.id', 'users.name', 'users.email')
+            ->selectRaw('COUNT(votes.id) as votes_count')
+            ->join('planning_stakeholder', function ($join) use ($planning) {
+                $join->on('users.id', '=', 'planning_stakeholder.user_id')
+                    ->where('planning_stakeholder.planning_id', '=', $planning->id);
+            })
+            ->leftJoin('votes', function ($join) use ($planning) {
+                $join->on('users.id', '=', 'votes.user_id')
+                    ->where('votes.planning_id', '=', $planning->id);
+            })
+            ->groupBy('users.id', 'users.name', 'users.email')
+            ->get();
+
         return Inertia::render('plannings/show', [
             'planning' => $planning,
+            'stakeholders' => $stakeholders,
         ]);
     }
 
