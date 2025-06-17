@@ -37,6 +37,14 @@ interface SessionProps {
 
 export default function VoteSession({ planning, plannings, features, types, existingVotes, user }: SessionProps) {
   const { props } = usePage();
+
+  // Breadcrumbs definieren
+  const breadcrumbs = [
+    { title: "Startseite", href: "/" },
+    { title: "Plannings", href: "/plannings" },
+    { title: planning?.title || "Abstimmung", href: null },
+  ];
+
   const [votes, setVotes] = useState<VoteValue>(() => {
     const initial: VoteValue = {};
     Object.entries(existingVotes).forEach(([key, vote]) => {
@@ -120,7 +128,7 @@ export default function VoteSession({ planning, plannings, features, types, exis
   const handleCloseModal = () => setOpen(false);
 
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
@@ -155,7 +163,7 @@ export default function VoteSession({ planning, plannings, features, types, exis
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <div className="w-full mx-auto mt-8">
+      <div className="w-full mx-auto mt-8 px-10">
         <Card>
           <CardHeader>
             <CardTitle>
@@ -241,13 +249,19 @@ export default function VoteSession({ planning, plannings, features, types, exis
 // Hilfsfunktion zum Extrahieren aller Werte für einen bestimmten Typ
 const getTypeVotes = (votes: VoteValue, type: string, excludeKey?: string) => {
   return Object.entries(votes)
-    .filter(([key, _]) => key.endsWith(`_${type}`))
-    .filter(([key, _]) => !excludeKey || key !== excludeKey)
+    .filter(([key]) => key.endsWith(`_${type}`))
+    .filter(([key]) => !excludeKey || key !== excludeKey)
     .map(([key, val]) => ({
       key,
       value: parseFloat(val)
     }))
     .filter(vote => !isNaN(vote.value));
+};
+
+// Ursprüngliche Funktion beibehalten für den Fall, dass kein fester Wert gesetzt ist
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ensureUniqueValuesStandard = (votes: VoteValue, _unusedType: string, _unusedMaxValue: number) => {
+  return { ...votes };
 };
 
 // Erweiterte Hilfsfunktion zur Sicherstellung eindeutiger, fortlaufender Werte
@@ -383,18 +397,4 @@ const reorganizeVotes = (
       }
     });
   }
-};
-
-// Ursprüngliche Funktion beibehalten für den Fall, dass kein fester Wert gesetzt ist
-const ensureUniqueValuesStandard = (votes: VoteValue, type: string, maxValue: number) => {
-  // Hier die bestehende Logik der ursprünglichen ensureUniqueValues-Funktion einfügen
-  // für den Fall, dass kein fester Ankerpunkt definiert ist
-  // ...
-  
-  // Bestehende Implementierung für den Standard-Fall
-  const result = { ...votes };
-  
-  // Bestehende Logik einfügen...
-  
-  return result;
 };

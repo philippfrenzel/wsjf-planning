@@ -7,11 +7,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Check } from "lucide-react";
-import { Plus, Eye, Pencil, Trash2, Vote, Search, X, CalendarIcon } from "lucide-react";
+import { Plus, Eye, Pencil, Trash2, Vote, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
-import { DatePicker } from "@/components/ui/date-picker";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface Planning {
@@ -35,17 +33,19 @@ interface IndexProps {
 }
 
 export default function Index({ plannings }: IndexProps) {
+  // Breadcrumbs definieren
+  const breadcrumbs = [
+    { title: "Startseite", href: "/" },
+    { title: "Plannings", href: null },
+  ];
+
   // Aktuellen Benutzer aus dem Page-Props holen
-  const { auth } = usePage().props as IndexProps;
+  const { auth } = (usePage().props as unknown as IndexProps);
   
   // Filter-Zustände
   const [filters, setFilters] = useState({
     title: "",
-    project: "",
-    planned_from: "",
-    planned_to: "",
-    executed_from: "",
-    executed_to: "",
+    project: ""
   });
 
   // Zustand für Projekt-Popover
@@ -76,11 +76,7 @@ export default function Index({ plannings }: IndexProps) {
   const resetFilters = () => {
     setFilters({
       title: "",
-      project: "",
-      planned_from: "",
-      planned_to: "",
-      executed_from: "",
-      executed_to: "",
+      project: ""
     });
   };
 
@@ -88,20 +84,6 @@ export default function Index({ plannings }: IndexProps) {
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString();
-  };
-
-  // Hilfsfunktion zum Vergleichen von Datumswerten für Filter
-  const isDateInRange = (date: string | null | undefined, fromDate: string, toDate: string) => {
-    if (!date) return true; // Wenn kein Datum vorhanden ist, immer einbeziehen
-    
-    const dateObj = new Date(date);
-    const fromDateObj = fromDate ? new Date(fromDate) : null;
-    const toDateObj = toDate ? new Date(toDate) : null;
-    
-    if (fromDateObj && dateObj < fromDateObj) return false;
-    if (toDateObj && dateObj > toDateObj) return false;
-    
-    return true;
   };
   
   // Hilfsfunktion zum Prüfen, ob der Benutzer Bearbeitungsrechte hat
@@ -118,9 +100,7 @@ export default function Index({ plannings }: IndexProps) {
     return plannings.filter(planning => {
       return (
         planning.title.toLowerCase().includes(filters.title.toLowerCase()) &&
-        (filters.project === "" || planning.project?.name === filters.project) &&
-        isDateInRange(planning.planned_at, filters.planned_from, filters.planned_to) &&
-        isDateInRange(planning.executed_at, filters.executed_from, filters.executed_to)
+        (filters.project === "" || planning.project?.name === filters.project)
       );
     });
   }, [plannings, filters]);
@@ -135,8 +115,19 @@ export default function Index({ plannings }: IndexProps) {
   // Berechne die Gesamtzahl der Seiten
   const totalPages = Math.ceil(filteredPlannings.length / itemsPerPage);
 
+  // Pagination-Handler wie im Projekt-Index
+  const goToPreviousPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+  // Bereich für Anzeige
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(startItem + itemsPerPage - 1, filteredPlannings.length);
+
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <div className="p-5 flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Plannings</h1>
         <Button asChild>
@@ -148,9 +139,9 @@ export default function Index({ plannings }: IndexProps) {
       </div>
       
       {/* Filter-Bereich */}
-      <div className="flex flex-col gap-4 p-5">
+      <div className="flex flex-col p-5">
         <Card className="bg-gray-50 border border-gray-200">
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="flex items-center gap-2 mb-4">
               <Search className="w-4 h-4 text-gray-500" />
               <h2 className="font-medium">Filter</h2>
@@ -187,7 +178,6 @@ export default function Index({ plannings }: IndexProps) {
                   )}
                 </div>
               </div>
-              
               {/* Projekt Filter mit Type-Ahead */}
               <div>
                 <label className="block text-sm font-medium mb-1">Projekt</label>
@@ -260,50 +250,8 @@ export default function Index({ plannings }: IndexProps) {
                   )}
                 </div>
               </div>
-
               {/* Leer für Ausrichtung */}
               <div></div>
-
-              {/* Geplant am (von-bis) */}
-              <div>
-                <label className="block text-sm font-medium mb-1">Geplant von</label>
-                <Input
-                  type="date"
-                  value={filters.planned_from}
-                  onChange={(e) => handleFilterChange("planned_from", e.target.value)}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Geplant bis</label>
-                <Input
-                  type="date"
-                  value={filters.planned_to}
-                  onChange={(e) => handleFilterChange("planned_to", e.target.value)}
-                />
-              </div>
-
-              {/* Leer für Ausrichtung */}
-              <div></div>
-
-              {/* Durchgeführt am (von-bis) */}
-              <div>
-                <label className="block text-sm font-medium mb-1">Durchgeführt von</label>
-                <Input
-                  type="date"
-                  value={filters.executed_from}
-                  onChange={(e) => handleFilterChange("executed_from", e.target.value)}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Durchgeführt bis</label>
-                <Input
-                  type="date"
-                  value={filters.executed_to}
-                  onChange={(e) => handleFilterChange("executed_to", e.target.value)}
-                />
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -314,14 +262,9 @@ export default function Index({ plannings }: IndexProps) {
           <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
             <div className="text-sm text-gray-500">
               {filteredPlannings.length > 0 ? (
-                <>
-                  Zeige {Math.min(filteredPlannings.length, (currentPage - 1) * itemsPerPage + 1)} bis{" "}
-                  {Math.min(filteredPlannings.length, currentPage * itemsPerPage)} von{" "}
-                  {filteredPlannings.length} Einträgen
-                </>
+                `Zeige ${startItem} bis ${endItem} von ${filteredPlannings.length} Plannings`
               ) : "Keine Plannings gefunden"}
             </div>
-            
             {/* Seitenauswahl */}
             {filteredPlannings.length > 0 && (
               <div className="flex items-center gap-2">
@@ -426,36 +369,36 @@ export default function Index({ plannings }: IndexProps) {
             </TableBody>
           </Table>
           
-          {/* Pagination UI */}
-          {filteredPlannings.length > itemsPerPage && (
-            <div className="flex justify-center mt-4">
+           {/* Verbesserte Paginierungs-Navigation */}
+          {filteredPlannings.length > 0 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-gray-500">
+                Zeige {Math.min(filteredPlannings.length, (currentPage - 1) * itemsPerPage + 1)} bis{" "}
+                {Math.min(filteredPlannings.length, currentPage * itemsPerPage)} von{" "}
+                {filteredPlannings.length} Einträgen
+              </div>
+
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  onClick={goToPreviousPage}
                   disabled={currentPage === 1}
                 >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
                   Zurück
                 </Button>
-                
                 {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                   let pageNumber: number;
-                  
                   if (totalPages <= 5) {
-                    // Wenn wir 5 oder weniger Seiten haben, zeige alle
                     pageNumber = i + 1;
                   } else if (currentPage <= 3) {
-                    // Wenn wir auf den ersten 3 Seiten sind
                     pageNumber = i + 1;
                   } else if (currentPage >= totalPages - 2) {
-                    // Wenn wir auf den letzten 3 Seiten sind
                     pageNumber = totalPages - 4 + i;
                   } else {
-                    // Sonst zeige die aktuelle Seite in der Mitte an
                     pageNumber = currentPage - 2 + i;
                   }
-                  
                   return (
                     <Button
                       key={pageNumber}
@@ -467,14 +410,14 @@ export default function Index({ plannings }: IndexProps) {
                     </Button>
                   );
                 })}
-                
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages || totalPages === 0}
                 >
                   Weiter
+                  <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
             </div>

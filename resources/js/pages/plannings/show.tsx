@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronRight } from "lucide-react";
 // StakeholderTable Komponente importieren
 import StakeholderTable from "./components/StakeholderTable";
+import PlanningDetailsCard from "./components/PlanningDetailsCard";
 
 // Interface für Stakeholder anpassen (mit votes_count)
 interface Stakeholder {
@@ -174,63 +175,6 @@ function FeaturesTable({ features }: { features?: Feature[] }) {
   );
 }
 
-// Neue CommonVotesTable Komponente
-function CommonVotesTable({ features }: { features?: Feature[] }) {
-  if (!features || features.length === 0) {
-    return <div className="mt-6">Keine Features verknüpft.</div>;
-  }
-  
-  // console.log("Features für CommonVotesTable:", features);
-
-  // Alle Features mit mindestens einem Common Vote filtern
-  const featuresWithCommonVotes = features
-    .filter(feature => feature.commonvotes && feature.commonvotes.length > 0);
-  
-  if (featuresWithCommonVotes.length === 0) {
-    return <div className="mt-6">Keine Common Votes vorhanden.</div>;
-  }
-  
-  // Die Vote-Typen, die wir anzeigen wollen
-  const voteTypes = ["BusinessValue", "TimeCriticality", "RiskOpportunity"];
-  
-  return (
-    <div className="mt-6">
-      <h2 className="text-lg font-semibold mb-2">Common Votes (Ersteller)</h2>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Jira Key</TableHead>
-            <TableHead>Name</TableHead>
-            {voteTypes.map(type => (
-              <TableHead key={type}>{translateVoteType(type)}</TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {featuresWithCommonVotes.map((feature) => (
-            <TableRow key={feature.id}>
-              <TableCell>{feature.jira_key}</TableCell>
-              <TableCell>{feature.name}</TableCell>
-              {voteTypes.map(type => {
-                const vote = feature.commonvotes?.find(v => v.type === type);
-                return (
-                  <TableCell key={type}>
-                    {vote ? (
-                      <Badge className={getScoreBadgeClass(vote.value)}>
-                        {vote.value}
-                      </Badge>
-                    ) : "-"}
-                  </TableCell>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
 // Hilfsfunktion zur Übersetzung der Vote-Typen
 function translateVoteType(type: string): string {
   const translations: {[key: string]: string} = {
@@ -265,42 +209,7 @@ export default function Show({ planning, stakeholders }: ShowProps) {
                 <TabsTrigger value="features">Features & Individual Votes</TabsTrigger>
               </TabsList>
               <TabsContent value="details">
-                <Table>
-                  <TableBody>
-                    <TableRow>
-                      <TableHead className="w-1/4">Projekt</TableHead>
-                      <TableCell>{planning.project?.name ?? "-"}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableHead className="w-1/4">Geplant am</TableHead>
-                      <TableCell>{planning.planned_at ?? "-"}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableHead className="w-1/4">Durchgeführt am</TableHead>
-                      <TableCell>{planning.executed_at ?? "-"}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableHead className="w-1/4">Beschreibung</TableHead>
-                      <TableCell>{planning.description ?? "-"}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableHead className="w-1/4">Erstellt von</TableHead>
-                      <TableCell>{planning.creator?.name ?? "-"}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableHead className="w-1/4">Stakeholder</TableHead>
-                      <TableCell className="p-0">
-                        {/* StakeholderTable Komponente mit den korrekten Stakeholder-Daten */}
-                        <StakeholderTable stakeholders={stakeholders} />
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-                
-                {/* Common Votes Tabelle unter den Details einfügen */}
-                {planning.creator && planning.features && (
-                  <CommonVotesTable features={planning.features} />
-                )}
+                <PlanningDetailsCard planning={planning} stakeholders={stakeholders} />
               </TabsContent>
               <TabsContent value="features">
                 <FeaturesTable features={planning.features} />
