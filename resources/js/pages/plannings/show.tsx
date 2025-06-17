@@ -195,8 +195,15 @@ function getScoreBadgeClass(value: number): string {
 }
 
 export default function Show({ planning, stakeholders }: ShowProps) {
+  // Breadcrumbs für die Planungs-Detailseite
+  const breadcrumbs = [
+    { title: "Startseite", href: "/" },
+    { title: "Plannings", href: "/plannings" },
+    { title: planning.title, href: "#" }, // aktuelle Seite nicht klickbar
+  ];
+
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <div className="w-full max-w-full px-10">
         <Card className="w-full">
           <CardHeader>
