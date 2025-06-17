@@ -91,9 +91,9 @@ class PlanningController extends Controller
         // Stakeholder (User) mit ihrer Stimmenanzahl in der aktuellen Planning-Session laden
         $stakeholders = User::select('users.id', 'users.name', 'users.email')
             ->selectRaw('COUNT(votes.id) as votes_count')
-            ->join('planning_user', function ($join) use ($planning) {
-                $join->on('users.id', '=', 'planning_user.user_id')
-                    ->where('planning_user.planning_id', '=', $planning->id);
+            ->join('planning_stakeholder', function ($join) use ($planning) {
+                $join->on('users.id', '=', 'planning_stakeholder.user_id')
+                    ->where('planning_stakeholder.planning_id', '=', $planning->id);
             })
             ->leftJoin('votes', function ($join) use ($planning) {
                 $join->on('users.id', '=', 'votes.user_id')
