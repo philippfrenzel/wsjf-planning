@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,13 +6,6 @@ import { Plus, Eye, Pencil, Trash2, ArrowUp, ArrowDown, Search, X, Check } from 
 import { Link } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -43,6 +36,7 @@ interface Feature {
   // Neue Eigenschaften für Schätzungen
   estimation_components_count?: number;
   total_weighted_case?: number;
+  estimation_units?: string[]; // <--- NEU
 }
 
 interface IndexProps {
@@ -131,6 +125,20 @@ export default function Index({ features }: IndexProps) {
     if (sortField !== field) return null;
     return sortDirection === "asc" ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" />;
   };
+
+  // Hilfsfunktion zur Formatierung der Einheit(en)
+  function formatUnits(units?: string[]): string {
+    if (!units || units.length === 0) return "";
+    if (units.length === 1) {
+      switch (units[0]) {
+        case "hours": return "Stunden";
+        case "days": return "Tage";
+        case "story_points": return "Story Points";
+        default: return units[0];
+      }
+    }
+    return "Gemischt";
+  }
 
   // Gefilterte und sortierte Features
   const filteredAndSortedFeatures = useMemo(() => {
@@ -527,8 +535,8 @@ export default function Index({ features }: IndexProps) {
                     </TableCell>
                     {/* Summe aller gewichteten Schätzungen */}
                     <TableCell>
-                      {feature.total_weighted_case 
-                        ? `${feature.total_weighted_case.toFixed(2)} Std.` 
+                      {feature.total_weighted_case !== null && feature.total_weighted_case !== undefined && feature.estimation_components_count
+                        ? `${feature.total_weighted_case.toFixed(2)} ${formatUnits(feature.estimation_units)}`
                         : '-'}
                     </TableCell>
                     {/* Projekt - Diese Zelle fehlt */}

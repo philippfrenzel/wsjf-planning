@@ -37,6 +37,11 @@ class FeatureController extends Controller
                     return $component->estimations;
                 })->sum('weighted_case');
 
+                // Sammle alle Einheiten der Schätzungen
+                $units = $feature->estimationComponents->flatMap(function ($component) {
+                    return $component->estimations->pluck('unit');
+                })->unique()->values()->all();
+
                 return [
                     'id' => $feature->id,
                     'jira_key' => $feature->jira_key,
@@ -66,6 +71,7 @@ class FeatureController extends Controller
                     ],
                     'estimation_components_count' => $feature->estimation_components_count,
                     'total_weighted_case' => $totalWeightedCase,
+                    'estimation_units' => $units,
                 ];
             });
 
