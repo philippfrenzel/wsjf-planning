@@ -9,10 +9,17 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 // StakeholderTable Komponente importieren
 import StakeholderTable from "./components/StakeholderTable";
 
+// Interface für Stakeholder anpassen (mit votes_count)
+interface Stakeholder {
+  id: number;
+  name: string;
+  email?: string;
+  votes_count: number;  // Hinzugefügt für die Stimmenzählung
+}
+
 interface User {
   id: number;
   name: string;
-  votes_count?: number; // Stimmenzählung für jeden Stakeholder
 }
 
 interface Project {
@@ -43,12 +50,14 @@ interface Planning {
   planned_at: string;
   executed_at: string;
   project?: Project;
-  stakeholders: User[];
+  stakeholders: Stakeholder[];  // Geändert zu Stakeholder statt User
   features?: Feature[];
+  creator?: User;  // Für Ersteller-Angabe
 }
 
 interface ShowProps {
   planning: Planning;
+  stakeholders: Stakeholder[];  // Ergänzt: vom Controller direkt übergebene Stakeholder
 }
 
 function FeaturesTable({ features }: { features?: Feature[] }) {
@@ -241,7 +250,7 @@ function getScoreBadgeClass(value: number): string {
   return "bg-green-100 text-green-800";
 }
 
-export default function Show({ planning }: ShowProps) {
+export default function Show({ planning, stakeholders }: ShowProps) {
   return (
     <AppLayout>
       <div className="w-full max-w-full px-10">
@@ -281,8 +290,8 @@ export default function Show({ planning }: ShowProps) {
                     <TableRow>
                       <TableHead className="w-1/4">Stakeholder</TableHead>
                       <TableCell className="p-0">
-                        {/* StakeholderTable Komponente statt String-Verkettung */}
-                        <StakeholderTable stakeholders={planning.stakeholders} />
+                        {/* StakeholderTable Komponente mit den korrekten Stakeholder-Daten */}
+                        <StakeholderTable stakeholders={stakeholders} />
                       </TableCell>
                     </TableRow>
                   </TableBody>

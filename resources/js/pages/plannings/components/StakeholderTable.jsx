@@ -1,10 +1,26 @@
 // StakeholderTable.jsx
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-const StakeholderTable = ({ stakeholders }) => {
+// Interface für die Props
+interface Stakeholder {
+  id: number;
+  name: string;
+  votes_count: number;
+}
+
+interface StakeholderTableProps {
+  stakeholders: Stakeholder[];
+}
+
+const StakeholderTable = ({ stakeholders }: StakeholderTableProps) => {
+  // Prüfen, ob Stakeholder-Daten vorhanden sind
+  if (!stakeholders || stakeholders.length === 0) {
+    return <div className="py-2">Keine Stakeholder vorhanden.</div>;
+  }
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -12,30 +28,23 @@ const StakeholderTable = ({ stakeholders }) => {
       </CardHeader>
       <CardContent>
         <Table>
-          <TableCaption>Übersicht der Stakeholder und ihrer abgegebenen Stimmen</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Abgegebene Stimmen</TableHead>
+              <TableHead className="text-right">Abgegebene Stimmen</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {stakeholders.length > 0 ? (
-              stakeholders.map((stakeholder) => (
-                <TableRow key={stakeholder.id}>
-                  <TableCell className="font-medium">{stakeholder.name}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{stakeholder.votes_count}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={2} className="text-center">
-                  Keine Stakeholder gefunden.
+            {stakeholders.map((stakeholder) => (
+              <TableRow key={stakeholder.id}>
+                <TableCell className="font-medium">{stakeholder.name}</TableCell>
+                <TableCell className="text-right">
+                  <Badge variant={stakeholder.votes_count > 0 ? "default" : "outline"}>
+                    {stakeholder.votes_count}
+                  </Badge>
                 </TableCell>
               </TableRow>
-            )}
+            ))}
           </TableBody>
         </Table>
       </CardContent>
