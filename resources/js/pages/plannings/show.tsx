@@ -6,10 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronRight } from "lucide-react";
+// StakeholderTable Komponente importieren
+import StakeholderTable from "./components/StakeholderTable";
 
 interface User {
   id: number;
   name: string;
+  votes_count?: number; // Stimmenzählung für jeden Stakeholder
 }
 
 interface Project {
@@ -241,7 +244,7 @@ function getScoreBadgeClass(value: number): string {
 export default function Show({ planning }: ShowProps) {
   return (
     <AppLayout>
-      <div className="w-full max-w-full px-0">
+      <div className="w-full max-w-full px-10">
         <Card className="w-full">
           <CardHeader>
             <CardTitle>{planning.title}</CardTitle>
@@ -249,7 +252,7 @@ export default function Show({ planning }: ShowProps) {
           <CardContent>
             <Tabs defaultValue="details" className="w-full">
               <TabsList>
-                <TabsTrigger value="details">Details</TabsTrigger>
+                <TabsTrigger value="details">Details & Common Vote</TabsTrigger>
                 <TabsTrigger value="features">Features & Individual Votes</TabsTrigger>
               </TabsList>
               <TabsContent value="details">
@@ -277,10 +280,9 @@ export default function Show({ planning }: ShowProps) {
                     </TableRow>
                     <TableRow>
                       <TableHead className="w-1/4">Stakeholder</TableHead>
-                      <TableCell>
-                        {planning.stakeholders.length > 0
-                          ? planning.stakeholders.map((u) => u.name).join(", ")
-                          : "-"}
+                      <TableCell className="p-0">
+                        {/* StakeholderTable Komponente statt String-Verkettung */}
+                        <StakeholderTable stakeholders={planning.stakeholders} />
                       </TableCell>
                     </TableRow>
                   </TableBody>

@@ -6,6 +6,7 @@ use App\Models\Planning;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Feature; // Feature Model importieren
+use App\Models\Stakeholder; // Stakeholder Model importieren
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -93,8 +94,19 @@ class PlanningController extends Controller
             },
         ]);
 
+        // Stakeholder mit ihrer Stimmenanzahl in der aktuellen Planning-Session laden
+        $stakeholders = Stakeholder::select('stakeholders.*')
+            ->selectRaw('COUNT(votes.id) as votes_count')
+            ->leftJoin('votes', function ($join) use ($planning) {
+                $join->on('stakeholders.id', '=', 'votes.stakeholder_id')
+                    ->where('votes.planning_id', '=', $planning->id);
+            })
+            ->groupBy('stakeholders.id')
+            ->get();
+
         return Inertia::render('plannings/show', [
             'planning' => $planning,
+            'stakeholders' => $stakeholders,
         ]);
     }
 

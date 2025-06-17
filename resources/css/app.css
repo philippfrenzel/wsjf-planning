@@ -156,4 +156,18 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    .stakeholder-votes-badge {
+        display: inline-block;
+        background-color: #e2e8f0;
+        color: #4a5568;
+        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        margin-left: 0.5rem;
+    }
+
+    .stakeholder-votes-badge:empty {
+        display: none;
+    }
 }
