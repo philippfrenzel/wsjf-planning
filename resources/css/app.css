@@ -84,7 +84,7 @@
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.65 0.20 180); /* Türkise SWICA-Farbe */
+    --primary: #2FBBA8; /* Türkise SWICA-Farbe, RGB: 0 184 186, HEX: #00b8ba */
     --primary-foreground: oklch(0.985 0 0); /* Weiß als Text-Farbe */
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
@@ -103,7 +103,7 @@
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
+    --sidebar: #2FBBA8;
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);
     --sidebar-primary-foreground: oklch(0.985 0 0);
