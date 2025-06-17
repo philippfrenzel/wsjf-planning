@@ -44,7 +44,7 @@ export default function EstimationTable({ estimations }: EstimationTableProps) {
               <TableCell>{estimation.best_case}</TableCell>
               <TableCell>{estimation.most_likely}</TableCell>
               <TableCell>{estimation.worst_case}</TableCell>
-              <TableCell>{estimation.weighted_case?.toFixed(2) || '-'}</TableCell>
+              <TableCell>{typeof estimation.weighted_case === 'number' ? estimation.weighted_case.toFixed(2) : '-'}</TableCell>
               <TableCell>{estimation.unit}</TableCell>
               <TableCell>{estimation.creator.name}</TableCell>
               <TableCell>
