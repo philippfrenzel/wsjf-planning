@@ -68,6 +68,12 @@ class PlanningController extends Controller
 
     public function show(Planning $planning)
     {
+        // Setze die Parameter für die Commonvotes-Relation
+        request()->merge([
+            'planning_id' => $planning->id,
+            'user_id' => $planning->created_by,
+        ]);
+
         $planning->load([
             'project:id,name',
             'stakeholders:id,name,email',
@@ -83,10 +89,7 @@ class PlanningController extends Controller
                     });
             },
             'features.votes.user:id,name',
-            'features.commonvotes' => function ($query) use ($planning) {
-                $query->where('planning_id', $planning->id)
-                    ->where('user_id', $planning->created_by);
-            },
+            'features.commonvotes',
         ]);
 
         // Stakeholder (User) mit ihrer Stimmenanzahl in der aktuellen Planning-Session laden
