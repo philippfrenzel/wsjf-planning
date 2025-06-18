@@ -34,10 +34,12 @@ function translateVoteType(type: string): string {
   return translations[type] || type;
 }
 
-function getScoreBadgeClass(value: number): string {
-  if (value >= 8) return "bg-red-100 text-red-800";
-  if (value >= 5) return "bg-orange-100 text-orange-800";
-  if (value >= 3) return "bg-yellow-100 text-yellow-800";
+function getScoreBadgeClass(value: number, min: number, max: number): string {
+  if (max === min) return "bg-green-100 text-green-800";
+  const step = (max - min) / 4;
+  if (value >= min + 3 * step) return "bg-red-100 text-red-800";
+  if (value >= min + 2 * step) return "bg-orange-100 text-orange-800";
+  if (value >= min + step) return "bg-yellow-100 text-yellow-800";
   return "bg-green-100 text-green-800";
 }
 
@@ -103,6 +105,18 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
   const featuresWithCommonVotes = features.filter(feature => feature.commonvotes && feature.commonvotes.length > 0);
   const voteTypes = ["BusinessValue", "TimeCriticality", "RiskOpportunity"];
 
+  // Min/Max für jeden Typ berechnen
+  const minMax: Record<string, {min: number, max: number}> = {};
+  voteTypes.forEach(type => {
+    const values = featuresWithCommonVotes
+      .map(f => f.commonvotes?.find(v => v.type === type)?.value)
+      .filter((v): v is number => typeof v === 'number');
+    minMax[type] = {
+      min: values.length ? Math.min(...values) : 0,
+      max: values.length ? Math.max(...values) : 0,
+    };
+  });
+
   return (
     <Card className="mt-6">
       <CardHeader className="flex flex-row items-center justify-between gap-2">
@@ -144,7 +158,7 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
                       return (
                         <TableCell key={type}>
                           {vote ? (
-                            <Badge className={getScoreBadgeClass(vote.value)}>
+                            <Badge className={getScoreBadgeClass(vote.value, minMax[type].min, minMax[type].max)}>
                               {vote.value}
                             </Badge>
                           ) : "-"}
