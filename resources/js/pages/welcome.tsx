@@ -77,6 +77,17 @@ export default function Welcome() {
                     </div>
                 </section>
 
+                <section className="mt-12 w-full max-w-4xl text-center text-[#1b1b18] dark:text-[#EDEDEC]">
+                    <h2 className="text-2xl font-semibold mb-4">Hauptfunktionen</h2>
+                    <ul className="mx-auto list-disc space-y-1 text-sm text-[#706f6c] dark:text-[#A1A09A] text-left max-w-xl">
+                        <li>Planning-Verwaltung mit Owner- und Deputy-Rollen</li>
+                        <li>Feature-Management inklusive Projektzuordnung</li>
+                        <li>Schätzungen mit Best Case, Most Likely und Worst Case</li>
+                        <li>Stakeholder-Integration im gesamten Prozess</li>
+                        <li>Umfangreiche Filter- und Suchfunktionen</li>
+                    </ul>
+                </section>
+
                 <section className="mt-16 grid w-full max-w-4xl grid-cols-1 gap-12 text-center md:grid-cols-4">
                     <div className="flex flex-col items-center">
                         <Gauge className="mb-4 h-10 w-10 text-orange-500" />
@@ -157,12 +168,30 @@ export default function Welcome() {
                             <p className="mb-2 text-sm text-[#706f6c] dark:text-[#A1A09A]">
                                 Verfolgen Sie den Erfolg Ihrer Planung mit klaren Kennzahlen.
                             </p>
-                            <ul className="list-disc pl-5 text-sm text-[#706f6c] dark:text-[#A1A09A] space-y-1">
-                                <li>KPIs zum Tracken aus Comitted zu Delivered</li>
-                            </ul>
-                        </div>
+                        <ul className="list-disc pl-5 text-sm text-[#706f6c] dark:text-[#A1A09A] space-y-1">
+                            <li>KPIs zum Tracken aus Comitted zu Delivered</li>
+                        </ul>
                     </div>
-                </section>
+                </div>
+            </section>
+
+        <section className="mt-16 w-full max-w-4xl text-center text-[#1b1b18] dark:text-[#EDEDEC]">
+            <h2 className="mb-4 text-2xl font-semibold">Getting started</h2>
+            <p className="mx-auto mb-6 max-w-xl text-sm text-[#706f6c] dark:text-[#A1A09A]">
+                In wenigen Schritten zu Ihrer ersten Planung:
+            </p>
+            <ol className="mx-auto list-decimal space-y-1 text-left text-sm text-[#706f6c] dark:text-[#A1A09A] max-w-xl">
+                <li>Konto erstellen und anmelden</li>
+                <li>Neue Planung anlegen und Teammitglieder einladen</li>
+                <li>Features erfassen und Aufwand schätzen</li>
+            </ol>
+            <Link
+                href={route('register')}
+                className="mt-6 inline-flex items-center rounded-md bg-primary px-6 py-2 text-sm font-medium text-white shadow hover:bg-primary/90"
+            >
+                Jetzt loslegen
+            </Link>
+        </section>
 
                 <div className="hidden h-14.5 lg:block"></div>
             </div>
