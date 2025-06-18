@@ -84,7 +84,7 @@ const PlanningDetailsCard: React.FC<PlanningDetailsCardProps> = ({ planning, sta
           {/* Accordion für CommonVotesTable */}
           {planning.features && (
             <div className="mt-6">
-              <CommonVotesTable features={planning.features} />
+              <CommonVotesTable features={planning.features} planningId={planning.id} />
             </div>
           )}
         </CardContent>

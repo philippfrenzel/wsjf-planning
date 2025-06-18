@@ -10,6 +10,7 @@ use App\Models\Stakeholder; // Stakeholder Model importieren
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\VoteController;
 
 class PlanningController extends Controller
 {
@@ -67,6 +68,12 @@ class PlanningController extends Controller
 
     public function show(Planning $planning)
     {
+        // Setze die Parameter für die Commonvotes-Relation
+        request()->merge([
+            'planning_id' => $planning->id,
+            'user_id' => $planning->created_by,
+        ]);
+
         $planning->load([
             'project:id,name',
             'stakeholders:id,name,email',
@@ -82,10 +89,7 @@ class PlanningController extends Controller
                     });
             },
             'features.votes.user:id,name',
-            'features.commonvotes' => function ($query) use ($planning) {
-                $query->where('planning_id', $planning->id)
-                    ->where('user_id', $planning->created_by);
-            },
+            'features.commonvotes',
         ]);
 
         // Stakeholder (User) mit ihrer Stimmenanzahl in der aktuellen Planning-Session laden
@@ -153,5 +157,52 @@ class PlanningController extends Controller
     {
         $planning->delete();
         return redirect()->route('plannings.index')->with('success', 'Planning gelöscht.');
+    }
+
+    /**
+     * Stößt die Berechnung der Common Votes für ein Planning an.
+     */
+    public function recalculateCommonVotes(string $planningId)
+    {
+        $planning = Planning::findOrFail($planningId);
+        // VoteController-Logik aufrufen
+        $voteController = app(VoteController::class);
+        $voteController->calculateAverageVotesForCreator($planning);
+
+        return redirect()->route('plannings.show', $planning->id)
+            ->with('success', 'Common Votes wurden neu berechnet.');
+    }
+
+    /**
+     * Admin-Übersicht: Plannings und Ersteller ändern
+     */
+    public function adminPlannings()
+    {
+        // Nur Admins erlauben
+        if (!auth()->user()) { //  || !auth()->user()->roles()->where('name', 'admin')->exists()
+            abort(403);
+        }
+        $plannings = Planning::with(['project:id,name', 'creator:id,name', 'owner:id,name', 'deputy:id,name'])->get();
+        $users = User::all(['id', 'name']);
+        return Inertia::render('plannings/admin', [
+            'plannings' => $plannings,
+            'users' => $users,
+        ]);
+    }
+
+    /**
+     * Setzt den Ersteller (created_by) eines Plannings neu (nur Admin)
+     */
+    public function setCreator(Request $request, Planning $planning)
+    {
+        if (!auth()->user()) { // || !auth()->user()->roles()->where('name', 'admin')->exists()
+            abort(403);
+        }
+        $request->validate([
+            'created_by' => 'required|exists:users,id',
+        ]);
+        $planning->created_by = $request->created_by;
+        $planning->save();
+        return redirect()->back()->with('success', 'Ersteller wurde geändert.');
     }
 }

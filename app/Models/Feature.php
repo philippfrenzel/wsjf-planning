@@ -67,11 +67,19 @@ class Feature extends Model
     }
 
     /**
-     * Die Common Votes (vom Ersteller des zugehörigen Plannings)
-     * Diese Version stellt sicher, dass die Einschränkungen direkt in der Relation definiert sind
+     * Die Common Votes (nur für ein bestimmtes Planning und User)
      */
     public function commonvotes()
     {
-        return $this->hasMany(Vote::class);
+        $planning = Planning::find(request('planning_id'));
+        return $this->hasMany(Vote::class)
+            ->where(function ($query) use ($planning) {
+                if (request()->has('planning_id')) {
+                    $query->where('planning_id', request('planning_id'));
+                }
+                if (request()->has('user_id')) {
+                    $query->where('user_id', $planning->created_by);
+                }
+            });
     }
 }
