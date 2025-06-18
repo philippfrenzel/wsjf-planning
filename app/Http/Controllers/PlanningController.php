@@ -10,6 +10,7 @@ use App\Models\Stakeholder; // Stakeholder Model importieren
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\VoteController;
 
 class PlanningController extends Controller
 {
@@ -153,5 +154,19 @@ class PlanningController extends Controller
     {
         $planning->delete();
         return redirect()->route('plannings.index')->with('success', 'Planning gelöscht.');
+    }
+
+    /**
+     * Stößt die Berechnung der Common Votes für ein Planning an.
+     */
+    public function recalculateCommonVotes(string $planningId)
+    {
+        $planning = Planning::findOrFail($planningId);
+        // VoteController-Logik aufrufen
+        $voteController = app(VoteController::class);
+        $voteController->calculateAverageVotesForCreator($planning);
+
+        return redirect()->route('plannings.show', $planning->id)
+            ->with('success', 'Common Votes wurden neu berechnet.');
     }
 }

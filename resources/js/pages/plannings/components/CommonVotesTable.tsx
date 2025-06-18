@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { router } from "@inertiajs/react";
 
 interface User {
   id: number;
@@ -42,10 +43,29 @@ function getScoreBadgeClass(value: number): string {
 
 interface CommonVotesTableProps {
   features?: Feature[];
+  planningId: number;
 }
 
-const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features }) => {
+const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningId }) => {
   const [open, setOpen] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  // Handler für manuelles Anstoßen der Common Votes Berechnung
+  const handleRecalculate = async () => {
+    setLoading(true);
+    setSuccess(false);
+    try {
+      await router.post(route("plannings.recalculate-commonvotes", { planning: planningId }));
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (e) {
+      // Fehlerbehandlung ggf. ergänzen
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!features || features.length === 0) {
     return <div className="mt-6">Keine Features verknüpft.</div>;
   }
@@ -60,15 +80,27 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features }) => {
 
   return (
     <Card className="mt-6">
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between gap-2">
         <CardTitle>Common Votes</CardTitle>
-        <button
-          type="button"
-          className="text-sm text-blue-600 hover:underline focus:outline-none"
-          onClick={() => setOpen((prev) => !prev)}
-        >
-          {open ? 'Weniger anzeigen' : 'Mehr anzeigen'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="text-sm text-blue-600 hover:underline focus:outline-none"
+            onClick={() => setOpen((prev) => !prev)}
+          >
+            {open ? 'Weniger anzeigen' : 'Mehr anzeigen'}
+          </button>
+          <button
+            type="button"
+            className={`text-sm px-2 py-1 rounded border border-blue-600 text-blue-600 hover:bg-blue-50 focus:outline-none ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={handleRecalculate}
+            disabled={loading}
+            title="Common Votes Berechnung manuell anstoßen"
+          >
+            {loading ? 'Berechne...' : 'Common Votes neu berechnen'}
+          </button>
+          {success && <span className="text-green-600 text-xs ml-2">Erfolgreich!</span>}
+        </div>
       </CardHeader>
       {open && (
         <CardContent>

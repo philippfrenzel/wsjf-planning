@@ -172,7 +172,7 @@ class VoteController extends Controller
     /**
      * Berechnet Durchschnitts-Votes für den Planning-Ersteller
      */
-    private function calculateAverageVotesForCreator(Planning $planning)
+    public function calculateAverageVotesForCreator(Planning $planning)
     {
         // Planning-Ersteller identifizieren
         $creatorId = $planning->created_by;

@@ -58,5 +58,8 @@ Route::get('/admin/users', [UserController::class, 'index'])->name('users.index'
 // Weitere Admin-Routen...
 //});
 
+Route::post('plannings/{planning}/recalculate-commonvotes', [PlanningController::class, 'recalculateCommonVotes'])
+    ->name('plannings.recalculate-commonvotes');
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
