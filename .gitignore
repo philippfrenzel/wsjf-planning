@@ -22,3 +22,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Cypress artifacts
+/cypress/screenshots
+/cypress/videos
