@@ -48,6 +48,10 @@ interface Planning {
   executed_at: string;
   stakeholders: User[];
   features?: Feature[];
+  //hier fehlen die datumsfelder
+  planned_at?: string; // Geplant am
+  executed_at?: string; // Durchgeführt am
+  // Neu: Felder für Owner und Deputy
   owner_id?: number;    // Neu: Owner ID
   deputy_id?: number;   // Neu: Deputy ID
   owner?: User;         // Neu: Owner-Beziehung

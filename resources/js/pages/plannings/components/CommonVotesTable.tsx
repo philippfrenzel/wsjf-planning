@@ -66,16 +66,41 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
     }
   };
 
+  // Button immer anzeigen, unabhängig von Features/CommonVotes
+  const recalcButton = (
+    <button
+      type="button"
+      className={`text-sm px-2 py-1 rounded border border-blue-600 text-blue-600 hover:bg-blue-50 focus:outline-none ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+      onClick={handleRecalculate}
+      disabled={loading}
+      title="Common Votes Berechnung manuell anstoßen"
+    >
+      {loading ? 'Berechne...' : 'Common Votes neu berechnen'}
+    </button>
+  );
+
+  // Erfolgsmeldung ggf. anzeigen
+  const successMsg = success && <span className="text-green-600 text-xs ml-2">Erfolgreich!</span>;
+
+  // Wenn keine Features vorhanden
   if (!features || features.length === 0) {
-    return <div className="mt-6">Keine Features verknüpft.</div>;
+    return (
+      <Card className="mt-6">
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
+          <CardTitle>Common Votes</CardTitle>
+          <div className="flex items-center gap-2">
+            {recalcButton}
+            {successMsg}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="mt-6">Keine Features verknüpft.</div>
+        </CardContent>
+      </Card>
+    );
   }
 
   const featuresWithCommonVotes = features.filter(feature => feature.commonvotes && feature.commonvotes.length > 0);
-
-  if (featuresWithCommonVotes.length === 0) {
-    return <div className="mt-6">Keine Common Votes vorhanden.</div>;
-  }
-
   const voteTypes = ["BusinessValue", "TimeCriticality", "RiskOpportunity"];
 
   return (
@@ -90,51 +115,47 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
           >
             {open ? 'Weniger anzeigen' : 'Mehr anzeigen'}
           </button>
-          <button
-            type="button"
-            className={`text-sm px-2 py-1 rounded border border-blue-600 text-blue-600 hover:bg-blue-50 focus:outline-none ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={handleRecalculate}
-            disabled={loading}
-            title="Common Votes Berechnung manuell anstoßen"
-          >
-            {loading ? 'Berechne...' : 'Common Votes neu berechnen'}
-          </button>
-          {success && <span className="text-green-600 text-xs ml-2">Erfolgreich!</span>}
+          {recalcButton}
+          {successMsg}
         </div>
       </CardHeader>
       {open && (
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Jira Key</TableHead>
-                <TableHead>Name</TableHead>
-                {voteTypes.map(type => (
-                  <TableHead key={type}>{translateVoteType(type)}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {featuresWithCommonVotes.map((feature) => (
-                <TableRow key={feature.id}>
-                  <TableCell>{feature.jira_key}</TableCell>
-                  <TableCell>{feature.name}</TableCell>
-                  {voteTypes.map(type => {
-                    const vote = feature.commonvotes?.find(v => v.type === type);
-                    return (
-                      <TableCell key={type}>
-                        {vote ? (
-                          <Badge className={getScoreBadgeClass(vote.value)}>
-                            {vote.value}
-                          </Badge>
-                        ) : "-"}
-                      </TableCell>
-                    );
-                  })}
+          {featuresWithCommonVotes.length === 0 ? (
+            <div className="mt-6">Keine Common Votes vorhanden.</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Jira Key</TableHead>
+                  <TableHead>Name</TableHead>
+                  {voteTypes.map(type => (
+                    <TableHead key={type}>{translateVoteType(type)}</TableHead>
+                  ))}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {featuresWithCommonVotes.map((feature) => (
+                  <TableRow key={feature.id}>
+                    <TableCell>{feature.jira_key}</TableCell>
+                    <TableCell>{feature.name}</TableCell>
+                    {voteTypes.map(type => {
+                      const vote = feature.commonvotes?.find(v => v.type === type);
+                      return (
+                        <TableCell key={type}>
+                          {vote ? (
+                            <Badge className={getScoreBadgeClass(vote.value)}>
+                              {vote.value}
+                            </Badge>
+                          ) : "-"}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       )}
     </Card>

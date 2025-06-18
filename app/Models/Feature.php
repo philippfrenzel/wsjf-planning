@@ -71,13 +71,14 @@ class Feature extends Model
      */
     public function commonvotes()
     {
+        $planning = Planning::find(request('planning_id'));
         return $this->hasMany(Vote::class)
-            ->where(function ($query) {
+            ->where(function ($query) use ($planning) {
                 if (request()->has('planning_id')) {
                     $query->where('planning_id', request('planning_id'));
                 }
                 if (request()->has('user_id')) {
-                    $query->where('user_id', request('user_id'));
+                    $query->where('user_id', $planning->created_by);
                 }
             });
     }
