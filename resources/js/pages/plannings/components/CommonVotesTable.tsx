@@ -52,6 +52,18 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
   const [open, setOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [sort, setSort] = useState<{type: string, direction: 'asc'|'desc'} | null>(null);
+
+  function sortFeatures(features: Feature[], type: string, direction: 'asc'|'desc') {
+    return [...features].sort((a, b) => {
+      const aVote = a.commonvotes?.find(v => v.type === type)?.value;
+      const bVote = b.commonvotes?.find(v => v.type === type)?.value;
+      if (aVote == null && bVote == null) return 0;
+      if (aVote == null) return 1;
+      if (bVote == null) return -1;
+      return direction === 'asc' ? aVote - bVote : bVote - aVote;
+    });
+  }
 
   // Handler für manuelles Anstoßen der Common Votes Berechnung
   const handleRecalculate = async () => {
@@ -61,7 +73,7 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
       await router.post(route("plannings.recalculate-commonvotes", { planning: planningId }));
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
-    } catch (e) {
+    } catch {
       // Fehlerbehandlung ggf. ergänzen
     } finally {
       setLoading(false);
@@ -117,6 +129,8 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
     };
   });
 
+  const sortedFeatures = sort && sort.type ? sortFeatures(featuresWithCommonVotes, sort.type, sort.direction) : featuresWithCommonVotes;
+
   return (
     <Card className="mt-6">
       <CardHeader className="flex flex-row items-center justify-between gap-2">
@@ -144,12 +158,21 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
                   <TableHead>Jira Key</TableHead>
                   <TableHead>Name</TableHead>
                   {voteTypes.map(type => (
-                    <TableHead key={type}>{translateVoteType(type)}</TableHead>
+                    <TableHead
+                      key={type}
+                      className="cursor-pointer select-none"
+                      onClick={() => setSort(s => s && s.type === type ? {type, direction: s.direction === 'asc' ? 'desc' : 'asc'} : {type, direction: 'asc'})}
+                    >
+                      {translateVoteType(type)}
+                      {sort?.type === type && (
+                        <span className="ml-1">{sort.direction === 'asc' ? '▲' : '▼'}</span>
+                      )}
+                    </TableHead>
                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {featuresWithCommonVotes.map((feature) => (
+                {sortedFeatures.map((feature) => (
                   <TableRow key={feature.id}>
                     <TableCell>{feature.jira_key}</TableCell>
                     <TableCell>{feature.name}</TableCell>
