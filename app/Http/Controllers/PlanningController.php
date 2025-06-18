@@ -172,4 +172,37 @@ class PlanningController extends Controller
         return redirect()->route('plannings.show', $planning->id)
             ->with('success', 'Common Votes wurden neu berechnet.');
     }
+
+    /**
+     * Admin-Übersicht: Plannings und Ersteller ändern
+     */
+    public function adminPlannings()
+    {
+        // Nur Admins erlauben
+        if (!auth()->user() || !auth()->user()->roles()->where('name', 'admin')->exists()) {
+            abort(403);
+        }
+        $plannings = Planning::with(['project:id,name', 'creator:id,name', 'owner:id,name', 'deputy:id,name'])->get();
+        $users = User::all(['id', 'name']);
+        return Inertia::render('plannings/admin', [
+            'plannings' => $plannings,
+            'users' => $users,
+        ]);
+    }
+
+    /**
+     * Setzt den Ersteller (created_by) eines Plannings neu (nur Admin)
+     */
+    public function setCreator(Request $request, Planning $planning)
+    {
+        if (!auth()->user() || !auth()->user()->roles()->where('name', 'admin')->exists()) {
+            abort(403);
+        }
+        $request->validate([
+            'created_by' => 'required|exists:users,id',
+        ]);
+        $planning->created_by = $request->created_by;
+        $planning->save();
+        return redirect()->back()->with('success', 'Ersteller wurde geändert.');
+    }
 }

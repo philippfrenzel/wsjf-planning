@@ -3,8 +3,8 @@ import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, ChevronRight, BarChart3 as Donut, Route, Shirt } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BookOpen, Folder, LayoutGrid, BarChart3 as Donut, Route, Shirt, Shield } from 'lucide-react';
 import AppLogo from './app-logo';
 
 interface AppSidebarProps {
@@ -13,6 +13,10 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ hasProjects, firstPlanningId }: AppSidebarProps) {
+    // Auth-Objekt sicher extrahieren
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const auth = (usePage().props as any)?.auth;
+
     const mainNavItems: NavItem[] = [
         {
             title: 'Dashboard',
@@ -33,6 +37,12 @@ export function AppSidebar({ hasProjects, firstPlanningId }: AppSidebarProps) {
             title: 'Features',
             href: '/features',
             icon: Shirt,
+        },
+        // Admin-Link nur für Philipp
+        auth?.user?.email === 'philipp@frenzel.net' && {
+            title: 'Plannings Admin',
+            href: '/plannings/admin',
+            icon: Shield,
         },
     ].filter(Boolean) as NavItem[];
 

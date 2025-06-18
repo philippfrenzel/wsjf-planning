@@ -44,6 +44,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::put('estimation-components/{id}/archive', [EstimationComponentController::class, 'archive'])->name('estimation-components.archive');
     Route::put('estimation-components/{id}/activate', [EstimationComponentController::class, 'activate'])->name('estimation-components.activate');
+
+    // Admin: Plannings-Übersicht und Ersteller setzen
+    Route::get('plannings/admin', [PlanningController::class, 'adminPlannings'])->name('plannings.admin');
+    Route::post('plannings/{planning}/set-creator', [PlanningController::class, 'setCreator'])->name('plannings.set-creator');
 });
 
 Route::resource('projects', ProjectController::class);
