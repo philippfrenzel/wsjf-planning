@@ -44,7 +44,7 @@ export default function AdminPlannings({ plannings, users }: AdminPlanningsProps
   };
 
   return (
-    <AppLayout breadcrumbs={[{ title: "Admin", href: null }, { title: "Plannings verwalten", href: null }]}> 
+    <AppLayout breadcrumbs={[{ title: "Admin", href: "" }, { title: "Plannings verwalten", href: "" }]}> 
       <Card className="mt-8">
         <CardHeader>
           <CardTitle>Plannings – Ersteller ändern (Admin)</CardTitle>
