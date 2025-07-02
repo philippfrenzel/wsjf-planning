@@ -40,6 +40,17 @@ interface Feature {
   project_id: number;
   votes?: Vote[];
   commonvotes?: Vote[]; // Vom Controller dediziert geladene Common Votes
+  commitments?: {
+    id: number;
+    commitment_type: string;
+    user_id: number;
+    user: User;
+    status_details?: {
+      value: string;
+      name: string;
+      color: string;
+    }
+  }[];
 }
 
 interface Planning {

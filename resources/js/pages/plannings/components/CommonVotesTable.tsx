@@ -2,7 +2,24 @@ import React, { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { router } from "@inertiajs/react";
+import { router, useForm } from "@inertiajs/react";
+import { Button } from "@/components/ui/button";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter 
+} from "@/components/ui/dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { PlusCircle } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 interface User {
   id: number;
@@ -16,12 +33,27 @@ interface Vote {
   value: number;
 }
 
+interface StatusDetails {
+  value: string;
+  name: string;
+  color: string;
+}
+
+interface Commitment {
+  id: number;
+  user_id: number;
+  user: User;
+  commitment_type: string; // A, B, C, D
+  status_details?: StatusDetails;
+}
+
 interface Feature {
   id: number;
   jira_key: string;
   name: string;
   project_id: number;
   commonvotes?: Vote[];
+  commitments?: Commitment[]; // Hinzugefügt: Commitments für dieses Feature
 }
 
 function translateVoteType(type: string): string {
@@ -43,6 +75,26 @@ function getScoreBadgeClass(value: number, min: number, max: number): string {
   return "bg-green-100 text-green-800";
 }
 
+function getCommitmentTypeBadgeClass(type: string): string {
+  const classes: {[key: string]: string} = {
+    'A': "bg-red-100 text-red-800",
+    'B': "bg-blue-100 text-blue-800",
+    'C': "bg-yellow-100 text-yellow-800",
+    'D': "bg-green-100 text-green-800",
+  };
+  return classes[type] || "bg-gray-100 text-gray-800";
+}
+
+function getCommitmentTypeLabel(type: string): string {
+  const labels: {[key: string]: string} = {
+    'A': "Typ A",
+    'B': "Typ B",
+    'C': "Typ C",
+    'D': "Typ D",
+  };
+  return labels[type] || type;
+}
+
 interface CommonVotesTableProps {
   features?: Feature[];
   planningId: number;
@@ -53,6 +105,16 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [sort, setSort] = useState<{type: string, direction: 'asc'|'desc'} | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
+
+  // Form für das neue Commitment
+  const { data, setData, post, processing, errors, reset } = useForm({
+    planning_id: planningId.toString(),
+    feature_id: "",
+    commitment_type: "",
+    status: "suggested" // Default-Status ist "Vorschlag"
+  });
 
   function sortFeatures(features: Feature[], type: string, direction: 'asc'|'desc') {
     return [...features].sort((a, b) => {
@@ -64,6 +126,37 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
       return direction === 'asc' ? aVote - bVote : bVote - aVote;
     });
   }
+  
+  // Handler zum Öffnen des Modals für ein neues Commitment
+  const handleOpenCommitmentModal = (feature: Feature) => {
+    setSelectedFeature(feature);
+    setData({
+      planning_id: planningId.toString(),
+      feature_id: feature.id.toString(),
+      commitment_type: "",
+      status: "suggested"
+    });
+    setModalOpen(true);
+  };
+  
+  // Handler zum Schließen des Modals
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedFeature(null);
+    reset();
+  };
+  
+  // Handler zum Absenden des Formulars
+  const handleSubmitCommitment = (e: React.FormEvent) => {
+    e.preventDefault();
+    post(route("commitments.store"), {
+      onSuccess: () => {
+        handleCloseModal();
+        // Seite neu laden, um die Änderungen zu sehen
+        router.reload();
+      }
+    });
+  };
 
   // Handler für manuelles Anstoßen der Common Votes Berechnung
   const handleRecalculate = async () => {
@@ -115,6 +208,14 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
   }
 
   const featuresWithCommonVotes = features.filter(feature => feature.commonvotes && feature.commonvotes.length > 0);
+  
+  // Commitment-Typen für das Formular
+  const commitmentTypes = [
+    { value: 'A', label: 'Typ A - Hohe Priorität & Dringlichkeit' },
+    { value: 'B', label: 'Typ B - Hohe Priorität, geringe Dringlichkeit' },
+    { value: 'C', label: 'Typ C - Geringe Priorität, hohe Dringlichkeit' },
+    { value: 'D', label: 'Typ D - Geringe Priorität & Dringlichkeit' },
+  ];
   const voteTypes = ["BusinessValue", "TimeCriticality", "RiskOpportunity"];
 
   // Min/Max für jeden Typ berechnen
@@ -132,70 +233,150 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
   const sortedFeatures = sort && sort.type ? sortFeatures(featuresWithCommonVotes, sort.type, sort.direction) : featuresWithCommonVotes;
 
   return (
-    <Card className="mt-6">
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle>Common Votes</CardTitle>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="text-sm text-blue-600 hover:underline focus:outline-none"
-            onClick={() => setOpen((prev) => !prev)}
-          >
-            {open ? 'Weniger anzeigen' : 'Mehr anzeigen'}
-          </button>
-          {recalcButton}
-          {successMsg}
-        </div>
-      </CardHeader>
-      {open && (
-        <CardContent>
-          {featuresWithCommonVotes.length === 0 ? (
-            <div className="mt-6">Keine Common Votes vorhanden.</div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Jira Key</TableHead>
-                  <TableHead>Name</TableHead>
-                  {voteTypes.map(type => (
-                    <TableHead
-                      key={type}
-                      className="cursor-pointer select-none"
-                      onClick={() => setSort(s => s && s.type === type ? {type, direction: s.direction === 'asc' ? 'desc' : 'asc'} : {type, direction: 'asc'})}
-                    >
-                      {translateVoteType(type)}
-                      {sort?.type === type && (
-                        <span className="ml-1">{sort.direction === 'asc' ? '▲' : '▼'}</span>
-                      )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedFeatures.map((feature) => (
-                  <TableRow key={feature.id}>
-                    <TableCell>{feature.jira_key}</TableCell>
-                    <TableCell>{feature.name}</TableCell>
-                    {voteTypes.map(type => {
-                      const vote = feature.commonvotes?.find(v => v.type === type);
-                      return (
-                        <TableCell key={type}>
-                          {vote ? (
-                            <Badge className={getScoreBadgeClass(vote.value, minMax[type].min, minMax[type].max)}>
-                              {vote.value}
-                            </Badge>
-                          ) : "-"}
-                        </TableCell>
-                      );
-                    })}
+    <>
+      <Card className="mt-6">
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
+          <CardTitle>Common Votes</CardTitle>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="text-sm text-blue-600 hover:underline focus:outline-none"
+              onClick={() => setOpen((prev) => !prev)}
+            >
+              {open ? 'Weniger anzeigen' : 'Mehr anzeigen'}
+            </button>
+            {recalcButton}
+            {successMsg}
+          </div>
+        </CardHeader>
+        {open && (
+          <CardContent>
+            {featuresWithCommonVotes.length === 0 ? (
+              <div className="mt-6">Keine Common Votes vorhanden.</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Jira Key</TableHead>
+                    <TableHead>Name</TableHead>
+                    {voteTypes.map(type => (
+                      <TableHead
+                        key={type}
+                        className="cursor-pointer select-none"
+                        onClick={() => setSort(s => s && s.type === type ? {type, direction: s.direction === 'asc' ? 'desc' : 'asc'} : {type, direction: 'asc'})}
+                      >
+                        {translateVoteType(type)}
+                        {sort?.type === type && (
+                          <span className="ml-1">{sort.direction === 'asc' ? '▲' : '▼'}</span>
+                        )}
+                      </TableHead>
+                    ))}
+                    <TableHead>Commitment</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      )}
-    </Card>
+                </TableHeader>
+                <TableBody>
+                  {sortedFeatures.map((feature) => (
+                    <TableRow key={feature.id}>
+                      <TableCell>{feature.jira_key}</TableCell>
+                      <TableCell>{feature.name}</TableCell>
+                      {voteTypes.map(type => {
+                        const vote = feature.commonvotes?.find(v => v.type === type);
+                        return (
+                          <TableCell key={type}>
+                            {vote ? (
+                              <Badge className={getScoreBadgeClass(vote.value, minMax[type].min, minMax[type].max)}>
+                                {vote.value}
+                              </Badge>
+                            ) : "-"}
+                          </TableCell>
+                        );
+                      })}
+                      <TableCell>
+                        {feature.commitments && feature.commitments.length > 0 ? (
+                          <Badge className={getCommitmentTypeBadgeClass(feature.commitments[0].commitment_type)}>
+                            {getCommitmentTypeLabel(feature.commitments[0].commitment_type)}
+                          </Badge>
+                        ) : (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleOpenCommitmentModal(feature)}
+                            className="p-1"
+                          >
+                            <PlusCircle className="h-4 w-4 text-blue-600" />
+                            <span className="ml-1 text-xs text-blue-600">Commitment erstellen</span>
+                          </Button>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {feature.commitments && feature.commitments.length > 0 && feature.commitments[0].status_details ? (
+                          <Badge className={feature.commitments[0].status_details.color}>
+                            {feature.commitments[0].status_details.name}
+                          </Badge>
+                        ) : "-"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        )}
+      </Card>
+      
+      {/* Modal für das Erstellen eines Commitments */}
+      <Dialog open={modalOpen} onOpenChange={(open) => !open && handleCloseModal()}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Neues Commitment erstellen</DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmitCommitment} className="space-y-4 mt-4">
+            {selectedFeature && (
+              <div>
+                <Label className="text-sm font-semibold mb-1">Feature</Label>
+                <div className="p-2 border rounded-md bg-gray-50">
+                  {selectedFeature.jira_key}: {selectedFeature.name}
+                </div>
+              </div>
+            )}
+            
+            <div className="space-y-1">
+              <Label htmlFor="commitment_type">Commitment-Typ</Label>
+              <Select 
+                name="commitment_type"
+                value={data.commitment_type} 
+                onValueChange={(value) => setData({...data, commitment_type: value})}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Commitment-Typ wählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {commitmentTypes.map(type => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.commitment_type && (
+                <p className="text-sm text-red-600 mt-1">{errors.commitment_type}</p>
+              )}
+            </div>
+            
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="outline" onClick={handleCloseModal}>
+                Abbrechen
+              </Button>
+              <Button type="submit" disabled={processing || !data.commitment_type}>
+                {processing ? 'Wird gespeichert...' : 'Commitment erstellen'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
