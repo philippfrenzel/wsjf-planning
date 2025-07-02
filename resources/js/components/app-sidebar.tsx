@@ -28,15 +28,15 @@ export function AppSidebar({ hasProjects, firstPlanningId }: AppSidebarProps) {
             href: '/projects',
             icon: Donut,
         },
-        hasProjects && {
-            title: 'WSJF Verwaltung',
-            href: '/plannings?project_id=' + (firstPlanningId || ''),
-            icon: Route,
-        },
         {
             title: 'Features',
             href: '/features',
             icon: Shirt,
+        },
+        hasProjects && {
+            title: 'WSJF Verwaltung',
+            href: '/plannings?project_id=' + (firstPlanningId || ''),
+            icon: Route,
         },
         // Admin-Link nur für Philipp
         auth?.user?.email === 'philipp@frenzel.net' && {
