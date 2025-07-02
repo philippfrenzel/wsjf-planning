@@ -6,8 +6,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { Link } from "@inertiajs/react";
-import StakeholderTable from "./components/StakeholderTable";
 import PlanningDetailsCard from "./components/PlanningDetailsCard";
 
 // Interface für Stakeholder anpassen (mit votes_count)
@@ -214,9 +212,6 @@ export default function Show({ planning, stakeholders }: ShowProps) {
               <TabsList>
                 <TabsTrigger value="details">Details & Common Vote</TabsTrigger>
                 <TabsTrigger value="features">Features & Individual Votes</TabsTrigger>
-                <TabsTrigger value="commitments">
-                  <Link href={route("plannings.commitments", planning.id)}>Commitments</Link>
-                </TabsTrigger>
               </TabsList>
               <TabsContent value="details">
                 <PlanningDetailsCard planning={planning} stakeholders={stakeholders} />

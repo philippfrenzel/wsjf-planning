@@ -85,47 +85,25 @@ export default function EditCommitment({ commitment, features, users, commitment
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Feature */}
+              {/* Feature - Read-Only */}
               <div>
                 <Label htmlFor="feature_id">Feature</Label>
-                <Select 
-                  value={data.feature_id} 
-                  onValueChange={(value) => setData("feature_id", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Feature auswählen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {features.map((feature) => (
-                      <SelectItem key={feature.id} value={String(feature.id)}>
-                        {feature.jira_key}: {feature.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center p-2 border rounded-md bg-gray-50">
+                  {features.find(f => f.id === Number(data.feature_id))?.jira_key}: {features.find(f => f.id === Number(data.feature_id))?.name}
+                </div>
+                <input type="hidden" name="feature_id" value={data.feature_id} />
                 {errors.feature_id && (
                   <p className="text-sm text-red-600 mt-1">{errors.feature_id}</p>
                 )}
               </div>
 
-              {/* User */}
+              {/* User - Read-Only */}
               <div>
                 <Label htmlFor="user_id">Benutzer</Label>
-                <Select 
-                  value={data.user_id} 
-                  onValueChange={(value) => setData("user_id", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Benutzer auswählen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={String(user.id)}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center p-2 border rounded-md bg-gray-50">
+                  {users.find(u => u.id === Number(data.user_id))?.name}
+                </div>
+                <input type="hidden" name="user_id" value={data.user_id} />
                 {errors.user_id && (
                   <p className="text-sm text-red-600 mt-1">{errors.user_id}</p>
                 )}
@@ -156,37 +134,48 @@ export default function EditCommitment({ commitment, features, users, commitment
 
 
 
-              {/* Status */}
-              <div>
-                <Label htmlFor="status">Status</Label>
-                <Select 
-                  value={data.status} 
-                  onValueChange={(value) => setData("status", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Status wählen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {possibleTransitions.length > 0 ? (
-                      possibleTransitions.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          <div className="flex items-center">
-                            <span className={`inline-block w-3 h-3 rounded-full mr-2 ${status.color.replace('bg-', 'bg-').replace('text-', '')}`} />
-                            {status.label}
-                          </div>
-                        </SelectItem>
-                      ))
-                    ) : (
-                      // Wenn keine Übergänge möglich sind, zeige nur den aktuellen Status an
-                      <SelectItem value={data.status}>
-                        <div className="flex items-center">
-                          <span className={`inline-block w-3 h-3 rounded-full mr-2 ${commitment.status_details?.color || ''}`} />
-                          {commitment.status_details?.name || "Status nicht gesetzt"}
-                        </div>
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
+              {/* Status - Current Status Read-Only und Transitionen als Auswahlliste */}
+              <div className="space-y-4">
+                {/* Aktueller Status - Read-Only */}
+                <div>
+                  <Label>Aktueller Status</Label>
+                  <div className="flex items-center p-2 border rounded-md bg-gray-50">
+                    <span className={`inline-block w-3 h-3 rounded-full mr-2 ${commitment.status_details?.color || ''}`} />
+                    {commitment.status_details?.name || "Status nicht gesetzt"}
+                  </div>
+                </div>
+
+                {/* Status-Transitionen */}
+                {possibleTransitions.length > 0 && (
+                  <div>
+                    <Label htmlFor="status">Status ändern zu</Label>
+                    <Select 
+                      value={data.status} 
+                      onValueChange={(value) => setData("status", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Neuen Status wählen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {possibleTransitions.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            <div className="flex items-center">
+                              <span className={`inline-block w-3 h-3 rounded-full mr-2 ${status.color}`} />
+                              {status.label}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                {possibleTransitions.length === 0 && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    Keine weiteren Status-Übergänge möglich.
+                  </p>
+                )}
+
                 {errors.status && (
                   <p className="text-sm text-red-600 mt-1">{errors.status}</p>
                 )}

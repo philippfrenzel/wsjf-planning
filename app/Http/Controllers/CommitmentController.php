@@ -164,7 +164,7 @@ class CommitmentController extends Controller
                 ['value' => 'accepted', 'label' => 'Angenommen', 'color' => 'bg-yellow-100 text-yellow-800'],
                 ['value' => 'completed', 'label' => 'Erledigt', 'color' => 'bg-green-100 text-green-800'],
             ],
-            'currentStatus' => $commitment->status ? $commitment->status->value : 'suggested',
+            'currentStatus' => $commitment->status ? (is_string($commitment->status) ? $commitment->status : $commitment->status->value) : 'suggested',
             'possibleTransitions' => $this->getPossibleStatusTransitions($commitment),
         ]);
     }
@@ -176,7 +176,36 @@ class CommitmentController extends Controller
     {
         $transitions = [];
 
-        if ($commitment->status) {
+        // Wenn status ein String ist, konvertieren wir es in ein State-Objekt
+        if ($commitment->status && is_string($commitment->status)) {
+            // Bei String-Status geben wir die Standard-Übergänge zurück
+            switch ($commitment->status) {
+                case 'suggested':
+                    $transitions[] = [
+                        'value' => 'accepted',
+                        'label' => 'Angenommen',
+                        'color' => 'bg-yellow-100 text-yellow-800'
+                    ];
+                    $transitions[] = [
+                        'value' => 'completed',
+                        'label' => 'Erledigt',
+                        'color' => 'bg-green-100 text-green-800'
+                    ];
+                    break;
+                case 'accepted':
+                    $transitions[] = [
+                        'value' => 'completed',
+                        'label' => 'Erledigt',
+                        'color' => 'bg-green-100 text-green-800'
+                    ];
+                    break;
+                case 'completed':
+                    // Keine weiteren Übergänge von "completed" aus
+                    break;
+            }
+        }
+        // Wenn es ein State-Objekt ist
+        else if ($commitment->status) {
             // Basierend auf dem aktuellen Status die möglichen Übergänge ermitteln
             if ($commitment->status->canTransitionTo(\App\States\Commitment\Accepted::class)) {
                 $transitions[] = [
@@ -241,23 +270,35 @@ class CommitmentController extends Controller
         }
 
         // Status-Transition verarbeiten, wenn ein neuer Status angegeben wurde
-        if (isset($validated['status']) && $commitment->status && $validated['status'] !== $commitment->status->value) {
-            switch ($validated['status']) {
-                case 'suggested':
-                    if ($commitment->status->canTransitionTo(\App\States\Commitment\Suggested::class)) {
-                        $commitment->status->transitionTo(\App\States\Commitment\Suggested::class);
+        if (isset($validated['status'])) {
+            $currentStatusValue = is_string($commitment->status) ? $commitment->status : ($commitment->status ? $commitment->status->value : null);
+
+            if ($commitment->status && $validated['status'] !== $currentStatusValue) {
+                // Wenn status ein String ist, setzen wir den neuen Status direkt
+                if (is_string($commitment->status)) {
+                    $commitment->status = $validated['status'];
+                    $commitment->save();
+                }
+                // Wenn status ein State-Objekt ist, verwenden wir die Transition-Funktionen
+                else {
+                    switch ($validated['status']) {
+                        case 'suggested':
+                            if ($commitment->status->canTransitionTo(\App\States\Commitment\Suggested::class)) {
+                                $commitment->status->transitionTo(\App\States\Commitment\Suggested::class);
+                            }
+                            break;
+                        case 'accepted':
+                            if ($commitment->status->canTransitionTo(\App\States\Commitment\Accepted::class)) {
+                                $commitment->status->transitionTo(\App\States\Commitment\Accepted::class);
+                            }
+                            break;
+                        case 'completed':
+                            if ($commitment->status->canTransitionTo(\App\States\Commitment\Completed::class)) {
+                                $commitment->status->transitionTo(\App\States\Commitment\Completed::class);
+                            }
+                            break;
                     }
-                    break;
-                case 'accepted':
-                    if ($commitment->status->canTransitionTo(\App\States\Commitment\Accepted::class)) {
-                        $commitment->status->transitionTo(\App\States\Commitment\Accepted::class);
-                    }
-                    break;
-                case 'completed':
-                    if ($commitment->status->canTransitionTo(\App\States\Commitment\Completed::class)) {
-                        $commitment->status->transitionTo(\App\States\Commitment\Completed::class);
-                    }
-                    break;
+                }
             }
 
             // Status aus den validated-Daten entfernen, da er bereits gesetzt wurde
