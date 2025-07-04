@@ -4,22 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { router, useForm } from "@inertiajs/react";
 import { Button } from "@/components/ui/button";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter 
-} from "@/components/ui/dialog";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import { PlusCircle } from "lucide-react";
-import { Label } from "@/components/ui/label";
+import CommitmentModal from "./CommitmentModal";
 
 interface User {
   id: number;
@@ -113,12 +99,16 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
   const [isEditing, setIsEditing] = useState(false);
 
   // Form für das neue oder zu bearbeitende Commitment
-  const { data, setData, post, put, processing, errors, reset } = useForm({
+  const { data, setData, processing, errors, reset } = useForm({
     planning_id: planningId.toString(),
     feature_id: "",
     commitment_type: "",
     status: "suggested" // Default-Status ist "Vorschlag"
   });
+  
+  // Status-Optionen und mögliche Übergänge
+  const [currentStatus, setCurrentStatus] = useState<string | null>(null);
+  const [possibleTransitions, setPossibleTransitions] = useState<Array<{value: string, label: string, color: string}>>([]);
 
   function sortFeatures(features: Feature[], type: string, direction: 'asc'|'desc') {
     return [...features].sort((a, b) => {
@@ -136,6 +126,8 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
     setSelectedFeature(feature);
     setSelectedCommitment(null);
     setIsEditing(false);
+    setCurrentStatus(null);
+    setPossibleTransitions([]);
     setData({
       planning_id: planningId.toString(),
       feature_id: feature.id.toString(),
@@ -150,12 +142,36 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
     setSelectedFeature(feature);
     setSelectedCommitment(commitment);
     setIsEditing(true);
+    
+    // Setze den aktuellen Status
+    const statusValue = commitment.status_details?.value || "suggested";
+    setCurrentStatus(statusValue);
+    
+    // Setze mögliche Status-Übergänge basierend auf dem aktuellen Status
+    // Diese sollten idealerweise vom Backend kommen, aber für jetzt verwenden wir eine einfache Logik
+    const transitions: Array<{value: string, label: string, color: string}> = [];
+    
+    if (statusValue === "suggested") {
+      transitions.push(
+        { value: "accepted", label: "Angenommen", color: "bg-yellow-100 text-yellow-800" },
+        { value: "completed", label: "Erledigt", color: "bg-green-100 text-green-800" }
+      );
+    } else if (statusValue === "accepted") {
+      transitions.push(
+        { value: "completed", label: "Erledigt", color: "bg-green-100 text-green-800" }
+      );
+    }
+    
+    setPossibleTransitions(transitions);
+    
+    // Formular-Daten setzen
     setData({
       planning_id: planningId.toString(),
       feature_id: feature.id.toString(),
       commitment_type: commitment.commitment_type,
-      status: commitment.status_details?.value || "suggested"
+      status: statusValue
     });
+    
     setModalOpen(true);
   };
   
@@ -165,6 +181,8 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
     setSelectedFeature(null);
     setSelectedCommitment(null);
     setIsEditing(false);
+    setCurrentStatus(null);
+    setPossibleTransitions([]);
     reset();
   };
   
@@ -174,20 +192,31 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
     
     if (isEditing && selectedCommitment) {
       // Update-Pfad für existierendes Commitment
-      put(route("commitments.update", { commitment: selectedCommitment.id }), {
+      const updateData = {
+        ...data,
+        planning_id: planningId,
+        user_id: selectedCommitment.user_id, // Wichtig: user_id muss für das Update mitgesendet werden
+      };
+      
+      // Verwendung des inertia useForm-Hooks
+      router.put(route("commitments.update", { commitment: selectedCommitment.id }), updateData, {
         onSuccess: () => {
           handleCloseModal();
-          // Seite neu laden, um die Änderungen zu sehen
           router.reload();
+        },
+        onError: (errors: object) => {
+          console.error("Fehler beim Aktualisieren:", errors);
         }
       });
     } else {
       // Create-Pfad für neues Commitment
-      post(route("commitments.store"), {
+      router.post(route("commitments.store"), data, {
         onSuccess: () => {
           handleCloseModal();
-          // Seite neu laden, um die Änderungen zu sehen
           router.reload();
+        },
+        onError: (errors: object) => {
+          console.error("Fehler beim Erstellen:", errors);
         }
       });
     }
@@ -244,13 +273,7 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
 
   const featuresWithCommonVotes = features.filter(feature => feature.commonvotes && feature.commonvotes.length > 0);
   
-  // Commitment-Typen für das Formular
-  const commitmentTypes = [
-    { value: 'A', label: 'Typ A - Hohe Priorität & Dringlichkeit' },
-    { value: 'B', label: 'Typ B - Hohe Priorität, geringe Dringlichkeit' },
-    { value: 'C', label: 'Typ C - Geringe Priorität, hohe Dringlichkeit' },
-    { value: 'D', label: 'Typ D - Geringe Priorität & Dringlichkeit' },
-  ];
+  // Commitments-Typen sind jetzt in der CommitmentModal-Komponente definiert
   const voteTypes = ["BusinessValue", "TimeCriticality", "RiskOpportunity"];
 
   // Min/Max für jeden Typ berechnen
@@ -367,81 +390,20 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
       </Card>
       
       {/* Modal für das Erstellen oder Bearbeiten eines Commitments */}
-      <Dialog open={modalOpen} onOpenChange={(open) => !open && handleCloseModal()}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>
-              {isEditing ? 'Commitment bearbeiten' : 'Neues Commitment erstellen'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <form onSubmit={handleSubmitCommitment} className="space-y-4 mt-4">
-            {selectedFeature && (
-              <div>
-                <Label className="text-sm font-semibold mb-1">Feature</Label>
-                <div className="p-2 border rounded-md bg-gray-50">
-                  {selectedFeature.jira_key}: {selectedFeature.name}
-                </div>
-              </div>
-            )}
-            
-            <div className="space-y-1">
-              <Label htmlFor="commitment_type">Commitment-Typ</Label>
-              <Select 
-                name="commitment_type"
-                value={data.commitment_type} 
-                onValueChange={(value) => setData({...data, commitment_type: value})}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Commitment-Typ wählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  {commitmentTypes.map(type => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.commitment_type && (
-                <p className="text-sm text-red-600 mt-1">{errors.commitment_type}</p>
-              )}
-            </div>
-
-            {isEditing && (
-              <div className="space-y-1">
-                <Label htmlFor="status">Status</Label>
-                <Select 
-                  name="status"
-                  value={data.status} 
-                  onValueChange={(value) => setData({...data, status: value})}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Status wählen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="suggested">Vorschlag</SelectItem>
-                    <SelectItem value="accepted">Angenommen</SelectItem>
-                    <SelectItem value="completed">Erledigt</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.status && (
-                  <p className="text-sm text-red-600 mt-1">{errors.status}</p>
-                )}
-              </div>
-            )}
-            
-            <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={handleCloseModal}>
-                Abbrechen
-              </Button>
-              <Button type="submit" disabled={processing || !data.commitment_type}>
-                {processing ? 'Wird gespeichert...' : isEditing ? 'Commitment aktualisieren' : 'Commitment erstellen'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <CommitmentModal
+        isOpen={modalOpen}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmitCommitment}
+        selectedFeature={selectedFeature}
+        selectedCommitment={selectedCommitment}
+        isEditing={isEditing}
+        data={data}
+        setData={(newData) => setData({...data, ...newData})}
+        processing={processing}
+        errors={errors}
+        currentStatus={currentStatus || undefined}
+        possibleTransitions={possibleTransitions}
+      />
     </>
   );
 };
