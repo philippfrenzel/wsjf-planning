@@ -47,10 +47,10 @@ interface PlanningCommitmentsProps {
 
 function getCommitmentTypeBadge(type: string) {
   const classes = {
-    A: "bg-red-100 text-red-800",
-    B: "bg-blue-100 text-blue-800",
-    C: "bg-yellow-100 text-yellow-800",
-    D: "bg-green-100 text-green-800",
+    D: "bg-red-100 text-red-800",
+    C: "bg-blue-100 text-blue-800",
+    B: "bg-yellow-100 text-yellow-800",
+    A: "bg-green-100 text-green-800",
   };
   
   return classes[type as keyof typeof classes] || "bg-gray-100 text-gray-800";

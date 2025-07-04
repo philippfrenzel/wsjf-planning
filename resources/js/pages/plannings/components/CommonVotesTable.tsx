@@ -43,6 +43,8 @@ interface Commitment {
   id: number;
   user_id: number;
   user: User;
+  planning_id?: number;
+  feature_id?: number;
   commitment_type: string; // A, B, C, D
   status_details?: StatusDetails;
 }
@@ -77,10 +79,10 @@ function getScoreBadgeClass(value: number, min: number, max: number): string {
 
 function getCommitmentTypeBadgeClass(type: string): string {
   const classes: {[key: string]: string} = {
-    'A': "bg-red-100 text-red-800",
-    'B': "bg-blue-100 text-blue-800",
-    'C': "bg-yellow-100 text-yellow-800",
-    'D': "bg-green-100 text-green-800",
+    'D': "bg-red-100 text-red-800",
+    'C': "bg-blue-100 text-blue-800",
+    'B': "bg-yellow-100 text-yellow-800",
+    'A': "bg-green-100 text-green-800",
   };
   return classes[type] || "bg-gray-100 text-gray-800";
 }
@@ -107,9 +109,11 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
   const [sort, setSort] = useState<{type: string, direction: 'asc'|'desc'} | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
+  const [selectedCommitment, setSelectedCommitment] = useState<Commitment | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
-  // Form für das neue Commitment
-  const { data, setData, post, processing, errors, reset } = useForm({
+  // Form für das neue oder zu bearbeitende Commitment
+  const { data, setData, post, put, processing, errors, reset } = useForm({
     planning_id: planningId.toString(),
     feature_id: "",
     commitment_type: "",
@@ -130,6 +134,8 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
   // Handler zum Öffnen des Modals für ein neues Commitment
   const handleOpenCommitmentModal = (feature: Feature) => {
     setSelectedFeature(feature);
+    setSelectedCommitment(null);
+    setIsEditing(false);
     setData({
       planning_id: planningId.toString(),
       feature_id: feature.id.toString(),
@@ -139,23 +145,52 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
     setModalOpen(true);
   };
   
+  // Handler zum Öffnen des Modals für die Bearbeitung eines Commitments
+  const handleEditCommitmentModal = (feature: Feature, commitment: Commitment) => {
+    setSelectedFeature(feature);
+    setSelectedCommitment(commitment);
+    setIsEditing(true);
+    setData({
+      planning_id: planningId.toString(),
+      feature_id: feature.id.toString(),
+      commitment_type: commitment.commitment_type,
+      status: commitment.status_details?.value || "suggested"
+    });
+    setModalOpen(true);
+  };
+  
   // Handler zum Schließen des Modals
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedFeature(null);
+    setSelectedCommitment(null);
+    setIsEditing(false);
     reset();
   };
   
   // Handler zum Absenden des Formulars
   const handleSubmitCommitment = (e: React.FormEvent) => {
     e.preventDefault();
-    post(route("commitments.store"), {
-      onSuccess: () => {
-        handleCloseModal();
-        // Seite neu laden, um die Änderungen zu sehen
-        router.reload();
-      }
-    });
+    
+    if (isEditing && selectedCommitment) {
+      // Update-Pfad für existierendes Commitment
+      put(route("commitments.update", { commitment: selectedCommitment.id }), {
+        onSuccess: () => {
+          handleCloseModal();
+          // Seite neu laden, um die Änderungen zu sehen
+          router.reload();
+        }
+      });
+    } else {
+      // Create-Pfad für neues Commitment
+      post(route("commitments.store"), {
+        onSuccess: () => {
+          handleCloseModal();
+          // Seite neu laden, um die Änderungen zu sehen
+          router.reload();
+        }
+      });
+    }
   };
 
   // Handler für manuelles Anstoßen der Common Votes Berechnung
@@ -294,7 +329,10 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
                       })}
                       <TableCell>
                         {feature.commitments && feature.commitments.length > 0 ? (
-                          <Badge className={getCommitmentTypeBadgeClass(feature.commitments[0].commitment_type)}>
+                          <Badge 
+                            className={`${getCommitmentTypeBadgeClass(feature.commitments[0].commitment_type)} cursor-pointer hover:opacity-80`} 
+                            onClick={() => feature.commitments && handleEditCommitmentModal(feature, feature.commitments[0])}
+                          >
                             {getCommitmentTypeLabel(feature.commitments[0].commitment_type)}
                           </Badge>
                         ) : (
@@ -311,7 +349,10 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
                       </TableCell>
                       <TableCell>
                         {feature.commitments && feature.commitments.length > 0 && feature.commitments[0].status_details ? (
-                          <Badge className={feature.commitments[0].status_details.color}>
+                          <Badge 
+                            className={`${feature.commitments[0].status_details.color} cursor-pointer hover:opacity-80`}
+                            onClick={() => feature.commitments && handleEditCommitmentModal(feature, feature.commitments[0])}
+                          >
                             {feature.commitments[0].status_details.name}
                           </Badge>
                         ) : "-"}
@@ -325,11 +366,13 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
         )}
       </Card>
       
-      {/* Modal für das Erstellen eines Commitments */}
+      {/* Modal für das Erstellen oder Bearbeiten eines Commitments */}
       <Dialog open={modalOpen} onOpenChange={(open) => !open && handleCloseModal()}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Neues Commitment erstellen</DialogTitle>
+            <DialogTitle>
+              {isEditing ? 'Commitment bearbeiten' : 'Neues Commitment erstellen'}
+            </DialogTitle>
           </DialogHeader>
           
           <form onSubmit={handleSubmitCommitment} className="space-y-4 mt-4">
@@ -364,13 +407,36 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
                 <p className="text-sm text-red-600 mt-1">{errors.commitment_type}</p>
               )}
             </div>
+
+            {isEditing && (
+              <div className="space-y-1">
+                <Label htmlFor="status">Status</Label>
+                <Select 
+                  name="status"
+                  value={data.status} 
+                  onValueChange={(value) => setData({...data, status: value})}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Status wählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="suggested">Vorschlag</SelectItem>
+                    <SelectItem value="accepted">Angenommen</SelectItem>
+                    <SelectItem value="completed">Erledigt</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.status && (
+                  <p className="text-sm text-red-600 mt-1">{errors.status}</p>
+                )}
+              </div>
+            )}
             
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={handleCloseModal}>
                 Abbrechen
               </Button>
               <Button type="submit" disabled={processing || !data.commitment_type}>
-                {processing ? 'Wird gespeichert...' : 'Commitment erstellen'}
+                {processing ? 'Wird gespeichert...' : isEditing ? 'Commitment aktualisieren' : 'Commitment erstellen'}
               </Button>
             </DialogFooter>
           </form>
