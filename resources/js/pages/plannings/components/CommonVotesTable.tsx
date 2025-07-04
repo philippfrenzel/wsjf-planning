@@ -75,10 +75,10 @@ function getCommitmentTypeBadgeClass(type: string): string {
 
 function getCommitmentTypeLabel(type: string): string {
   const labels: {[key: string]: string} = {
-    'A': "Typ A",
-    'B': "Typ B",
-    'C': "Typ C",
-    'D': "Typ D",
+    'A': 'Typ A - Hohe Priorität & Dringlichkeit',
+    'B': 'Typ B - Hohe Priorität, geringe Dringlichkeit',
+    'C': 'Typ C - Geringe Priorität, hohe Dringlichkeit',
+    'D': 'Typ D - Geringe Priorität & Dringlichkeit',
   };
   return labels[type] || type;
 }
@@ -198,11 +198,13 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
         user_id: selectedCommitment.user_id, // Wichtig: user_id muss für das Update mitgesendet werden
       };
       
-      // Verwendung des inertia useForm-Hooks
+      // Inertia-Router für das Update verwenden
       router.put(route("commitments.update", { commitment: selectedCommitment.id }), updateData, {
+        preserveState: true,
         onSuccess: () => {
           handleCloseModal();
-          router.reload();
+          // Direkt zur Planning-Show-Seite navigieren
+          router.get(route("plannings.show", { planning: planningId }));
         },
         onError: (errors: object) => {
           console.error("Fehler beim Aktualisieren:", errors);
@@ -210,10 +212,13 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
       });
     } else {
       // Create-Pfad für neues Commitment
+      // Inertia-Router für die Erstellung verwenden
       router.post(route("commitments.store"), data, {
+        preserveState: true,
         onSuccess: () => {
           handleCloseModal();
-          router.reload();
+          // Direkt zur Planning-Show-Seite navigieren
+          router.get(route("plannings.show", { planning: planningId }));
         },
         onError: (errors: object) => {
           console.error("Fehler beim Erstellen:", errors);
