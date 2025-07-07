@@ -10,6 +10,8 @@ use App\Http\Controllers\VoteController;
 use App\Http\Controllers\EstimationComponentController;
 use App\Http\Controllers\EstimationController;
 use App\Http\Controllers\CommitmentController;
+use App\Http\Controllers\PlanController;
+use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -74,6 +76,12 @@ Route::get('/admin/users', [UserController::class, 'index'])->name('users.index'
 
 Route::post('plannings/{planning}/recalculate-commonvotes', [PlanningController::class, 'recalculateCommonVotes'])
     ->name('plannings.recalculate-commonvotes');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('plans', PlanController::class)->only(['index', 'create', 'store']);
+    Route::get('subscribe', [SubscriptionController::class, 'create'])->name('subscriptions.create');
+    Route::post('subscribe', [SubscriptionController::class, 'store'])->name('subscriptions.store');
+});
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
