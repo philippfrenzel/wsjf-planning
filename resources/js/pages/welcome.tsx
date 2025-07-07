@@ -10,8 +10,9 @@ export default function Welcome() {
     return (
         <>
             <Head title={t('hero_title')}>
-                <link rel="preconnect" href="https://fonts.bunny.net" />
-                <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
             </Head>
             <div className="flex min-h-screen w-full flex-col items-center bg-[#fff4e6] text-[#1b1b18] lg:justify-start lg:p-8 dark:bg-[#2d1a06]">
                 <header className="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl">
@@ -51,16 +52,16 @@ export default function Welcome() {
                 </header>
 
                 <section
-                    className="relative mt-8 flex w-full flex-col items-center overflow-hidden bg-white py-12 text-center lg:mt-20 dark:bg-[#23201b]"
+                    className="relative mt-8 flex w-full flex-col items-center overflow-hidden bg-white py-16 text-center lg:mt-20 dark:bg-[#23201b]"
                     style={{
                         backgroundImage: "url('/gfx/wsjf_planning_teaser.png')",
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                     }}
                 >
-                    <div className="pointer-events-none absolute inset-0 bg-white/80 dark:bg-[#23201b]/80" />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-orange-100/80 via-white/90 to-white/80 dark:from-[#23201b] dark:via-[#23201b]/90 dark:to-[#23201b]/80" />
                     <div className="relative z-10 flex w-full flex-col items-center">
-                        <h1 className="mb-4 text-4xl font-bold" dangerouslySetInnerHTML={{ __html: t('hero_title') }} />
+                        <h1 className="mb-4 text-5xl font-bold" dangerouslySetInnerHTML={{ __html: t('hero_title') }} />
                         <p
                             className="mb-6 max-w-xl text-lg text-[#1b1b18] dark:text-[#EDEDEC]"
                             dangerouslySetInnerHTML={{ __html: t('hero_subtitle') }}
