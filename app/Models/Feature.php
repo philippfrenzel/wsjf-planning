@@ -82,4 +82,12 @@ class Feature extends Model
                 }
             });
     }
+
+    /**
+     * Die Commitments für dieses Feature.
+     */
+    public function commitments(): HasMany
+    {
+        return $this->hasMany(Commitment::class);
+    }
 }

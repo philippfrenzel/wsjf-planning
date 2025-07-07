@@ -6,8 +6,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronRight } from "lucide-react";
-// StakeholderTable Komponente importieren
-import StakeholderTable from "./components/StakeholderTable";
 import PlanningDetailsCard from "./components/PlanningDetailsCard";
 
 // Interface für Stakeholder anpassen (mit votes_count)
@@ -42,6 +40,17 @@ interface Feature {
   project_id: number;
   votes?: Vote[];
   commonvotes?: Vote[]; // Vom Controller dediziert geladene Common Votes
+  commitments?: {
+    id: number;
+    commitment_type: string;
+    user_id: number;
+    user: User;
+    status_details?: {
+      value: string;
+      name: string;
+      color: string;
+    }
+  }[];
 }
 
 interface Planning {

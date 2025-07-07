@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Planning extends Model
 {
@@ -71,5 +72,13 @@ class Planning extends Model
     {
         return $this->belongsToMany(Feature::class, 'feature_planning', 'planning_id', 'feature_id')
             ->withTimestamps();
+    }
+
+    /**
+     * Ein Planning kann mehrere Commitments haben.
+     */
+    public function commitments(): HasMany
+    {
+        return $this->hasMany(Commitment::class);
     }
 }

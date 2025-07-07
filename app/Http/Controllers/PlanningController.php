@@ -90,6 +90,10 @@ class PlanningController extends Controller
             },
             'features.votes.user:id,name',
             'features.commonvotes',
+            'features.commitments' => function ($query) use ($planning) {
+                $query->where('planning_id', $planning->id);
+            },
+            'features.commitments.user:id,name',
         ]);
 
         // Stakeholder (User) mit ihrer Stimmenanzahl in der aktuellen Planning-Session laden
@@ -179,7 +183,7 @@ class PlanningController extends Controller
     public function adminPlannings()
     {
         // Nur Admins erlauben
-        if (!auth()->user()) { //  || !auth()->user()->roles()->where('name', 'admin')->exists()
+        if (!Auth::check()) { //  || !auth()->user()->roles()->where('name', 'admin')->exists()
             abort(403);
         }
         $plannings = Planning::with(['project:id,name', 'creator:id,name', 'owner:id,name', 'deputy:id,name'])->get();
@@ -195,7 +199,7 @@ class PlanningController extends Controller
      */
     public function setCreator(Request $request, Planning $planning)
     {
-        if (!auth()->user()) { // || !auth()->user()->roles()->where('name', 'admin')->exists()
+        if (!Auth::check()) { // || !auth()->user()->roles()->where('name', 'admin')->exists()
             abort(403);
         }
         $request->validate([

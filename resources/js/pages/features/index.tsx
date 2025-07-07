@@ -489,7 +489,7 @@ export default function Index({ features }: IndexProps) {
                     {getSortIcon("requester")}
                   </span>
                 </TableHead>
-                <TableHead>Aktionen</TableHead>
+                <TableHead className="text-right">Aktionen</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -548,7 +548,7 @@ export default function Index({ features }: IndexProps) {
                       {feature.requester?.name || '-'}
                     </TableCell>
                     {/* Aktionen */}
-                    <TableCell className="flex gap-2">
+                    <TableCell className="flex gap-2 justify-right">
                       <Button asChild size="icon" variant="outline">
                         <Link href={route("features.show", { feature: feature.id })}>
                           <Eye className="w-4 h-4" />

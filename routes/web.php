@@ -9,6 +9,7 @@ use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\EstimationComponentController;
 use App\Http\Controllers\EstimationController;
+use App\Http\Controllers\CommitmentController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -55,7 +56,16 @@ Route::resource('plannings', PlanningController::class);
 Route::resource('features', FeatureController::class);
 Route::resources([
     'votes' => VoteController::class,
+    'commitments' => CommitmentController::class,
 ]);
+
+// Zusätzliche Commitment-Routen
+Route::get('plannings/{planning}/commitments', [CommitmentController::class, 'planningCommitments'])
+    ->name('plannings.commitments');
+
+// API-Route zum Laden von Features für ein Planning
+Route::post('api/planning-features', [CommitmentController::class, 'getFeaturesForPlanning'])
+    ->name('api.planning-features');
 
 //Route::group(['middleware' => ['role:admin']], function () {
 Route::get('/admin/users', [UserController::class, 'index'])->name('users.index');

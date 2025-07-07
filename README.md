@@ -21,6 +21,35 @@ Diese Anwendung ermöglicht es Teams, Planungszyklen zu organisieren, Aufwände 
     git clone [repository-url]
     ```
 
+2. Installieren Sie die PHP-Abhängigkeiten:
+    ```bash
+    composer install
+    ```
+
+3. Installieren Sie die JavaScript-Abhängigkeiten:
+    ```bash
+    npm install
+    ```
+
+4. Starten Sie den Laravel-Server:
+    ```bash
+    php artisan serve
+    ```
+
+5. Starten Sie die Frontend-Entwicklung:
+    ```bash
+    npm run dev
+    ```
+
+## Tests
+
+Tests können über die PHP- oder JavaScript-Werkzeuge ausgeführt werden:
+```bash
+composer test
+# oder
+npm run test:e2e
+```
+
 Technologien
 Backend: Laravel (PHP)
 Frontend: React 19, TypeScript, Inertia.js

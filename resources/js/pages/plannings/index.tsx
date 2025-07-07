@@ -293,7 +293,7 @@ export default function Index({ plannings }: IndexProps) {
                 <TableHead>Projekt</TableHead>
                 <TableHead>Geplant am</TableHead>
                 <TableHead>Durchgeführt am</TableHead>
-                <TableHead>Aktionen</TableHead>
+                <TableHead className="text-right">Aktionen</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -323,7 +323,7 @@ export default function Index({ plannings }: IndexProps) {
                     <TableCell>{planning.project?.name ?? "-"}</TableCell>
                     <TableCell>{formatDate(planning.planned_at)}</TableCell>
                     <TableCell>{formatDate(planning.executed_at)}</TableCell>
-                    <TableCell className="flex gap-2">
+                    <TableCell className="flex gap-2 justify-right">
                       {/* Ansichts-Button für alle Benutzer */}
                       <Button asChild size="icon" variant="outline">
                         <Link href={route("plannings.show", planning)}>

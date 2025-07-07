@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableRow } from "@/components/ui/table";
 import StakeholderTable from "./StakeholderTable";
@@ -21,12 +21,34 @@ interface Project {
   name: string;
 }
 
+interface Vote {
+  user_id: number;
+  user: User;
+  type: string;
+  value: number;
+}
+
+interface StatusDetails {
+  value: string;
+  name: string;
+  color: string;
+}
+
+interface Commitment {
+  id: number;
+  user_id: number;
+  user: User;
+  commitment_type: string; // A, B, C, D
+  status_details?: StatusDetails;
+}
+
 interface Feature {
   id: number;
   jira_key: string;
   name: string;
   project_id: number;
-  commonvotes?: any[];
+  commonvotes?: Vote[];
+  commitments?: Commitment[];
 }
 
 interface Planning {
@@ -47,7 +69,6 @@ interface PlanningDetailsCardProps {
 }
 
 const PlanningDetailsCard: React.FC<PlanningDetailsCardProps> = ({ planning, stakeholders }) => {
-  const [open, setOpen] = useState(true);
 
   return (
     <Card className="w-full">
