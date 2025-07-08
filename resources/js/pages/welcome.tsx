@@ -4,8 +4,8 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { BarChart3, CalendarCheck2, Gauge, Users } from 'lucide-react';
 
 export default function Welcome() {
-    const { auth, locale } = usePage<SharedData>().props;
-    const { t, setLocale } = useTranslation();
+    const { auth } = usePage<SharedData>().props;
+    const { t, locale, setLocale } = useTranslation();
 
     return (
         <>
@@ -14,45 +14,49 @@ export default function Welcome() {
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
             </Head>
-            <div className="flex min-h-screen w-full flex-col items-center bg-[#fff4e6] text-[#1b1b18] lg:justify-start lg:p-8 dark:bg-[#2d1a06]">
-                <header className="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl">
-                    <nav className="flex items-center justify-end gap-4">
-                        {auth.user ? (
-                            <Link
-                                href={route('dashboard')}
-                                className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+            <div className="flex min-h-screen w-full flex-col items-center bg-[#bff04b] text-[#1b1b18] dark:bg-[#1e1e1e]">
+                {/* Schwarze Navigationsleiste */}
+                <header className="w-full bg-black text-white py-4">
+                    <div className="max-w-[335px] mx-auto lg:max-w-4xl px-4">
+                        <nav className="flex items-center justify-end gap-4 text-sm">
+                            {auth.user ? (
+                                <Link
+                                    href={route('dashboard')}
+                                    className="inline-block rounded-sm border border-[#ffffff35] px-5 py-1.5 text-sm leading-normal text-white hover:border-[#ffffff4a] hover:bg-[#ffffff10]"
+                                >
+                                    {t('dashboard')}
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link
+                                        href={route('login')}
+                                        className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-white hover:border-[#ffffff35] hover:bg-[#ffffff10]"
+                                    >
+                                        {t('login')}
+                                    </Link>
+                                    <Link
+                                        href={route('register')}
+                                        className="inline-block rounded-sm border border-[#ffffff35] px-5 py-1.5 text-sm leading-normal text-white hover:border-[#ffffff4a] hover:bg-[#ffffff10]"
+                                    >
+                                        {t('register')}
+                                    </Link>
+                                </>
+                            )}
+                            <select
+                                value={locale}
+                                onChange={(e) => setLocale(e.target.value as 'en' | 'de')}
+                                className="ml-4 rounded-sm border border-[#ffffff35] px-2 py-1 text-sm bg-black text-white"
                             >
-                                {t('dashboard')}
-                            </Link>
-                        ) : (
-                            <>
-                                <Link
-                                    href={route('login')}
-                                    className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
-                                >
-                                    {t('login')}
-                                </Link>
-                                <Link
-                                    href={route('register')}
-                                    className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
-                                >
-                                    {t('register')}
-                                </Link>
-                            </>
-                        )}
-                        <select
-                            value={locale}
-                            onChange={(e) => setLocale(e.target.value as 'en' | 'de')}
-                            className="ml-4 rounded-sm border border-[#19140035] px-2 py-1 text-sm dark:border-[#3E3E3A] dark:bg-transparent"
-                        >
-                            <option value="en">EN</option>
-                            <option value="de">DE</option>
-                        </select>
-                    </nav>
+                                <option value="en">EN</option>
+                                <option value="de">DE</option>
+                            </select>
+                        </nav>
+                    </div>
                 </header>
 
+                {/* Hero-Section - volle Breite, direkt unter der Navigationsleiste */}
                 <section
-                    className="relative mt-8 flex w-full flex-col items-center overflow-hidden bg-white py-16 text-center lg:mt-20 dark:bg-[#23201b]"
+                    className="relative flex w-full flex-col items-center overflow-hidden bg-white py-16 text-center"
                     style={{
                         backgroundImage: "url('/gfx/wsjf_planning_teaser.png')",
                         backgroundSize: 'cover',
@@ -83,8 +87,11 @@ export default function Welcome() {
                         )}
                     </div>
                 </section>
-
-                <section className="mt-12 w-full max-w-4xl text-center text-[#1b1b18] dark:text-[#EDEDEC]">
+                  
+                {/* Container für den restlichen Inhalt mit begrenzter Breite */}
+                <div className="w-full max-w-[335px] mx-auto lg:max-w-4xl px-4 py-8">
+                   {/* Features-Liste */}
+                <section className="w-full text-center text-[#1b1b18] dark:text-[#EDEDEC]">
                     <h2 className="mb-4 text-2xl font-semibold">{t('features_title')}</h2>
                     <ul className="mx-auto max-w-xl list-disc space-y-1 text-left text-sm text-[#706f6c] dark:text-[#A1A09A]">
                         {(t('features') as string[]).map((item) => (
@@ -92,88 +99,128 @@ export default function Welcome() {
                         ))}
                     </ul>
                 </section>
+                </div>
 
-                <section className="mt-16 grid w-full max-w-4xl grid-cols-1 gap-12 text-center md:grid-cols-4">
-                    <div className="flex flex-col items-center">
-                        <Gauge className="mb-4 h-10 w-10 text-orange-500" />
-                        <h3 className="text-lg font-semibold">{t('grid_wsjf_title')}</h3>
-                        <p className="text-sm text-[#706f6c] dark:text-[#A1A09A]">{t('grid_wsjf_text')}</p>
-                    </div>
-                    <div className="flex flex-col items-center">
-                        <CalendarCheck2 className="mb-4 h-10 w-10 text-orange-500" />
-                        <h3 className="text-lg font-semibold">{t('grid_sprint_title')}</h3>
-                        <p className="text-sm text-[#706f6c] dark:text-[#A1A09A]">{t('grid_sprint_text')}</p>
-                    </div>
-                    <div className="flex flex-col items-center">
-                        <Users className="mb-4 h-10 w-10 text-orange-500" />
-                        <h3 className="text-lg font-semibold">{t('grid_collab_title')}</h3>
-                        <p className="text-sm text-[#706f6c] dark:text-[#A1A09A]">{t('grid_collab_text')}</p>
-                    </div>
-                    <div className="flex flex-col items-center">
-                        <BarChart3 className="mb-4 h-10 w-10 text-orange-500" />
-                        <h3 className="text-lg font-semibold">{t('grid_reports_title')}</h3>
-                        <p className="text-sm text-[#706f6c] dark:text-[#A1A09A]">{t('grid_reports_text')}</p>
-                    </div>
-                </section>
-
-                <section className="mt-16 w-full max-w-4xl space-y-12 text-[#1b1b18] dark:text-[#EDEDEC]">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-start">
-                        <Gauge className="mx-auto h-12 w-12 text-orange-500 md:mx-0" />
-                        <div>
-                            <h2 className="text-2xl font-semibold">{t('section_wsjf_title')}</h2>
-                            <p
-                                className="mb-2 text-sm text-[#706f6c] dark:text-[#A1A09A]"
-                                dangerouslySetInnerHTML={{ __html: t('section_wsjf_text') }}
-                            />
-                            <ul className="list-disc space-y-1 pl-5 text-sm text-[#706f6c] dark:text-[#A1A09A]">
-                                {(t('section_wsjf_points') as string[]).map((p) => (
-                                    <li key={p}>{p}</li>
-                                ))}
-                            </ul>
+                {/* 4-Spalten Feature-Grid über die ganze Breite */}
+                <section className="mt-16 w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-4 w-full">
+                        <div className="flex flex-col items-center py-12 px-6 bg-[#a1d933] dark:bg-[#283618] text-center transition-all hover:shadow-lg hover:translate-y-[-4px]">
+                            <Gauge className="mb-4 h-14 w-14 text-orange-500" />
+                            <h3 className="text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">{t('grid_wsjf_title')}</h3>
+                            <p className="text-sm text-[#2b3313] dark:text-[#BFC8A1] max-w-xs mx-auto">{t('grid_wsjf_text')}</p>
                         </div>
-                    </div>
-
-                    <div className="flex flex-col gap-4 md:flex-row md:items-start">
-                        <CalendarCheck2 className="mx-auto h-12 w-12 text-orange-500 md:mx-0" />
-                        <div>
-                            <h2 className="text-2xl font-semibold">{t('section_sprint_title')}</h2>
-                            <p className="mb-2 text-sm text-[#706f6c] dark:text-[#A1A09A]">{t('section_sprint_text')}</p>
-                            <ul className="list-disc space-y-1 pl-5 text-sm text-[#706f6c] dark:text-[#A1A09A]">
-                                {(t('section_sprint_points') as string[]).map((p) => (
-                                    <li key={p}>{p}</li>
-                                ))}
-                            </ul>
+                        <div className="flex flex-col items-center py-12 px-6 bg-[#b9e45a] dark:bg-[#3a4a1c] text-center transition-all hover:shadow-lg hover:translate-y-[-4px]">
+                            <CalendarCheck2 className="mb-4 h-14 w-14 text-orange-500" />
+                            <h3 className="text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">{t('grid_sprint_title')}</h3>
+                            <p className="text-sm text-[#2b3313] dark:text-[#BFC8A1] max-w-xs mx-auto">{t('grid_sprint_text')}</p>
                         </div>
-                    </div>
-
-                    <div className="flex flex-col gap-4 md:flex-row md:items-start">
-                        <Users className="mx-auto h-12 w-12 text-orange-500 md:mx-0" />
-                        <div>
-                            <h2 className="text-2xl font-semibold">{t('section_collab_title')}</h2>
-                            <p className="mb-2 text-sm text-[#706f6c] dark:text-[#A1A09A]">{t('section_collab_text')}</p>
-                            <ul className="list-disc space-y-1 pl-5 text-sm text-[#706f6c] dark:text-[#A1A09A]">
-                                {(t('section_collab_points') as string[]).map((p) => (
-                                    <li key={p}>{p}</li>
-                                ))}
-                            </ul>
+                        <div className="flex flex-col items-center py-12 px-6 bg-[#d1ee85] dark:bg-[#4c5e26] text-center transition-all hover:shadow-lg hover:translate-y-[-4px]">
+                            <Users className="mb-4 h-14 w-14 text-orange-500" />
+                            <h3 className="text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">{t('grid_collab_title')}</h3>
+                            <p className="text-sm text-[#2b3313] dark:text-[#BFC8A1] max-w-xs mx-auto">{t('grid_collab_text')}</p>
                         </div>
-                    </div>
-
-                    <div className="flex flex-col gap-4 md:flex-row md:items-start">
-                        <BarChart3 className="mx-auto h-12 w-12 text-orange-500 md:mx-0" />
-                        <div>
-                            <h2 className="text-2xl font-semibold">{t('section_report_title')}</h2>
-                            <p className="mb-2 text-sm text-[#706f6c] dark:text-[#A1A09A]">{t('section_report_text')}</p>
-                            <ul className="list-disc space-y-1 pl-5 text-sm text-[#706f6c] dark:text-[#A1A09A]">
-                                {(t('section_report_points') as string[]).map((p) => (
-                                    <li key={p}>{p}</li>
-                                ))}
-                            </ul>
+                        <div className="flex flex-col items-center py-12 px-6 bg-[#e9f7b7] dark:bg-[#5e7230] text-center transition-all hover:shadow-lg hover:translate-y-[-4px]">
+                            <BarChart3 className="mb-4 h-14 w-14 text-orange-500" />
+                            <h3 className="text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">{t('grid_reports_title')}</h3>
+                            <p className="text-sm text-[#2b3313] dark:text-[#BFC8A1] max-w-xs mx-auto">{t('grid_reports_text')}</p>
                         </div>
                     </div>
                 </section>
+                
+                <div className="w-full max-w-[335px] mx-auto lg:max-w-4xl px-4 py-8">
 
-                <section className="mt-16 w-full max-w-4xl text-center text-[#1b1b18] dark:text-[#EDEDEC]">
+                {/* Detaillierte Funktionsbeschreibungen */}
+                <section className="mt-16 w-full text-[#1b1b18] dark:text-[#EDEDEC]">
+                    {/* WSJF Planning - Linke Spalte farbig */}
+                    <div className="w-full flex flex-col md:flex-row">
+                        <div className="w-full md:w-1/2 bg-[#a1d933] dark:bg-[#283618] p-8 flex flex-col justify-center items-center md:items-end">
+                            <div className="max-w-md">
+                                <Gauge className="mb-6 h-16 w-16 text-orange-500" />
+                                <h2 className="text-3xl font-semibold mb-4">{t('section_wsjf_title')}</h2>
+                                <p
+                                    className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]"
+                                    dangerouslySetInnerHTML={{ __html: t('section_wsjf_text') }}
+                                />
+                            </div>
+                        </div>
+                        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center items-center md:items-start">
+                            <div className="max-w-md">
+                                <h3 className="text-xl font-semibold mb-3">{t('Key Features')}</h3>
+                                <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
+                                    {(t('section_wsjf_points') as string[]).map((p) => (
+                                        <li key={p}>{p}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Sprint Planning - Rechte Spalte farbig */}
+                    <div className="w-full flex flex-col md:flex-row">
+                        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center items-center md:items-end order-1 md:order-none">
+                            <div className="max-w-md">
+                                <h3 className="text-xl font-semibold mb-3">{t('Key Features')}</h3>
+                                <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
+                                    {(t('section_sprint_points') as string[]).map((p) => (
+                                        <li key={p}>{p}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="w-full md:w-1/2 bg-[#b9e45a] dark:bg-[#3a4a1c] p-8 flex flex-col justify-center items-center md:items-start order-none md:order-1">
+                            <div className="max-w-md">
+                                <CalendarCheck2 className="mb-6 h-16 w-16 text-orange-500" />
+                                <h2 className="text-3xl font-semibold mb-4">{t('section_sprint_title')}</h2>
+                                <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_sprint_text')}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Collaboration - Linke Spalte farbig */}
+                    <div className="w-full flex flex-col md:flex-row">
+                        <div className="w-full md:w-1/2 bg-[#d1ee85] dark:bg-[#4c5e26] p-8 flex flex-col justify-center items-center md:items-end">
+                            <div className="max-w-md">
+                                <Users className="mb-6 h-16 w-16 text-orange-500" />
+                                <h2 className="text-3xl font-semibold mb-4">{t('section_collab_title')}</h2>
+                                <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_collab_text')}</p>
+                            </div>
+                        </div>
+                        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center items-center md:items-start">
+                            <div className="max-w-md">
+                                <h3 className="text-xl font-semibold mb-3">{t('Key Features')}</h3>
+                                <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
+                                    {(t('section_collab_points') as string[]).map((p) => (
+                                        <li key={p}>{p}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Reports - Rechte Spalte farbig */}
+                    <div className="w-full flex flex-col md:flex-row">
+                        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center items-center md:items-end order-1 md:order-none">
+                            <div className="max-w-md">
+                                <h3 className="text-xl font-semibold mb-3">{t('Key Features')}</h3>
+                                <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
+                                    {(t('section_report_points') as string[]).map((p) => (
+                                        <li key={p}>{p}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="w-full md:w-1/2 bg-[#e9f7b7] dark:bg-[#5e7230] p-8 flex flex-col justify-center items-center md:items-start order-none md:order-1">
+                            <div className="max-w-md">
+                                <BarChart3 className="mb-6 h-16 w-16 text-orange-500" />
+                                <h2 className="text-3xl font-semibold mb-4">{t('section_report_title')}</h2>
+                                <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_report_text')}</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Getting Started */}
+                <section className="mt-16 w-full text-center text-[#1b1b18] dark:text-[#EDEDEC]">
                     <h2 className="mb-4 text-2xl font-semibold">{t('getting_started_title')}</h2>
                     <p className="mx-auto mb-6 max-w-xl text-sm text-[#706f6c] dark:text-[#A1A09A]">{t('getting_started_subtitle')}</p>
                     <ol className="mx-auto max-w-xl list-decimal space-y-1 text-left text-sm text-[#706f6c] dark:text-[#A1A09A]">
@@ -188,8 +235,14 @@ export default function Welcome() {
                         {t('getting_started_cta')}
                     </Link>
                 </section>
-
-                <div className="hidden h-14.5 lg:block"></div>
+                </div>
+                
+                {/* Footer-Bereich */}
+                <div className="w-full bg-black text-white py-8 mt-auto">
+                    <div className="max-w-[335px] mx-auto lg:max-w-4xl px-4 text-center text-xs">
+                        © {new Date().getFullYear()} WSJF Planning Tool
+                    </div>
+                </div>
             </div>
         </>
     );
