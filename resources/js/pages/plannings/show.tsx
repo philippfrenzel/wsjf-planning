@@ -38,6 +38,11 @@ interface Feature {
   jira_key: string;
   name: string;
   project_id: number;
+  project?: {
+    id: number;
+    name: string;
+    jira_base_uri?: string;
+  };
   votes?: Vote[];
   commonvotes?: Vote[]; // Vom Controller dediziert geladene Common Votes
   commitments?: {
