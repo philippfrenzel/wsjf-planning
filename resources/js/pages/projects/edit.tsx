@@ -19,6 +19,7 @@ interface Project {
   project_number: string;
   name: string;
   description: string;
+  jira_base_uri: string;
   start_date: string;
   end_date: string;
   status: string;
@@ -26,23 +27,46 @@ interface Project {
   deputy_leader_id: string;
 }
 
+interface StatusOption {
+  value: string;
+  label: string;
+  color: string;
+  current: boolean;
+}
+
+interface CurrentStatus {
+  name: string;
+  color: string;
+}
+
 interface EditProps {
   project: Project;
   users: User[];
+  currentStatus: CurrentStatus;
+  statusOptions: StatusOption[];
 }
 
-export default function Edit({ project, users }: EditProps) {
+export default function Edit({ project, users, currentStatus, statusOptions }: EditProps) {
   const { errors } = usePage().props as { errors: Record<string, string> };
+  
+  // Breadcrumbs definieren
+  const breadcrumbs = [
+    { title: "Startseite", href: "/" },
+    { title: "Projekte", href: route("projects.index") },
+    { title: project.name, href: route("projects.show", project.id) },
+    { title: "Bearbeiten", href: "#" },
+  ];
 
   const [values, setValues] = useState({
     project_number: project.project_number || "",
     name: project.name || "",
     description: project.description || "",
+    jira_base_uri: project.jira_base_uri || "",
     start_date: project.start_date || "",
     end_date: project.end_date || "",
-    status: project.status || "",
     project_leader_id: project.project_leader_id ? String(project.project_leader_id) : "",
     deputy_leader_id: project.deputy_leader_id ? String(project.deputy_leader_id) : "",
+    new_status: "",
   });
 
   const handleChange = (
@@ -61,7 +85,7 @@ export default function Edit({ project, users }: EditProps) {
   };
 
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Card className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
         <CardHeader>
           <CardTitle>Projekt bearbeiten</CardTitle>
@@ -104,6 +128,19 @@ export default function Edit({ project, users }: EditProps) {
               />
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="jira_base_uri">JIRA Base URI</Label>
+              <Input
+                id="jira_base_uri"
+                name="jira_base_uri"
+                value={values.jira_base_uri}
+                onChange={handleChange}
+                placeholder="https://your-company.atlassian.net/browse/"
+              />
+              {errors.jira_base_uri && (
+                <p className="text-sm text-red-600 mt-1">{errors.jira_base_uri}</p>
               )}
             </div>
             <div>
@@ -175,15 +212,36 @@ export default function Edit({ project, users }: EditProps) {
               )}
             </div>
             <div>
-              <Label htmlFor="status">Status</Label>
-              <Input
-                id="status"
-                name="status"
-                value={values.status}
-                onChange={handleChange}
-              />
-              {errors.status && (
-                <p className="text-sm text-red-600 mt-1">{errors.status}</p>
+              <Label htmlFor="currentStatus">Aktueller Status</Label>
+              <div className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium ${currentStatus.color} mt-1`}>
+                {currentStatus.name}
+              </div>
+              
+              {statusOptions.length > 1 && (
+                <div className="mt-4">
+                  <Label htmlFor="new_status">Status ändern zu</Label>
+                  <Select
+                    value={values.new_status}
+                    onValueChange={(value) => handleSelectChange("new_status", value)}
+                  >
+                    <SelectTrigger id="new_status">
+                      <SelectValue placeholder="Neuen Status wählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.filter(option => !option.current).map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex items-center">
+                            <span className={`mr-2 inline-block h-2 w-2 rounded-full ${option.color.replace('text-', 'bg-')}`}></span>
+                            {option.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.new_status && (
+                    <p className="text-sm text-red-600 mt-1">{errors.new_status}</p>
+                  )}
+                </div>
               )}
             </div>
             <Button type="submit" className="w-full">
