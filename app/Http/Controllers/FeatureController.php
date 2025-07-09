@@ -6,13 +6,14 @@ use App\Models\Feature;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class FeatureController extends Controller
 {
     public function index(Request $request)
     {
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         // Hole alle Projekt-IDs, bei denen der Nutzer Besitzer, Stellvertreter oder Projektleiter ist
         $projectIds = Project::where(function ($query) use ($userId) {
@@ -23,7 +24,7 @@ class FeatureController extends Controller
 
         // Zeige nur Features, die zu diesen Projekten gehören
         $features = Feature::with([
-            'project:id,name',
+            'project:id,name,jira_base_uri',
             'requester:id,name',
             'estimationComponents',  // Lade alle Komponenten
             'estimationComponents.estimations'  // Lade alle Schätzungen der Komponenten
@@ -54,6 +55,7 @@ class FeatureController extends Controller
                     'project' => $feature->project ? [
                         'id' => $feature->project->id,
                         'name' => $feature->project->name,
+                        'jira_base_uri' => $feature->project->jira_base_uri,
                     ] : null,
                     'status' => isset($feature->status) ? (
                         // Prüfen, ob es ein Objekt oder ein String ist
