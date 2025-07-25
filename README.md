@@ -13,6 +13,7 @@ Diese Anwendung ermöglicht es Teams, Planungszyklen zu organisieren, Aufwände 
 - **Schätzungen**: Erfassen Sie Aufwandsschätzungen mit Best Case, Most Likely und Worst Case und berechnen Sie den gewichteten Durchschnitt
 - **Stakeholder-Integration**: Binden Sie relevante Teammitglieder in den Planungsprozess ein
 - **Filter und Suche**: Finden Sie schnell relevante Planungen und Features durch umfangreiche Filtermöglichkeiten
+- **Abonnements**: Benutzer können Pläne auswählen und monatliche Zahlungen veranlassen
 
 ## Installation
 

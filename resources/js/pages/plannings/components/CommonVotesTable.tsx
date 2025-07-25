@@ -40,6 +40,11 @@ interface Feature {
   jira_key: string;
   name: string;
   project_id: number;
+  project?: {
+    id: number;
+    name: string;
+    jira_base_uri?: string;
+  };
   commonvotes?: Vote[];
   commitments?: Commitment[]; // Hinzugefügt: Commitments für dieses Feature
 }
@@ -341,7 +346,20 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
                 <TableBody>
                   {sortedFeatures.map((feature) => (
                     <TableRow key={feature.id}>
-                      <TableCell>{feature.jira_key}</TableCell>
+                      <TableCell>
+                        {feature.project?.jira_base_uri && feature.jira_key ? (
+                          <a
+                            href={`${feature.project.jira_base_uri}${feature.jira_key}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            {feature.jira_key}
+                          </a>
+                        ) : (
+                          feature.jira_key
+                        )}
+                      </TableCell>
                       <TableCell>{feature.name}</TableCell>
                       {voteTypes.map(type => {
                         const vote = feature.commonvotes?.find(v => v.type === type);

@@ -323,7 +323,7 @@ export default function Index({ plannings }: IndexProps) {
                     <TableCell>{planning.project?.name ?? "-"}</TableCell>
                     <TableCell>{formatDate(planning.planned_at)}</TableCell>
                     <TableCell>{formatDate(planning.executed_at)}</TableCell>
-                    <TableCell className="flex gap-2 justify-right">
+                    <TableCell className="flex gap-2 justify-end">
                       {/* Ansichts-Button für alle Benutzer */}
                       <Button asChild size="icon" variant="outline">
                         <Link href={route("plannings.show", planning)}>

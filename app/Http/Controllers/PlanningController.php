@@ -75,13 +75,14 @@ class PlanningController extends Controller
         ]);
 
         $planning->load([
-            'project:id,name',
+            'project:id,name,jira_base_uri',
             'stakeholders:id,name,email',
             'creator:id,name',
             'features' => function ($query) use ($planning) {
                 $query->where('project_id', $planning->project_id)
                     ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
             },
+            'features.project:id,name,jira_base_uri',
             'features.votes' => function ($query) use ($planning) {
                 $query->where('planning_id', $planning->id)
                     ->whereHas('user', function ($subQuery) use ($planning) {

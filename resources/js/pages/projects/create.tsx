@@ -28,13 +28,20 @@ interface CreateProps {
 export default function Create({ users }: CreateProps) {
   const { errors } = usePage().props as { errors: Record<string, string> };
   
+  // Breadcrumbs definieren
+  const breadcrumbs = [
+    { title: "Startseite", href: "/" },
+    { title: "Projekte", href: route("projects.index") },
+    { title: "Neues Projekt", href: "#" },
+  ];
+  
   const [values, setValues] = useState({
     project_number: "",
     name: "",
     description: "",
+    jira_base_uri: "",
     start_date: "",
     end_date: "",
-    status: "",
     project_leader_id: "",
     deputy_leader_id: "",
   });
@@ -55,7 +62,7 @@ export default function Create({ users }: CreateProps) {
   };
 
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Card className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
         <CardHeader>
           <CardTitle>Neues Projekt erstellen</CardTitle>
@@ -98,6 +105,19 @@ export default function Create({ users }: CreateProps) {
               />
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="jira_base_uri">JIRA Base URI</Label>
+              <Input
+                id="jira_base_uri"
+                name="jira_base_uri"
+                value={values.jira_base_uri}
+                onChange={handleChange}
+                placeholder="https://your-company.atlassian.net/browse/"
+              />
+              {errors.jira_base_uri && (
+                <p className="text-sm text-red-600 mt-1">{errors.jira_base_uri}</p>
               )}
             </div>
             <div>
@@ -168,18 +188,6 @@ export default function Create({ users }: CreateProps) {
               />
               {errors.end_date && (
                 <p className="text-sm text-red-600 mt-1">{errors.end_date}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Input
-                id="status"
-                name="status"
-                value={values.status}
-                onChange={handleChange}
-              />
-              {errors.status && (
-                <p className="text-sm text-red-600 mt-1">{errors.status}</p>
               )}
             </div>
             <Button type="submit" className="w-full">

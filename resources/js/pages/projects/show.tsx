@@ -15,6 +15,7 @@ type Project = {
   project_number: string;
   name: string;
   description?: string;
+  jira_base_uri?: string;
   start_date: string;
   project_leader?: { id: number; name: string };
   deputy_leader?: { id: number; name: string };
@@ -23,9 +24,16 @@ type Project = {
 
 export default function ProjectShow() {
   const { project } = usePage<PageProps & { project: Project }>().props;
+  
+  // Breadcrumbs definieren
+  const breadcrumbs = [
+    { title: "Startseite", href: "/" },
+    { title: "Projekte", href: route("projects.index") },
+    { title: project.name, href: "#" },
+  ];
 
   return (
-    <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Head title={`Projekt: ${project.name}`} />
       <Card>
         <CardHeader>
@@ -52,11 +60,22 @@ export default function ProjectShow() {
               <span className="font-semibold">Beschreibung:</span>{" "}
               {project.description || "—"}
             </div>
+            <div>
+              <span className="font-semibold">JIRA Base URI:</span>{" "}
+              {project.jira_base_uri ? (
+                <a 
+                  href={project.jira_base_uri} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {project.jira_base_uri}
+                </a>
+              ) : "—"}
+            </div>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </AppLayout>
   );
 }
-
-ProjectShow.layout = (page: React.ReactNode) => <AppLayout children={page} />;

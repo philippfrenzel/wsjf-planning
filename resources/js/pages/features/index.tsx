@@ -28,7 +28,7 @@ interface Feature {
   name: string;
   description: string;
   requester?: { id: number; name: string } | null;
-  project?: { id: number; name: string } | null;
+  project?: { id: number; name: string; jira_base_uri?: string } | null;
   status?: {
     name: string;
     color: string;
@@ -515,7 +515,20 @@ export default function Index({ features }: IndexProps) {
               ) : (
                 paginatedFeatures.map((feature) => (
                   <TableRow key={feature.id}>
-                    <TableCell className="font-medium">{feature.jira_key}</TableCell>
+                    <TableCell className="font-medium">
+                      {feature.project?.jira_base_uri && feature.jira_key ? (
+                        <a
+                          href={`${feature.project.jira_base_uri}${feature.jira_key}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          {feature.jira_key}
+                        </a>
+                      ) : (
+                        feature.jira_key
+                      )}
+                    </TableCell>
                     <TableCell>{feature.name}</TableCell>
                     {/* Status-Badge */}
                     <TableCell>
@@ -548,7 +561,7 @@ export default function Index({ features }: IndexProps) {
                       {feature.requester?.name || '-'}
                     </TableCell>
                     {/* Aktionen */}
-                    <TableCell className="flex gap-2 justify-right">
+                    <TableCell className="flex gap-2 justify-end">
                       <Button asChild size="icon" variant="outline">
                         <Link href={route("features.show", { feature: feature.id })}>
                           <Eye className="w-4 h-4" />
