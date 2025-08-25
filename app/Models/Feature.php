@@ -30,6 +30,13 @@ class Feature extends Model
     ];
 
     /**
+     * Die Attribute, die an das Array-Format angehängt werden sollen.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = ['status_details'];
+
+    /**
      * Konfiguration für Status
      */
     protected function registerStates(): void
@@ -98,6 +105,106 @@ class Feature extends Model
     public function votes()
     {
         return $this->hasMany(Vote::class);
+    }
+
+    /**
+     * Gibt die Status-Details des Features zurück.
+     *
+     * @return array
+     */
+    public function getStatusDetailsAttribute()
+    {
+        $status = $this->status;
+
+        // Wenn es null ist, geben wir einen Standardwert zurück
+        if ($status === null) {
+            return [
+                'value' => 'in-planning',
+                'name' => 'In Planung',
+                'color' => 'bg-blue-100 text-blue-800',
+            ];
+        }
+
+        // Wenn es ein String ist, versuchen wir ihn in ein State-Objekt umzuwandeln
+        if (is_string($status)) {
+            try {
+                $statusMapping = [
+                    'in-planning' => InPlanning::class,
+                    'approved' => Approved::class,
+                    'rejected' => Rejected::class,
+                    'implemented' => Implemented::class,
+                    'obsolete' => Obsolete::class,
+                    'archived' => Archived::class,
+                    'deleted' => Deleted::class
+                ];
+
+                $statusClass = $statusMapping[$status] ?? InPlanning::class;
+
+                // Die statischen Eigenschaften der Klasse verwenden
+                $reflectionClass = new \ReflectionClass($statusClass);
+
+                // Versuchen, ein Objekt zu erstellen und die Methoden aufzurufen
+                try {
+                    $mockObj = new $statusClass($this);
+                    $displayName = $mockObj->name();
+                    $color = $mockObj->color();
+
+                    return [
+                        'value' => $status,
+                        'name' => $displayName,
+                        'color' => $color,
+                    ];
+                } catch (\Throwable $e) {
+                    // Fallback-Werte basierend auf der Klasse
+                    $shortName = $reflectionClass->getShortName();
+                    $displayName = $this->formatStateName($shortName);
+
+                    // Standard-Farben basierend auf dem Status
+                    $colorMapping = [
+                        'in-planning' => 'bg-blue-100 text-blue-800',
+                        'approved' => 'bg-green-100 text-green-800',
+                        'rejected' => 'bg-red-100 text-red-800',
+                        'implemented' => 'bg-purple-100 text-purple-800',
+                        'obsolete' => 'bg-gray-100 text-gray-800',
+                        'archived' => 'bg-yellow-100 text-yellow-800',
+                        'deleted' => 'bg-red-100 text-red-800'
+                    ];
+
+                    return [
+                        'value' => $status,
+                        'name' => $displayName,
+                        'color' => $colorMapping[$status] ?? 'bg-gray-100 text-gray-800',
+                    ];
+                }
+            } catch (\Exception $e) {
+                // Fallback, wenn die Konvertierung fehlschlägt
+                return [
+                    'value' => $status,
+                    'name' => ucfirst(str_replace('-', ' ', $status)),
+                    'color' => 'bg-gray-100 text-gray-800',
+                ];
+            }
+        }
+
+        // Wenn es bereits ein State-Objekt ist
+        return [
+            'value' => $status->getValue(),
+            'name' => $status->name(),
+            'color' => $status->color(),
+        ];
+    }
+
+    /**
+     * Formatiert einen Status-Namen aus einem CamelCase-Klassennamen
+     * 
+     * @param string $name
+     * @return string
+     */
+    private function formatStateName(string $name): string
+    {
+        // InPlanning -> In Planning
+        $result = preg_replace('/(?<!^)[A-Z]/', ' $0', $name);
+        return $result ?: $name;
     }
 
     /**

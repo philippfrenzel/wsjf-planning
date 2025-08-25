@@ -533,9 +533,9 @@ export default function Index({ features }: IndexProps) {
                     {/* Status-Badge */}
                     <TableCell>
                       {feature.status ? (
-                        <Badge className={feature.status.color}>
+                        <span className={`inline-block px-2 py-1 rounded-md text-xs ${feature.status.color}`}>
                           {feature.status.name}
-                        </Badge>
+                        </span>
                       ) : (
                         <Badge variant="outline">Unbekannt</Badge>
                       )}
