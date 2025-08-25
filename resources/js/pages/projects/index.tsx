@@ -21,6 +21,12 @@ interface Project {
   project_leader?: { id: number; name: string };
   deputy_leader?: { id: number; name: string };
   created_by?: number;
+  status?: string;
+  status_details?: {
+    value: string;
+    name: string;
+    color: string;
+  };
 }
 
 interface IndexProps {
@@ -225,9 +231,10 @@ export default function Index({ projects, currentUserId }: IndexProps) {
               <TableHead>ID</TableHead>
               <TableHead>Projektnummer</TableHead>
               <TableHead>Name</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Projektleiter</TableHead>
               <TableHead>Stellvertretung</TableHead>
-                <TableHead className="text-right">Aktionen</TableHead>
+              <TableHead className="text-right">Aktionen</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -243,6 +250,17 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                   <TableCell>{project.project_number}</TableCell>
                   <TableCell>{project.name}</TableCell>
                   <TableCell>
+                    {project.status_details ? (
+                      <span className={`inline-block px-2 py-1 rounded-md text-xs ${project.status_details.color}`}>
+                        {project.status_details.name}
+                      </span>
+                    ) : (
+                      <span className="inline-block px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-800">
+                        In Planung
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
                     {project.project_leader ? project.project_leader.name : "-"}
                   </TableCell>
                   <TableCell>
@@ -250,7 +268,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                   </TableCell>
                   <TableCell className="flex gap-2 justify-end">
                     <Button asChild size="icon" variant="outline">
-                      <Link href={route("projects.show", project)}>
+                      <Link href={route("projects.show", project.id)}>
                         <Eye className="w-4 h-4" />
                       </Link>
                     </Button>
@@ -262,14 +280,14 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                     {canEdit && (
                       <>
                         <Button asChild size="icon" variant="outline">
-                          <Link href={route("projects.edit", project)}>
+                          <Link href={route("projects.edit", project.id)}>
                             <Pencil className="w-4 h-4" />
                           </Link>
                         </Button>
                         <form
                           onSubmit={(e) => {
                             e.preventDefault();
-                            Inertia.delete(route("projects.destroy", project));
+                            Inertia.delete(route("projects.destroy", project.id));
                           }}
                         >
                           <Button type="submit" size="icon" variant="destructive">
