@@ -10,6 +10,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
+import { type BreadcrumbItem } from "@/types";
 
 
 interface Project {
@@ -27,14 +28,30 @@ interface Feature {
   description: string;
   requester_id: string | null;
   project_id: string;
+  project?: {
+    id: number;
+    name: string;
+  };
+  status?: {
+    name: string;
+    color: string;
+  };
 }
+interface StatusOption {
+  value: string;
+  label: string;
+  color: string;
+  current: boolean;
+}
+
 interface EditProps {
   feature: Feature;
   projects: Project[];
   users: User[];
+  statusOptions: StatusOption[];
 }
 
-export default function Edit({ feature, projects, users }: EditProps) {
+export default function Edit({ feature, projects, users, statusOptions }: EditProps) {
   const { errors } = usePage().props as { errors: Record<string, string> };
   const [values, setValues] = useState({
     jira_key: feature.jira_key || "",
@@ -42,7 +59,18 @@ export default function Edit({ feature, projects, users }: EditProps) {
     description: feature.description || "",
     requester_id: feature.requester_id ? String(feature.requester_id) : "",
     project_id: feature.project_id ? String(feature.project_id) : "",
+    status: statusOptions.find(option => option.current)?.value || "",
   });
+
+  // Breadcrumbs definieren
+  const breadcrumbs: BreadcrumbItem[] = [
+    { title: "Startseite", href: "/" },
+    { title: "Features", href: route("features.index") },
+    ...(feature.project 
+        ? [{ title: feature.project.name, href: route("projects.show", feature.project.id) }] 
+        : []),
+    { title: `${feature.name} bearbeiten`, href: "#" },
+  ];
 
   // TipTap Editor initialisieren
   const editor = useEditor({
@@ -197,7 +225,7 @@ export default function Edit({ feature, projects, users }: EditProps) {
   };
 
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Card className="w-full mt-8">
         <CardHeader>
           <CardTitle>Feature bearbeiten</CardTitle>
@@ -294,6 +322,47 @@ export default function Edit({ feature, projects, users }: EditProps) {
                 {errors.requester_id && (
                   <p className="text-sm text-red-600 mt-1">{errors.requester_id}</p>
                 )}
+              </div>
+            </div>
+            
+            {/* Status-Auswahl */}
+            <div className="mt-4 border-t pt-4">
+              <Label htmlFor="status">Status</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+                <div>
+                  <Select
+                    value={values.status}
+                    onValueChange={(value) => handleSelectChange("status", value)}
+                  >
+                    <SelectTrigger id="status" className="w-full">
+                      <SelectValue placeholder="Status wählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex items-center">
+                            <span className={`inline-block w-3 h-3 rounded-full mr-2 ${option.color.replace('bg-', 'bg-').replace('text-', '')}`}></span>
+                            {option.label}
+                            {option.current && <span className="ml-2 text-xs text-gray-500">(aktuell)</span>}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.status && (
+                    <p className="text-sm text-red-600 mt-1">{errors.status}</p>
+                  )}
+                </div>
+                <div className="flex items-center">
+                  {values.status && statusOptions.find(option => option.value === values.status) && (
+                    <div className="flex items-center">
+                      <span className="text-sm mr-2">Neuer Status:</span>
+                      <span className={`inline-block px-2 py-1 rounded-md text-xs ${statusOptions.find(option => option.value === values.status)?.color}`}>
+                        {statusOptions.find(option => option.value === values.status)?.label}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             

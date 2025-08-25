@@ -9,6 +9,11 @@ use Spatie\ModelStates\HasStates;
 use App\States\Feature\FeatureState;
 use App\States\Feature\InPlanning;
 use App\States\Feature\Approved;
+use App\States\Feature\Rejected;
+use App\States\Feature\Implemented;
+use App\States\Feature\Obsolete;
+use App\States\Feature\Archived;
+use App\States\Feature\Deleted;
 
 class Feature extends Model
 {
@@ -31,7 +36,36 @@ class Feature extends Model
     {
         $this->addState('status', FeatureState::class)
             ->default(InPlanning::class)
-            ->allowTransition(InPlanning::class, Approved::class);
+            ->allowTransition(InPlanning::class, Approved::class)
+            ->allowTransition(InPlanning::class, Rejected::class)
+            ->allowTransition(InPlanning::class, Obsolete::class)
+            ->allowTransition(Approved::class, Implemented::class)
+            ->allowTransition(Approved::class, Obsolete::class)
+            ->allowTransition(Approved::class, Archived::class)
+            ->allowTransition(Implemented::class, Archived::class)
+            ->allowTransition(Rejected::class, Obsolete::class)
+            ->allowTransition(Rejected::class, Archived::class)
+            ->allowTransition(Obsolete::class, Archived::class)
+            ->allowTransition(Archived::class, Deleted::class)
+            ->castUsing(static function ($value) {
+                // Beim Auslesen aus der Datenbank konvertieren wir den Status-String in ein Objekt
+                if (is_string($value)) {
+                    $statusMapping = [
+                        'in-planning' => InPlanning::class,
+                        'approved' => Approved::class,
+                        'rejected' => Rejected::class,
+                        'implemented' => Implemented::class,
+                        'obsolete' => Obsolete::class,
+                        'archived' => Archived::class,
+                        'deleted' => Deleted::class
+                    ];
+
+                    $statusClass = $statusMapping[$value] ?? InPlanning::class;
+                    return new $statusClass();
+                }
+
+                return $value;
+            });
     }
 
     /**

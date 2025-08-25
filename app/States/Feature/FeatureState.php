@@ -14,7 +14,23 @@ abstract class FeatureState extends State
     {
         return parent::config()
             ->default(InPlanning::class)
-            ->allowTransition(InPlanning::class, Approved::class);
+            // Von "In Planung" kann zu "Genehmigt", "Abgewiesen" oder "Obsolet" gewechselt werden
+            ->allowTransition(InPlanning::class, Approved::class)
+            ->allowTransition(InPlanning::class, Rejected::class)
+            ->allowTransition(InPlanning::class, Obsolete::class)
+            // Von "Genehmigt" kann zu "Implementiert", "Obsolet" oder "Archiviert" gewechselt werden
+            ->allowTransition(Approved::class, Implemented::class)
+            ->allowTransition(Approved::class, Obsolete::class)
+            ->allowTransition(Approved::class, Archived::class)
+            // Von "Implementiert" kann zu "Archiviert" gewechselt werden
+            ->allowTransition(Implemented::class, Archived::class)
+            // Von "Abgewiesen" kann zu "Obsolet" oder "Archiviert" gewechselt werden
+            ->allowTransition(Rejected::class, Obsolete::class)
+            ->allowTransition(Rejected::class, Archived::class)
+            // Von "Obsolet" kann zu "Archiviert" gewechselt werden
+            ->allowTransition(Obsolete::class, Archived::class)
+            // Von "Archiviert" kann zu "Gelöscht" gewechselt werden
+            ->allowTransition(Archived::class, Deleted::class);
     }
 
     /**
