@@ -65,8 +65,8 @@ class FeatureController extends Controller
                             'color' => $feature->status->color(),
                         ] : [
                             // Fallback für String-Status
-                            'name' => ucfirst($feature->status),
-                            'color' => 'bg-gray-100 text-gray-800',
+                            'name' => ucfirst(str_replace('-', ' ', $feature->status)),
+                            'color' => $this->getDefaultColorForStatus($feature->status),
                         ]
                     ) : [
                         'name' => 'In Planung',
@@ -322,5 +322,26 @@ class FeatureController extends Controller
     {
         $feature->delete();
         return redirect()->route('features.index')->with('success', 'Feature gelöscht.');
+    }
+
+    /**
+     * Gibt eine passende Farbe für einen Status-String zurück
+     *
+     * @param string $status
+     * @return string
+     */
+    private function getDefaultColorForStatus(string $status): string
+    {
+        $colorMapping = [
+            'in-planning' => 'bg-blue-100 text-blue-800',
+            'approved' => 'bg-green-100 text-green-800',
+            'rejected' => 'bg-red-100 text-red-800',
+            'implemented' => 'bg-purple-100 text-purple-800',
+            'obsolete' => 'bg-gray-100 text-gray-800',
+            'archived' => 'bg-yellow-100 text-yellow-800',
+            'deleted' => 'bg-red-100 text-red-800'
+        ];
+
+        return $colorMapping[$status] ?? 'bg-gray-100 text-gray-800';
     }
 }
