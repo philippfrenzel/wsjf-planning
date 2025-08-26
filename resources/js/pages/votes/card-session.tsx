@@ -326,12 +326,29 @@ const CategoryTabContent: React.FC<{
                 items={(categorizedFeatures[type]?.unsorted || []).map(f => `feature-${f.id}`)} 
                 strategy={verticalListSortingStrategy}
               >
-                <DroppableContainer 
-                  id="unsorted" 
-                  items={categorizedFeatures[type]?.unsorted || []} 
-                  emptyText="Alle Features wurden bewertet"
-                  emptyIcon={<CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-2" />}
-                />
+                <div 
+                  id="unsorted"
+                  data-droppable-id="unsorted"
+                  className={`bg-slate-50 border border-dashed border-slate-200 rounded-lg p-4 min-h-[300px] ${
+                    (categorizedFeatures[type]?.unsorted || []).length === 0 ? 'flex items-center justify-center' : ''
+                  }`}
+                >
+                  {(categorizedFeatures[type]?.unsorted || []).length > 0 ? (
+                    (categorizedFeatures[type]?.unsorted || []).map((feature) => (
+                      <SortableFeatureCard
+                        key={feature.id}
+                        feature={feature}
+                        id={`feature-${feature.id}`}
+                        position={null}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center text-gray-500">
+                      <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-2" />
+                      <p>Alle Features wurden bewertet</p>
+                    </div>
+                  )}
+                </div>
               </SortableContext>
             </div>
             <div>
@@ -340,12 +357,29 @@ const CategoryTabContent: React.FC<{
                 items={(categorizedFeatures[type]?.sorted || []).map(f => `feature-${f.id}`)}
                 strategy={verticalListSortingStrategy}
               >
-                <DroppableContainer 
-                  id="sorted" 
-                  items={categorizedFeatures[type]?.sorted || []} 
-                  emptyText="Ziehen Sie Features hierher, um sie zu bewerten"
-                  emptyIcon={<ArrowDownCircle className="h-12 w-12 mx-auto text-blue-500 mb-2" />}
-                />
+                <div 
+                  id="sorted"
+                  data-droppable-id="sorted"
+                  className={`bg-slate-50 border border-slate-200 rounded-lg p-4 min-h-[300px] ${
+                    (categorizedFeatures[type]?.sorted || []).length === 0 ? 'flex items-center justify-center' : ''
+                  }`}
+                >
+                  {(categorizedFeatures[type]?.sorted || []).length > 0 ? (
+                    (categorizedFeatures[type]?.sorted || []).map((feature, index) => (
+                      <SortableFeatureCard
+                        key={feature.id}
+                        feature={feature}
+                        id={`feature-${feature.id}`}
+                        position={index + 1}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center text-gray-500">
+                      <ArrowDownCircle className="h-12 w-12 mx-auto text-blue-500 mb-2" />
+                      <p>Ziehen Sie Features hierher, um sie zu bewerten</p>
+                    </div>
+                  )}
+                </div>
               </SortableContext>
             </div>
           </div>
