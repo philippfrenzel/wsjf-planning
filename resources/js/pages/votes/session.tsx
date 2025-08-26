@@ -166,25 +166,32 @@ export default function VoteSession({ planning, plannings, features, types, exis
       <div className="w-full mx-auto mt-8 px-10">
         <Card>
           <CardHeader>
-            <CardTitle>
-              Abstimmung für Planning:
-              <span className="font-semibold ml-2">
-                <Select value={selectedPlanning} onValueChange={handlePlanningChange}>
-                  <SelectTrigger className="w-64">
-                    <SelectValue placeholder="Planning wählen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {plannings.map((p) => (
-                      <SelectItem key={p.id} value={p.id.toString()}>
-                        {p.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </span>
-            </CardTitle>
-            <div className="text-sm text-muted-foreground">
-              Angemeldet als: {user.name}
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+              <div className="mb-4 md:mb-0">
+                <CardTitle>
+                  Abstimmung für Planning:
+                  <span className="font-semibold ml-2">
+                    <Select value={selectedPlanning} onValueChange={handlePlanningChange}>
+                      <SelectTrigger className="w-64">
+                        <SelectValue placeholder="Planning wählen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {plannings.map((p) => (
+                          <SelectItem key={p.id} value={p.id.toString()}>
+                            {p.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </span>
+                </CardTitle>
+                <div className="text-sm text-muted-foreground">
+                  Angemeldet als: {user.name}
+                </div>
+              </div>
+              <Button variant="outline" onClick={() => Inertia.get(route("votes.card-session", planning.id))}>
+                Zur Karten-Ansicht wechseln
+              </Button>
             </div>
           </CardHeader>
           <CardContent>

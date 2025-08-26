@@ -41,6 +41,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('votes/session/{planning}', [VoteController::class, 'voteSession'])->name('votes.session');
     Route::post('votes/session/{planning}', [VoteController::class, 'voteSessionStore'])->name('votes.session.store');
 
+    // Karten-basierte Voting Session
+    Route::get('votes/card-session/{planning}', [VoteController::class, 'cardVoteSession'])->name('votes.card-session');
+
     // Schätzungskomponenten und Schätzungen
     Route::resource('estimation-components', EstimationComponentController::class);
     Route::resource('estimations', EstimationController::class);
