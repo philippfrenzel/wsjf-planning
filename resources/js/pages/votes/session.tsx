@@ -3,7 +3,7 @@ import AppLayout from "@/layouts/app-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Inertia } from "@inertiajs/inertia";
 import { usePage } from "@inertiajs/react";
@@ -28,14 +28,13 @@ interface VoteValue {
 
 interface SessionProps {
   planning: Planning;
-  plannings: Planning[];
   features: Feature[];
   types: string[];
   existingVotes: Record<string, { value: number }>;
   user: { id: number; name: string };
 }
 
-export default function VoteSession({ planning, plannings, features, types, existingVotes, user }: SessionProps) {
+export default function VoteSession({ planning, features, types, existingVotes, user }: SessionProps) {
   const { props } = usePage();
 
   // Breadcrumbs definieren
@@ -52,10 +51,6 @@ export default function VoteSession({ planning, plannings, features, types, exis
     });
     return initial;
   });
-
-  const [selectedPlanning, setSelectedPlanning] = useState<string>(
-    planning && planning.id ? planning.id.toString() : (plannings[0]?.id?.toString() ?? "")
-  );
 
   // Modal-Status, wenn success-Message vorhanden
   const [open, setOpen] = useState(!!props.success);
@@ -112,10 +107,7 @@ export default function VoteSession({ planning, plannings, features, types, exis
     });
   };
 
-  const handlePlanningChange = (planningId: string) => {
-    setSelectedPlanning(planningId);
-    Inertia.get(route("votes.session", planningId));
-  };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,21 +161,7 @@ export default function VoteSession({ planning, plannings, features, types, exis
             <div className="flex flex-col md:flex-row md:justify-between md:items-center">
               <div className="mb-4 md:mb-0">
                 <CardTitle>
-                  Abstimmung für Planning:
-                  <span className="font-semibold ml-2">
-                    <Select value={selectedPlanning} onValueChange={handlePlanningChange}>
-                      <SelectTrigger className="w-64">
-                        <SelectValue placeholder="Planning wählen" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {plannings.map((p) => (
-                          <SelectItem key={p.id} value={p.id.toString()}>
-                            {p.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </span>
+                  Abstimmung für Planning: {planning.title}
                 </CardTitle>
                 <div className="text-sm text-muted-foreground">
                   Angemeldet als: {user.name}

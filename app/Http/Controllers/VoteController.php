@@ -118,10 +118,8 @@ class VoteController extends Controller
         // Typen für das Votum
         $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'];
 
-        $plannings = \App\Models\Planning::all(['id', 'title', 'project_id']);
         return Inertia::render('votes/session', [
             'planning' => $planning->only(['id', 'title', 'project_id']),
-            'plannings' => $plannings,
             'features' => $features,
             'types' => $types,
             'existingVotes' => $existingVotes,
@@ -274,10 +272,8 @@ class VoteController extends Controller
         // Typen für das Votum
         $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'];
 
-        $plannings = \App\Models\Planning::all(['id', 'title', 'project_id']);
         return Inertia::render('votes/card-session', [
             'planning' => $planning->only(['id', 'title', 'project_id']),
-            'plannings' => $plannings,
             'features' => $features,
             'types' => $types,
             'existingVotes' => $existingVotes,

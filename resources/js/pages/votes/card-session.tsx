@@ -15,7 +15,7 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import AppLayout from "@/layouts/app-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { usePage } from "@inertiajs/react";
@@ -43,7 +43,6 @@ interface VoteValue {
 
 interface SessionProps {
     planning: Planning;
-    plannings: Planning[];
     features: Feature[];
     types: string[];
     existingVotes: Record<string, { value: number }>;
@@ -440,7 +439,7 @@ const CategoryTabContent: React.FC<{
     );
 };
 
-export default function CardVoteSession({ planning, plannings, features, types, existingVotes, user }: SessionProps) {
+export default function CardVoteSession({ planning, features, types, existingVotes, user }: SessionProps) {
     const { props } = usePage();
     const [draggingFeature, setDraggingFeature] = useState<Feature | null>(null);
 
@@ -463,11 +462,6 @@ export default function CardVoteSession({ planning, plannings, features, types, 
 
     // Zustand für die aktuelle Kategorie
     const [activeCategory, setActiveCategory] = useState<string>(types[0]);
-
-    // Zustand für das ausgewählte Planning
-    const [selectedPlanning, setSelectedPlanning] = useState<string>(
-        planning && planning.id ? planning.id.toString() : (plannings[0]?.id?.toString() ?? "")
-    );
 
     // Modal-Status für Erfolgsmeldungen
     const [open, setOpen] = useState<boolean>(props.success !== undefined && props.success !== null);
@@ -529,11 +523,7 @@ export default function CardVoteSession({ planning, plannings, features, types, 
         setCategorizedFeatures(categorized);
     }, [features, types, votes]);
 
-    // Handling für Planning-Wechsel
-    const handlePlanningChange = (planningId: string) => {
-        setSelectedPlanning(planningId);
-        Inertia.get(route("votes.card-session", planningId));
-    };
+
 
     // Handling für Drag-Start
     const handleDragStart = (event: DragStartEvent) => {
@@ -761,7 +751,7 @@ export default function CardVoteSession({ planning, plannings, features, types, 
 
     // Wechsel zur Standard-Tabellen-Ansicht
     const switchToStandardView = () => {
-        Inertia.get(route("votes.session", selectedPlanning));
+        Inertia.get(route("votes.session", planning.id));
     };
 
     return (
@@ -784,20 +774,8 @@ export default function CardVoteSession({ planning, plannings, features, types, 
                     <CardHeader>
                         <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                             <div className="mb-4 md:mb-0">
-                                <CardTitle className="flex items-center space-x-2 text-xl">
-                                    <span>Abstimmung für Planning:</span>
-                                    <Select value={selectedPlanning} onValueChange={handlePlanningChange}>
-                                        <SelectTrigger className="w-64">
-                                            <SelectValue placeholder="Planning wählen" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {plannings.map((p) => (
-                                                <SelectItem key={p.id} value={p.id.toString()}>
-                                                    {p.title}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                <CardTitle className="text-xl">
+                                    <span>Abstimmung für Planning: {planning.title}</span>
                                 </CardTitle>
                                 <CardDescription>
                                     Angemeldet als: {user.name}
