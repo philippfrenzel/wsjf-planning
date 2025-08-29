@@ -50,18 +50,14 @@ interface Planning {
   project_id: number;
   title: string;
   description: string;
-  planned_at: string;
-  executed_at: string;
+  planned_at?: string;
+  executed_at?: string;
   stakeholders: User[];
   features?: Feature[];
-  //hier fehlen die datumsfelder
-  planned_at?: string; // Geplant am
-  executed_at?: string; // Durchgeführt am
-  // Neu: Felder für Owner und Deputy
-  owner_id?: number;    // Neu: Owner ID
-  deputy_id?: number;   // Neu: Deputy ID
-  owner?: User;         // Neu: Owner-Beziehung
-  deputy?: User;        // Neu: Deputy-Beziehung
+  owner_id?: number;
+  deputy_id?: number;
+  owner?: User;
+  deputy?: User;
 }
 
 interface EditProps {
@@ -320,13 +316,15 @@ export default function Edit({
                 <div className="my-2">
                   <Select
                     value={featureStatusFilter}
-                    onValueChange={(value) => setFeatureStatusFilter(value)}
+                    onValueChange={(value) =>
+                      setFeatureStatusFilter(value === "all" ? "" : value)
+                    }
                   >
                     <SelectTrigger className="w-[200px]">
                       <SelectValue placeholder="Status filtern" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Alle Status</SelectItem>
+                      <SelectItem value="all">Alle Status</SelectItem>
                       {statusOptions.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
                           {opt.name}
@@ -334,7 +332,7 @@ export default function Edit({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                  </div>
               )}
               <div className="flex flex-wrap gap-2">
                 {features.length === 0 && (
