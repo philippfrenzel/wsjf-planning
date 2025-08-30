@@ -92,157 +92,162 @@ export default function Edit({ project, users, currentStatus, statusOptions }: E
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="project_number">Projektnummer</Label>
-              <Input
-                id="project_number"
-                name="project_number"
-                value={values.project_number}
-                onChange={handleChange}
-                required
-              />
-              {errors.project_number && (
-                <p className="text-sm text-red-600 mt-1">{errors.project_number}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                name="name"
-                value={values.name}
-                onChange={handleChange}
-                required
-              />
-              {errors.name && (
-                <p className="text-sm text-red-600 mt-1">{errors.name}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="description">Beschreibung</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={values.description}
-                onChange={handleChange}
-              />
-              {errors.description && (
-                <p className="text-sm text-red-600 mt-1">{errors.description}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="jira_base_uri">JIRA Base URI</Label>
-              <Input
-                id="jira_base_uri"
-                name="jira_base_uri"
-                value={values.jira_base_uri}
-                onChange={handleChange}
-                placeholder="https://your-company.atlassian.net/browse/"
-              />
-              {errors.jira_base_uri && (
-                <p className="text-sm text-red-600 mt-1">{errors.jira_base_uri}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="project_leader_id">Projektleiter</Label>
-              <Select
-                value={values.project_leader_id}
-                onValueChange={(value) => handleSelectChange("project_leader_id", value)}
-              >
-                <SelectTrigger id="project_leader_id">
-                  <SelectValue placeholder="Projektleiter wählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id.toString()}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.project_leader_id && (
-                <p className="text-sm text-red-600 mt-1">{errors.project_leader_id}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="deputy_leader_id">Stellvertretung Projektleiter</Label>
-              <Select
-                value={values.deputy_leader_id}
-                onValueChange={(value) => handleSelectChange("deputy_leader_id", value)}
-              >
-                <SelectTrigger id="deputy_leader_id">
-                  <SelectValue placeholder="Stellvertretung wählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id.toString()}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.deputy_leader_id && (
-                <p className="text-sm text-red-600 mt-1">{errors.deputy_leader_id}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="start_date">Startdatum</Label>
-              <Input
-                id="start_date"
-                name="start_date"
-                type="date"
-                value={values.start_date}
-                onChange={handleChange}
-              />
-              {errors.start_date && (
-                <p className="text-sm text-red-600 mt-1">{errors.start_date}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="end_date">Enddatum</Label>
-              <Input
-                id="end_date"
-                name="end_date"
-                type="date"
-                value={values.end_date}
-                onChange={handleChange}
-              />
-              {errors.end_date && (
-                <p className="text-sm text-red-600 mt-1">{errors.end_date}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="currentStatus">Aktueller Status</Label>
-              <div className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium ${currentStatus.color} mt-1`}>
-                {currentStatus.name}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="project_number">Projektnummer</Label>
+                  <Input
+                    id="project_number"
+                    name="project_number"
+                    value={values.project_number}
+                    onChange={handleChange}
+                    required
+                  />
+                  {errors.project_number && (
+                    <p className="text-sm text-red-600 mt-1">{errors.project_number}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={values.name}
+                    onChange={handleChange}
+                    required
+                  />
+                  {errors.name && (
+                    <p className="text-sm text-red-600 mt-1">{errors.name}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="description">Beschreibung</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    value={values.description}
+                    onChange={handleChange}
+                  />
+                  {errors.description && (
+                    <p className="text-sm text-red-600 mt-1">{errors.description}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="jira_base_uri">JIRA Base URI</Label>
+                  <Input
+                    id="jira_base_uri"
+                    name="jira_base_uri"
+                    value={values.jira_base_uri}
+                    onChange={handleChange}
+                    placeholder="https://your-company.atlassian.net/browse/"
+                  />
+                  {errors.jira_base_uri && (
+                    <p className="text-sm text-red-600 mt-1">{errors.jira_base_uri}</p>
+                  )}
+                </div>
               </div>
-              
-              {statusOptions.length > 1 && (
-                <div className="mt-4">
-                  <Label htmlFor="new_status">Status ändern zu</Label>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="project_leader_id">Projektleiter</Label>
                   <Select
-                    value={values.new_status}
-                    onValueChange={(value) => handleSelectChange("new_status", value)}
+                    value={values.project_leader_id}
+                    onValueChange={(value) => handleSelectChange("project_leader_id", value)}
                   >
-                    <SelectTrigger id="new_status">
-                      <SelectValue placeholder="Neuen Status wählen" />
+                    <SelectTrigger id="project_leader_id">
+                      <SelectValue placeholder="Projektleiter wählen" />
                     </SelectTrigger>
                     <SelectContent>
-                      {statusOptions.filter(option => !option.current).map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          <div className="flex items-center">
-                            <span className={`mr-2 inline-block h-2 w-2 rounded-full ${option.color.replace('text-', 'bg-')}`}></span>
-                            {option.label}
-                          </div>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id.toString()}>
+                          {user.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.new_status && (
-                    <p className="text-sm text-red-600 mt-1">{errors.new_status}</p>
+                  {errors.project_leader_id && (
+                    <p className="text-sm text-red-600 mt-1">{errors.project_leader_id}</p>
                   )}
                 </div>
-              )}
+                <div>
+                  <Label htmlFor="deputy_leader_id">Stellvertretung Projektleiter</Label>
+                  <Select
+                    value={values.deputy_leader_id}
+                    onValueChange={(value) => handleSelectChange("deputy_leader_id", value)}
+                  >
+                    <SelectTrigger id="deputy_leader_id">
+                      <SelectValue placeholder="Stellvertretung wählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id.toString()}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.deputy_leader_id && (
+                    <p className="text-sm text-red-600 mt-1">{errors.deputy_leader_id}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="start_date">Startdatum</Label>
+                  <Input
+                    id="start_date"
+                    name="start_date"
+                    type="date"
+                    value={values.start_date}
+                    onChange={handleChange}
+                  />
+                  {errors.start_date && (
+                    <p className="text-sm text-red-600 mt-1">{errors.start_date}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="end_date">Enddatum</Label>
+                  <Input
+                    id="end_date"
+                    name="end_date"
+                    type="date"
+                    value={values.end_date}
+                    onChange={handleChange}
+                  />
+                  {errors.end_date && (
+                    <p className="text-sm text-red-600 mt-1">{errors.end_date}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="currentStatus">Aktueller Status</Label>
+                  <div className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium ${currentStatus.color} mt-1`}>
+                    {currentStatus.name}
+                  </div>
+                  {statusOptions.length > 1 && (
+                    <div className="mt-4">
+                      <Label htmlFor="new_status">Status ändern zu</Label>
+                      <Select
+                        value={values.new_status}
+                        onValueChange={(value) => handleSelectChange("new_status", value)}
+                      >
+                        <SelectTrigger id="new_status">
+                          <SelectValue placeholder="Neuen Status wählen" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {statusOptions.filter(option => !option.current).map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              <div className="flex items-center">
+                                <span className={`mr-2 inline-block h-2 w-2 rounded-full ${option.color.replace('text-', 'bg-')}`}></span>
+                                {option.label}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.new_status && (
+                        <p className="text-sm text-red-600 mt-1">{errors.new_status}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
             <Button type="submit" className="w-full">
               Speichern

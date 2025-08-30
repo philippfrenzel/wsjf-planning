@@ -20,6 +20,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 interface Feature {
@@ -529,7 +530,22 @@ export default function Index({ features }: IndexProps) {
                         feature.jira_key
                       )}
                     </TableCell>
-                    <TableCell>{feature.name}</TableCell>
+                    <TableCell>
+                      {feature.name.length > 50 ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">
+                              {feature.name.slice(0, 50)}&hellip;
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <span className="whitespace-pre-line max-w-xs break-words">{feature.name}</span>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        feature.name
+                      )}
+                    </TableCell>
                     {/* Status-Badge */}
                     <TableCell>
                       {feature.status ? (
