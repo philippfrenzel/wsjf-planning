@@ -83,6 +83,53 @@ class FeatureController extends Controller
         ]);
     }
 
+    public function board(Request $request)
+    {
+        $userId = Auth::id();
+
+        $projectIds = Project::where(function ($query) use ($userId) {
+            $query->where('project_leader_id', $userId)
+                ->orWhere('deputy_leader_id', $userId)
+                ->orWhere('created_by', $userId);
+        })->pluck('id');
+
+        $features = Feature::with('project:id,name')
+            ->whereIn('project_id', $projectIds)
+            ->get();
+
+        $statuses = [
+            ['key' => 'in-planning', 'name' => 'In Planung', 'color' => 'bg-blue-100 text-blue-800'],
+            ['key' => 'approved', 'name' => 'Genehmigt', 'color' => 'bg-green-100 text-green-800'],
+            ['key' => 'rejected', 'name' => 'Abgelehnt', 'color' => 'bg-red-100 text-red-800'],
+            ['key' => 'implemented', 'name' => 'Implementiert', 'color' => 'bg-purple-100 text-purple-800'],
+            ['key' => 'obsolete', 'name' => 'Obsolet', 'color' => 'bg-gray-100 text-gray-800'],
+            ['key' => 'archived', 'name' => 'Archiviert', 'color' => 'bg-yellow-100 text-yellow-800'],
+        ];
+
+        $lanes = collect($statuses)->map(function ($status) use ($features) {
+            $filtered = $features->filter(function ($feature) use ($status) {
+                $value = $feature->status_details['value'] ?? 'in-planning';
+                return $value === $status['key'];
+            })->map(function ($feature) {
+                return [
+                    'id' => $feature->id,
+                    'jira_key' => $feature->jira_key,
+                    'name' => $feature->name,
+                    'project' => $feature->project ? [
+                        'id' => $feature->project->id,
+                        'name' => $feature->project->name,
+                    ] : null,
+                ];
+            })->values();
+
+            return array_merge($status, ['features' => $filtered]);
+        });
+
+        return Inertia::render('features/board', [
+            'lanes' => $lanes,
+        ]);
+    }
+
     public function create()
     {
         return Inertia::render('features/create', [
