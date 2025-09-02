@@ -87,15 +87,28 @@ class FeatureController extends Controller
     {
         $userId = Auth::id();
 
-        $projectIds = Project::where(function ($query) use ($userId) {
+        // Ermittle Projekte, bei denen der Nutzer berechtigt ist
+        $projects = Project::where(function ($query) use ($userId) {
             $query->where('project_leader_id', $userId)
                 ->orWhere('deputy_leader_id', $userId)
                 ->orWhere('created_by', $userId);
-        })->pluck('id');
+        })->get(['id', 'name']);
 
-        $features = Feature::with('project:id,name')
+        $projectIds = $projects->pluck('id')->toArray();
+
+        // Filtere nach Projekt, wenn ein Filter gesetzt ist
+        $selectedProjectId = $request->input('project_id');
+
+        $featuresQuery = Feature::with(['project:id,name', 'estimationComponents'])
             ->whereIn('project_id', $projectIds)
-            ->get();
+            ->withCount('estimationComponents');
+
+        // Filter nach Projekt anwenden, wenn ausgewählt
+        if ($selectedProjectId) {
+            $featuresQuery->where('project_id', $selectedProjectId);
+        }
+
+        $features = $featuresQuery->get();
 
         $statuses = [
             ['key' => 'in-planning', 'name' => 'In Planung', 'color' => 'bg-blue-100 text-blue-800'],
@@ -111,6 +124,22 @@ class FeatureController extends Controller
                 $value = $feature->status_details['value'] ?? 'in-planning';
                 return $value === $status['key'];
             })->map(function ($feature) {
+                // Berechne die Summe der weighted_case manuell
+                $totalWeightedCase = $feature->estimationComponents
+                    ->flatMap(function ($component) {
+                        return $component->estimations ?? [];
+                    })
+                    ->sum('weighted_case');
+
+                // Sammle alle Einheiten der Schätzungen
+                $units = $feature->estimationComponents
+                    ->flatMap(function ($component) {
+                        return $component->estimations->pluck('unit') ?? [];
+                    })
+                    ->unique()
+                    ->values()
+                    ->all();
+
                 return [
                     'id' => $feature->id,
                     'jira_key' => $feature->jira_key,
@@ -119,6 +148,9 @@ class FeatureController extends Controller
                         'id' => $feature->project->id,
                         'name' => $feature->project->name,
                     ] : null,
+                    'estimation_components_count' => $feature->estimation_components_count,
+                    'total_weighted_case' => $totalWeightedCase,
+                    'estimation_units' => $units,
                 ];
             })->values();
 
@@ -127,6 +159,10 @@ class FeatureController extends Controller
 
         return Inertia::render('features/board', [
             'lanes' => $lanes,
+            'projects' => $projects,
+            'filters' => [
+                'project_id' => $selectedProjectId,
+            ],
         ]);
     }
 
