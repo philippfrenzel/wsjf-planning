@@ -372,6 +372,77 @@ class FeatureController extends Controller
     }
 
     /**
+     * Aktualisiert den Status eines Features
+     * 
+     * @param Request $request
+     * @param Feature $feature
+     * @return \Illuminate\Http\Response
+     */
+    public function updateStatus(Request $request, Feature $feature)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string',
+        ]);
+
+        $newStatus = $validated['status'];
+        $currentStatus = $feature->status;
+
+        Log::info('Feature Status Update Request:', [
+            'feature_id' => $feature->id,
+            'current_status' => $currentStatus,
+            'new_status' => $newStatus,
+        ]);
+
+        try {
+            // Statusübergang basierend auf dem neuen Statuswert
+            $statusMapping = [
+                'in-planning' => \App\States\Feature\InPlanning::class,
+                'approved' => \App\States\Feature\Approved::class,
+                'rejected' => \App\States\Feature\Rejected::class,
+                'implemented' => \App\States\Feature\Implemented::class,
+                'obsolete' => \App\States\Feature\Obsolete::class,
+                'archived' => \App\States\Feature\Archived::class,
+                'deleted' => \App\States\Feature\Deleted::class
+            ];
+
+            // Wenn der aktuelle Status ein String ist, müssen wir ihn manuell aktualisieren
+            if (is_string($feature->status) || is_null($feature->status)) {
+                if (isset($statusMapping[$newStatus])) {
+                    // Den Status direkt auf den neuen Wert setzen
+                    $feature->status = $newStatus;
+                    $feature->save();
+                }
+            } else {
+                // Wenn es ein State-Objekt ist, können wir transitionTo verwenden
+                if (isset($statusMapping[$newStatus])) {
+                    $feature->status->transitionTo($statusMapping[$newStatus]);
+                } else {
+                    $feature->status->transitionTo(\App\States\Feature\InPlanning::class);
+                }
+            }
+
+            // Speichern nach Statusänderung
+            $feature->save();
+
+            Log::info('Feature Status erfolgreich aktualisiert', [
+                'feature_id' => $feature->id,
+                'new_status' => $feature->status
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status erfolgreich aktualisiert'
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Fehler bei der Status-Änderung des Features: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Status-Änderung nicht möglich: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Gibt eine passende Farbe für einen Status-String zurück
      *
      * @param string $status

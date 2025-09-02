@@ -59,6 +59,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::resource('projects', ProjectController::class);
 Route::resource('plannings', PlanningController::class);
 Route::get('features/board', [FeatureController::class, 'board'])->name('features.board');
+Route::post('features/{feature}/status', [FeatureController::class, 'updateStatus'])->name('features.status.update');
 Route::resource('features', FeatureController::class);
 Route::resources([
     'votes' => VoteController::class,
