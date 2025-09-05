@@ -120,7 +120,15 @@ class PlanningController extends Controller
     public function edit(Planning $planning)
     {
         $users = User::all(['id', 'name', 'email']); // E-Mail für alle Benutzer hinzugefügt
-        $features = Feature::where('project_id', $planning->project_id)->get(); // Features des Projekts laden
+        $features = Feature::where('project_id', $planning->project_id)
+            ->get()
+            ->map(fn($feature) => [
+                'id' => $feature->id,
+                'jira_key' => $feature->jira_key,
+                'name' => $feature->name,
+                'project_id' => $feature->project_id,
+                'status_details' => $feature->status_details,
+            ])->values(); // Features des Projekts laden
 
         return Inertia::render('plannings/edit', [
             'planning' => $planning->load([

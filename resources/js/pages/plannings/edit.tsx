@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ interface Project {
 interface User {
   id: number;
   name: string;
+  email: string;
 }
 
 interface Feature {
@@ -37,6 +38,11 @@ interface Feature {
   jira_key: string;
   name: string;
   project_id: number;
+  status_details?: {
+    value: string;
+    name: string;
+    color: string;
+  };
 }
 
 interface Planning {
@@ -44,18 +50,14 @@ interface Planning {
   project_id: number;
   title: string;
   description: string;
-  planned_at: string;
-  executed_at: string;
+  planned_at?: string;
+  executed_at?: string;
   stakeholders: User[];
   features?: Feature[];
-  //hier fehlen die datumsfelder
-  planned_at?: string; // Geplant am
-  executed_at?: string; // Durchgeführt am
-  // Neu: Felder für Owner und Deputy
-  owner_id?: number;    // Neu: Owner ID
-  deputy_id?: number;   // Neu: Deputy ID
-  owner?: User;         // Neu: Owner-Beziehung
-  deputy?: User;        // Neu: Deputy-Beziehung
+  owner_id?: number;
+  deputy_id?: number;
+  owner?: User;
+  deputy?: User;
 }
 
 interface EditProps {
@@ -87,6 +89,28 @@ export default function Edit({
       ? planning.features.map((f) => String(f.id))
       : [],
   });
+
+  const [featureStatusFilter, setFeatureStatusFilter] = useState<string>("");
+
+  const statusOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    features.forEach((f) => {
+      if (f.status_details) {
+        map.set(f.status_details.value, f.status_details.name);
+      }
+    });
+    return Array.from(map.entries()).map(([value, name]) => ({ value, name }));
+  }, [features]);
+
+  const filteredFeatures = useMemo(
+    () =>
+      features.filter(
+        (f) =>
+          featureStatusFilter === "" ||
+          f.status_details?.value === featureStatusFilter
+      ),
+    [features, featureStatusFilter]
+  );
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -288,6 +312,28 @@ export default function Edit({
             </div>
             <div>
               <Label>Features aus dem gleichen Projekt</Label>
+              {features.length > 0 && (
+                <div className="my-2">
+                  <Select
+                    value={featureStatusFilter}
+                    onValueChange={(value) =>
+                      setFeatureStatusFilter(value === "all" ? "" : value)
+                    }
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Status filtern" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Alle Status</SelectItem>
+                      {statusOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  </div>
+              )}
               <div className="flex flex-wrap gap-2">
                 {features.length === 0 && (
                   <span className="text-sm text-gray-500">Keine Features im Projekt vorhanden.</span>
@@ -299,10 +345,11 @@ export default function Edit({
                         <TableHead className="w-24">Auswählen</TableHead>
                         <TableHead>Jira Key</TableHead>
                         <TableHead>Name</TableHead>
+                        <TableHead>Status</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {features.map((feature) => (
+                      {filteredFeatures.map((feature) => (
                         <TableRow key={feature.id}>
                           <TableCell className="text-center">
                             <input
@@ -314,6 +361,17 @@ export default function Edit({
                           </TableCell>
                           <TableCell>{feature.jira_key}</TableCell>
                           <TableCell>{feature.name}</TableCell>
+                          <TableCell>
+                            {feature.status_details ? (
+                              <span
+                                className={`inline-block px-2 py-1 rounded-md text-xs ${feature.status_details.color}`}
+                              >
+                                {feature.status_details.name}
+                              </span>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

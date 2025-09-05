@@ -47,15 +47,6 @@ export default function Create({ projects, users }: CreateProps) {
     setValues({ ...values, [field]: value });
   };
 
-  const handleStakeholderChange = (id: string) => {
-    setValues((prev) => ({
-      ...prev,
-      stakeholder_ids: prev.stakeholder_ids.includes(id)
-        ? prev.stakeholder_ids.filter((sid) => sid !== id)
-        : [...prev.stakeholder_ids, id],
-    }));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     Inertia.post(route("plannings.store"), {
@@ -196,16 +187,43 @@ export default function Create({ projects, users }: CreateProps) {
             <div>
               <Label>Stakeholder</Label>
               <div className="flex flex-wrap gap-2">
-                {users.map((user) => (
-                  <label key={user.id} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={values.stakeholder_ids.includes(user.id.toString())}
-                      onChange={() => handleStakeholderChange(user.id.toString())}
-                    />
-                    {user.name}
-                  </label>
-                ))}
+                {users.length === 0 && (
+                  <span className="text-sm text-gray-500">Keine Benutzer vorhanden.</span>
+                )}
+                {users.length > 0 && (
+                  <table className="min-w-full border text-sm">
+                    <thead>
+                      <tr>
+                        <th className="w-24 p-2 border">Auswählen</th>
+                        <th className="p-2 border">Name</th>
+                        <th className="p-2 border">E-Mail</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((user) => (
+                        <tr key={user.id}>
+                          <td className="text-center border p-2">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4"
+                              checked={values.stakeholder_ids.includes(user.id.toString())}
+                              onChange={() => {
+                                setValues((prev) => ({
+                                  ...prev,
+                                  stakeholder_ids: prev.stakeholder_ids.includes(user.id.toString())
+                                    ? prev.stakeholder_ids.filter((sid) => sid !== user.id.toString())
+                                    : [...prev.stakeholder_ids, user.id.toString()],
+                                }));
+                              }}
+                            />
+                          </td>
+                          <td className="border p-2">{user.name}</td>
+                          <td className="border p-2">{user.email}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
               {errors.stakeholder_ids && (
                 <p className="text-sm text-red-600 mt-1">{errors.stakeholder_ids}</p>

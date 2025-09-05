@@ -20,6 +20,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 interface Feature {
@@ -59,6 +60,7 @@ export default function Index({ features }: IndexProps) {
     name: "",
     project: "",
     requester: "",
+    status: "",
   });
 
   // Zustände für Popover
@@ -73,7 +75,7 @@ export default function Index({ features }: IndexProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Extrahiere alle eindeutigen Projekte und Anforderer für die Autovervollständigung
+  // Extrahiere alle eindeutigen Projekte, Anforderer und Status für die Autovervollständigung
   const uniqueProjects = useMemo(() => {
     const projectSet = new Set<string>();
     features.forEach((feature) => {
@@ -92,6 +94,16 @@ export default function Index({ features }: IndexProps) {
       }
     });
     return Array.from(requesterSet).sort();
+  }, [features]);
+
+  const uniqueStatuses = useMemo(() => {
+    const statusSet = new Set<string>();
+    features.forEach((feature) => {
+      if (feature.status?.name) {
+        statusSet.add(feature.status.name);
+      }
+    });
+    return Array.from(statusSet).sort();
   }, [features]);
 
   // Handling für Filter-Änderungen
@@ -117,6 +129,7 @@ export default function Index({ features }: IndexProps) {
       name: "",
       project: "",
       requester: "",
+      status: "",
     });
   };
 
@@ -148,7 +161,8 @@ export default function Index({ features }: IndexProps) {
         feature.jira_key.toLowerCase().includes(filters.jira_key.toLowerCase()) &&
         feature.name.toLowerCase().includes(filters.name.toLowerCase()) &&
         (filters.project === "" || feature.project?.name?.toLowerCase().includes(filters.project.toLowerCase())) &&
-        (filters.requester === "" || feature.requester?.name?.toLowerCase().includes(filters.requester.toLowerCase()))
+        (filters.requester === "" || feature.requester?.name?.toLowerCase().includes(filters.requester.toLowerCase())) &&
+        (filters.status === "" || feature.status?.name === filters.status)
       );
     });
 
@@ -230,7 +244,8 @@ export default function Index({ features }: IndexProps) {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            {/* Filter zweizeilig: Erste Zeile */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
               <div>
                 <label className="block text-sm font-medium mb-1">Jira Key</label>
                 <div className="relative">
@@ -249,7 +264,6 @@ export default function Index({ features }: IndexProps) {
                   )}
                 </div>
               </div>
-              
               <div>
                 <label className="block text-sm font-medium mb-1">Feature Name</label>
                 <div className="relative">
@@ -268,7 +282,23 @@ export default function Index({ features }: IndexProps) {
                   )}
                 </div>
               </div>
-              
+              {/* Status mit Dropdown */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Status</label>
+                <select
+                  className="w-full border rounded px-2 py-1"
+                  value={filters.status}
+                  onChange={e => handleFilterChange("status", e.target.value)}
+                >
+                  <option value="">Alle anzeigen</option>
+                  {uniqueStatuses.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {/* Filter zweizeilig: Zweite Zeile */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* Projekt mit Type-Ahead */}
               <div>
                 <label className="block text-sm font-medium mb-1">Projekt</label>
@@ -341,7 +371,6 @@ export default function Index({ features }: IndexProps) {
                   )}
                 </div>
               </div>
-              
               {/* Anforderer mit Type-Ahead */}
               <div>
                 <label className="block text-sm font-medium mb-1">Anforderer</label>
@@ -529,13 +558,28 @@ export default function Index({ features }: IndexProps) {
                         feature.jira_key
                       )}
                     </TableCell>
-                    <TableCell>{feature.name}</TableCell>
+                    <TableCell>
+                      {feature.name.length > 50 ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">
+                              {feature.name.slice(0, 50)}&hellip;
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <span className="whitespace-pre-line max-w-xs break-words">{feature.name}</span>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        feature.name
+                      )}
+                    </TableCell>
                     {/* Status-Badge */}
                     <TableCell>
                       {feature.status ? (
-                        <Badge className={feature.status.color}>
+                        <span className={`inline-block px-2 py-1 rounded-md text-xs ${feature.status.color}`}>
                           {feature.status.name}
-                        </Badge>
+                        </span>
                       ) : (
                         <Badge variant="outline">Unbekannt</Badge>
                       )}

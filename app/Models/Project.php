@@ -35,6 +35,13 @@ class Project extends Model
     ];
 
     /**
+     * Die Attribute, die an das Array-Format angehängt werden sollen.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = ['status_details'];
+
+    /**
      * Get the project leader (User).
      *
      * @return BelongsTo
@@ -97,5 +104,91 @@ class Project extends Model
                 throw new \Exception('Das Feld "created_by" darf nicht leer sein.');
             }
         });
+    }
+
+    /**
+     * Gibt die Status-Details des Projekts zurück.
+     *
+     * @return array
+     */
+    public function getStatusDetailsAttribute()
+    {
+        $status = $this->status;
+
+        // Wenn es ein String ist, versuchen wir die Informationen ohne eine Instanz zu bekommen
+        if (is_string($status)) {
+            try {
+                $statusMapping = [
+                    'in-planning' => InPlanning::class,
+                    'in-realization' => InRealization::class,
+                    'in-approval' => InApproval::class,
+                    'closed' => Closed::class
+                ];
+
+                $statusClass = $statusMapping[$status] ?? InPlanning::class;
+
+                // Die statischen Eigenschaften der Klasse verwenden
+                $reflectionClass = new \ReflectionClass($statusClass);
+
+                // Extrahieren des Namens aus der Klassenname
+                $shortName = $reflectionClass->getShortName();
+                $displayName = '';
+
+                // Wir suchen nach einer statischen Testmethode, um den Namen zu extrahieren
+                // ohne eine Instanz zu erstellen
+                try {
+                    $mockObj = new $statusClass($this);
+                    $displayName = $mockObj->name();
+                    $color = $mockObj->color();
+                } catch (\Throwable $e) {
+                    // Wenn das fehlschlägt, verwenden wir einen Fallback
+                    $displayName = $this->formatStateName($shortName);
+                    $color = 'bg-gray-100 text-gray-800';
+                }
+
+                return [
+                    'value' => $status,
+                    'name' => $displayName,
+                    'color' => $color,
+                ];
+            } catch (\Exception $e) {
+                // Fallback, wenn die Konvertierung fehlschlägt
+                return [
+                    'value' => $status,
+                    'name' => ucfirst(str_replace('-', ' ', $status)),
+                    'color' => 'bg-gray-100 text-gray-800',
+                ];
+            }
+        }
+
+        // Wenn es bereits ein State-Objekt ist oder null
+        if ($status === null) {
+            // Fallback für den Fall, dass der Status null ist
+            return [
+                'value' => 'in-planning',
+                'name' => 'In Planung',
+                'color' => 'bg-blue-100 text-blue-800',
+            ];
+        }
+
+        // Ansonsten normal das State-Objekt verwenden
+        return [
+            'value' => $status->getValue(),
+            'name' => $status->name(),
+            'color' => $status->color(),
+        ];
+    }
+
+    /**
+     * Formatiert einen Status-Namen aus einem CamelCase-Klassennamen
+     * 
+     * @param string $name
+     * @return string
+     */
+    private function formatStateName(string $name): string
+    {
+        // InPlanning -> In Planning
+        $result = preg_replace('/(?<!^)[A-Z]/', ' $0', $name);
+        return $result ?: $name;
     }
 }
