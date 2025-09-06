@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -63,6 +64,12 @@ interface ShowProps {
 }
 
 export default function Show({ feature, auth }: ShowProps) {
+   // Breadcrumbs für Navigation
+  const breadcrumbs = [
+    { title: "Startseite", href: "/" },
+    { title: "Features", href: route("features.index") },
+    { title: feature.name, href: "#" },
+  ];
   // Verwaltung der Komponenten mit dem Custom Hook
   const {
     showComponentForm,
@@ -94,7 +101,7 @@ export default function Show({ feature, auth }: ShowProps) {
   } = useEstimationManagement(feature.id);
 
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
       <Card className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
         <FeatureHeader
