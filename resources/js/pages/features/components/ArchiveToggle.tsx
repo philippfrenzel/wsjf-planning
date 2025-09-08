@@ -11,13 +11,12 @@ export default function ArchiveToggle({
   toggleArchived,
 }: ArchiveToggleProps) {
   return (
-    <div className="flex justify-end mb-4">
-      <Button 
-        variant="outline" 
-        size="sm"
-        onClick={toggleArchived}
-        className="text-gray-600"
-      >
+    <Button 
+      variant="outline" 
+      size="sm"
+      onClick={toggleArchived}
+      className="text-gray-600"
+    >
         {showArchived ? (
           <>
             <EyeOffIcon className="h-4 w-4 mr-1" />
@@ -30,6 +29,5 @@ export default function ArchiveToggle({
           </>
         )}
       </Button>
-    </div>
   );
 }

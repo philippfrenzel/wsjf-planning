@@ -29,6 +29,7 @@ interface EstimationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   estimationData: EstimationData;
+  isEditing?: boolean;
   onBestCaseChange: (value: number) => void;
   onMostLikelyChange: (value: number) => void;
   onWorstCaseChange: (value: number) => void;
@@ -41,6 +42,7 @@ export default function EstimationDialog({
   open,
   onOpenChange,
   estimationData,
+  isEditing = false,
   onBestCaseChange,
   onMostLikelyChange,
   onWorstCaseChange,
@@ -55,7 +57,7 @@ export default function EstimationDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Neue Schätzung</DialogTitle>
+          <DialogTitle>{isEditing ? 'Schätzung bearbeiten' : 'Neue Schätzung'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
@@ -124,7 +126,9 @@ export default function EstimationDialog({
             />
           </div>
           
-          <Button type="submit" className="w-full">Schätzung speichern</Button>
+          <Button type="submit" className="w-full">
+            {isEditing ? 'Schätzung aktualisieren' : 'Schätzung speichern'}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

@@ -7,6 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { PencilIcon, TrashIcon } from "lucide-react";
 
 interface Estimation {
   id: number;
@@ -23,9 +25,15 @@ interface Estimation {
 
 interface EstimationTableProps {
   estimations: Estimation[];
+  onEdit?: (estimation: Estimation) => void;
+  onDelete?: (estimationId: number) => void;
 }
 
-export default function EstimationTable({ estimations }: EstimationTableProps) {
+export default function EstimationTable({ 
+  estimations,
+  onEdit,
+  onDelete 
+}: EstimationTableProps) {
   // Hilfsfunktion zum Umwandeln von Zeilenumbrüchen in React-Elemente
   const renderMultilineText = (text: string) => {
     if (!text) return null;
@@ -50,6 +58,7 @@ export default function EstimationTable({ estimations }: EstimationTableProps) {
             <TableHead>Einheit</TableHead>
             <TableHead>Erstellt von</TableHead>
             <TableHead>Datum</TableHead>
+            <TableHead className="text-right">Aktionen</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -71,10 +80,34 @@ export default function EstimationTable({ estimations }: EstimationTableProps) {
                 <TableCell>
                   {new Date(estimation.created_at).toLocaleDateString()}
                 </TableCell>
+                <TableCell className="text-right space-x-2">
+                  {onEdit && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => onEdit(estimation)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <span className="sr-only">Bearbeiten</span>
+                      <PencilIcon className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => onDelete(estimation.id)}
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                    >
+                      <span className="sr-only">Löschen</span>
+                      <TrashIcon className="h-4 w-4" />
+                    </Button>
+                  )}
+                </TableCell>
               </TableRow>
               {estimation.notes && (
                 <TableRow>
-                  <TableCell colSpan={7} className="bg-gray-50">
+                  <TableCell colSpan={8} className="bg-gray-50">
                     <div className="p-2 text-sm text-gray-700">
                       <strong>Notiz:</strong> {renderMultilineText(estimation.notes)}
                     </div>
