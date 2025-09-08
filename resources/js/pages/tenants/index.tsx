@@ -2,7 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage, router } from '@inertiajs/react';
 import { type SharedData } from '@/types';
 
 export default function TenantsIndex() {
@@ -40,7 +40,11 @@ export default function TenantsIndex() {
                                         {t.name} {currentTenantId === t.id && <span className="text-xs text-neutral-500">(aktuell)</span>}
                                     </span>
                                     {currentTenantId !== t.id && (
-                                        <Button size="sm" variant="secondary" onClick={() => post(route('tenants.switch', t.id))}>
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() => router.post(route('tenants.switch', t.id), {}, { preserveScroll: true })}
+                                        >
                                             Wechseln
                                         </Button>
                                     )}
@@ -86,7 +90,12 @@ export default function TenantsIndex() {
                                             <span>
                                                 {inv.tenant.name} – Token: <code>{inv.token}</code>
                                             </span>
-                                            <Button size="sm" onClick={() => post(route('tenants.accept'), { token: inv.token })}>Annehmen</Button>
+                                            <Button
+                                                size="sm"
+                                                onClick={() => router.post(route('tenants.accept'), { token: inv.token }, { preserveScroll: true })}
+                                            >
+                                                Annehmen
+                                            </Button>
                                         </li>
                                     ))}
                                 </ul>
@@ -98,4 +107,3 @@ export default function TenantsIndex() {
         </AppLayout>
     );
 }
-

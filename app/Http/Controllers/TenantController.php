@@ -98,7 +98,10 @@ class TenantController extends Controller
         $inv->accepted_at = now();
         $inv->save();
 
-        return back()->with('success', 'Einladung akzeptiert.');
+        // Optional: direkt zu diesem Tenant wechseln
+        $user->current_tenant_id = $inv->tenant_id;
+        $user->save();
+
+        return back()->with('success', 'Einladung akzeptiert und Tenant gewechselt.');
     }
 }
-
