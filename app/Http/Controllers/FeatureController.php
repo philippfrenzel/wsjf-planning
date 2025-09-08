@@ -113,8 +113,8 @@ class FeatureController extends Controller
         $statuses = [
             ['key' => 'in-planning', 'name' => 'In Planung', 'color' => 'bg-blue-100 text-blue-800'],
             ['key' => 'approved', 'name' => 'Genehmigt', 'color' => 'bg-green-100 text-green-800'],
-            ['key' => 'rejected', 'name' => 'Abgelehnt', 'color' => 'bg-red-100 text-red-800'],
             ['key' => 'implemented', 'name' => 'Implementiert', 'color' => 'bg-purple-100 text-purple-800'],
+            ['key' => 'rejected', 'name' => 'Abgelehnt', 'color' => 'bg-red-100 text-red-800'],
             ['key' => 'obsolete', 'name' => 'Obsolet', 'color' => 'bg-gray-100 text-gray-800'],
             ['key' => 'archived', 'name' => 'Archiviert', 'color' => 'bg-yellow-100 text-yellow-800'],
         ];

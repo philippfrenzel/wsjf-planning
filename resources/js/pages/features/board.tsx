@@ -61,7 +61,10 @@ function LaneColumn({ lane, children, highlight }: { lane: Lane; children: React
         showHighlight ? "bg-blue-100 border-2 border-dashed border-blue-400" : ""
       }`}
     >
-      <h2 className={`mb-2 px-2 py-1 rounded text-sm font-semibold ${lane.color}`}>{lane.name}</h2>
+      <div className={`mb-2 px-2 py-1 rounded text-sm font-semibold ${lane.color} flex justify-between items-center`}>
+        <span>{lane.name}</span>
+        <span className="bg-white bg-opacity-80 text-xs px-1.5 py-0.5 rounded-full">{lane.features.length}</span>
+      </div>
       <div className="space-y-2 min-h-[60px] p-2">
         {children}
       </div>
