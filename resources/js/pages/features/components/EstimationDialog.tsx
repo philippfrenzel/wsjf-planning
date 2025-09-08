@@ -68,8 +68,11 @@ export default function EstimationDialog({
                 type="number"
                 step="0.1"
                 min="0"
-                value={estimationData.best_case}
-                onChange={(e) => onBestCaseChange(parseFloat(e.target.value))}
+                value={estimationData.best_case || ""}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                  onBestCaseChange(isNaN(value) ? 0 : value);
+                }}
                 required
               />
             </div>
@@ -80,8 +83,11 @@ export default function EstimationDialog({
                 type="number"
                 step="0.1"
                 min="0"
-                value={estimationData.most_likely}
-                onChange={(e) => onMostLikelyChange(parseFloat(e.target.value))}
+                value={estimationData.most_likely || ""}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                  onMostLikelyChange(isNaN(value) ? 0 : value);
+                }}
                 required
               />
             </div>
@@ -92,8 +98,11 @@ export default function EstimationDialog({
                 type="number"
                 step="0.1"
                 min="0"
-                value={estimationData.worst_case}
-                onChange={(e) => onWorstCaseChange(parseFloat(e.target.value))}
+                value={estimationData.worst_case || ""}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                  onWorstCaseChange(isNaN(value) ? 0 : value);
+                }}
                 required
               />
             </div>
