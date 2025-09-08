@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Table,
   TableBody,
@@ -13,7 +14,9 @@ interface Estimation {
   most_likely: number;
   worst_case: number;
   unit: string;
-  weighted_case?: number; // Geändert von weighted_estimate zu weighted_case
+  notes?: string;
+  weighted_estimate?: number;
+  weighted_case?: number; // Für Abwärtskompatibilität
   creator: { id: number; name: string };
   created_at: string;
 }
@@ -40,17 +43,34 @@ export default function EstimationTable({ estimations }: EstimationTableProps) {
         </TableHeader>
         <TableBody>
           {estimations.map((estimation) => (
-            <TableRow key={estimation.id}>
-              <TableCell>{estimation.best_case}</TableCell>
-              <TableCell>{estimation.most_likely}</TableCell>
-              <TableCell>{estimation.worst_case}</TableCell>
-              <TableCell>{typeof estimation.weighted_case === 'number' ? estimation.weighted_case.toFixed(2) : '-'}</TableCell>
-              <TableCell>{estimation.unit}</TableCell>
-              <TableCell>{estimation.creator.name}</TableCell>
-              <TableCell>
-                {new Date(estimation.created_at).toLocaleDateString()}
-              </TableCell>
-            </TableRow>
+            <React.Fragment key={estimation.id}>
+              <TableRow>
+                <TableCell>{estimation.best_case}</TableCell>
+                <TableCell>{estimation.most_likely}</TableCell>
+                <TableCell>{estimation.worst_case}</TableCell>
+                <TableCell>{
+                  typeof estimation.weighted_estimate === 'number' 
+                    ? estimation.weighted_estimate.toFixed(2) 
+                    : (typeof estimation.weighted_case === 'number' 
+                        ? estimation.weighted_case.toFixed(2) 
+                        : '-')
+                }</TableCell>
+                <TableCell>{estimation.unit}</TableCell>
+                <TableCell>{estimation.creator.name}</TableCell>
+                <TableCell>
+                  {new Date(estimation.created_at).toLocaleDateString()}
+                </TableCell>
+              </TableRow>
+              {estimation.notes && (
+                <TableRow>
+                  <TableCell colSpan={7} className="bg-gray-50">
+                    <div className="p-2 text-sm text-gray-700">
+                      <strong>Notiz:</strong> {estimation.notes}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </React.Fragment>
           ))}
         </TableBody>
       </Table>

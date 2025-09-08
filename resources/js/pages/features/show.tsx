@@ -1,6 +1,8 @@
 import React from "react";
+import { Link } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 import FeatureHeader from "./components/FeatureHeader";
 import FeatureDetails from "./components/FeatureDetails";
@@ -9,6 +11,7 @@ import ArchiveToggle from "./components/ArchiveToggle";
 import ComponentItem from "./components/ComponentItem";
 import EstimationDialog from "./components/EstimationDialog";
 import EditComponentDialog from "./components/EditComponentDialog";
+import FeatureDescription from "./components/FeatureDescription";
 
 import { useComponentManagement } from "@/hooks/useComponentManagement";
 import { useEstimationManagement } from "@/hooks/useEstimationManagement";
@@ -63,6 +66,12 @@ interface ShowProps {
 }
 
 export default function Show({ feature, auth }: ShowProps) {
+   // Breadcrumbs für Navigation
+  const breadcrumbs = [
+    { title: "Startseite", href: "/" },
+    { title: "Features", href: route("features.index") },
+    { title: feature.name, href: "#" },
+  ];
   // Verwaltung der Komponenten mit dem Custom Hook
   const {
     showComponentForm,
@@ -94,13 +103,11 @@ export default function Show({ feature, auth }: ShowProps) {
   } = useEstimationManagement(feature.id);
 
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
       <Card className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
         <FeatureHeader
           featureName={feature.name}
-          showComponentForm={showComponentForm}
-          toggleComponentForm={toggleComponentForm}
         />
 
         <CardContent>
@@ -109,8 +116,18 @@ export default function Show({ feature, auth }: ShowProps) {
             jiraKey={feature.jira_key}
             projectName={feature.project?.name}
             requesterName={feature.requester?.name}
-            description={feature.description}
           />
+
+          {/* Button zum Hinzufügen einer Komponente */}
+          <div className="mt-6 mb-4">
+            <Button 
+              onClick={toggleComponentForm}
+              variant="default"
+              className="w-full sm:w-auto"
+            >
+              {showComponentForm ? "Abbrechen" : "Komponente hinzufügen"}
+            </Button>
+          </div>
 
           {/* Formular zum Erstellen einer neuen Komponente */}
           {showComponentForm && (
@@ -126,13 +143,17 @@ export default function Show({ feature, auth }: ShowProps) {
             />
           )}
 
-          {/* Toggle für archivierte Komponenten */}
-          <ArchiveToggle
-            showArchived={showArchived}
-            toggleArchived={toggleArchivedVisibility}
-          />
-
-          <h3 className="text-lg font-medium my-4">Schätzungskomponenten</h3>
+          {/* Schätzungskomponenten Bereich */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium">Schätzungskomponenten</h3>
+              
+              {/* Toggle für archivierte Komponenten */}
+              <ArchiveToggle
+                showArchived={showArchived}
+                toggleArchived={toggleArchivedVisibility}
+              />
+            </div>
           
           {/* Liste der Komponenten */}
           {feature.estimation_components && feature.estimation_components.length > 0 ? (
@@ -153,6 +174,19 @@ export default function Show({ feature, auth }: ShowProps) {
           ) : (
             <p className="text-gray-500">Noch keine Komponenten vorhanden.</p>
           )}
+          </div>
+          
+          {/* Feature Beschreibung nach Schätzungskomponenten anzeigen */}
+          <div className="mt-8">
+            <h3 className="text-lg font-medium my-4">Beschreibung</h3>
+            {feature.description ? (
+              <div className="prose prose-sm max-w-none">
+                <FeatureDescription content={feature.description} />
+              </div>
+            ) : (
+              <p className="text-gray-500">Keine Beschreibung vorhanden.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
