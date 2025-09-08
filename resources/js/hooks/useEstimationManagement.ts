@@ -46,7 +46,15 @@ export function useEstimationManagement(featureId: number) {
     if (confirm('Sind Sie sicher, dass Sie diese Schätzung löschen möchten?')) {
       router.delete(route("estimations.destroy", estimationId), {
         onSuccess: () => {
-          router.reload({ only: ['feature'] });
+          // Verwende eine vollständige Navigation zurück zum Feature statt reload
+          router.visit(route("features.show", featureId), {
+            preserveState: false,
+            preserveScroll: false,
+          });
+        },
+        onError: (errors) => {
+          console.error("Fehler beim Löschen:", errors);
+          alert("Beim Löschen der Schätzung ist ein Fehler aufgetreten.");
         }
       });
     }
@@ -80,7 +88,10 @@ export function useEstimationManagement(featureId: number) {
         });
         
         // Seite neu laden, um die aktualisierte Schätzung anzuzeigen
-        router.reload({ only: ['feature'] });
+        router.visit(route("features.show", featureId), {
+          preserveState: false,
+          preserveScroll: false,
+        });
       },
       onError: (errors: object) => {
         console.error("Fehler beim Speichern:", errors);
@@ -97,7 +108,10 @@ export function useEstimationManagement(featureId: number) {
     }
   };
 
-  const updateEstimationData = (field: keyof typeof estimationData, value: any) => {
+  const updateEstimationData = (
+    field: keyof typeof estimationData, 
+    value: number | string
+  ) => {
     setEstimationData(prev => ({ ...prev, [field]: value }));
   };
 

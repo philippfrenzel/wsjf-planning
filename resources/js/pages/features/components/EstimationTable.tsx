@@ -65,9 +65,9 @@ export default function EstimationTable({
           {estimations.map((estimation) => (
             <React.Fragment key={estimation.id}>
               <TableRow>
-                <TableCell>{estimation.best_case}</TableCell>
-                <TableCell>{estimation.most_likely}</TableCell>
-                <TableCell>{estimation.worst_case}</TableCell>
+                <TableCell>{typeof estimation.best_case === 'number' ? estimation.best_case : '-'}</TableCell>
+                <TableCell>{typeof estimation.most_likely === 'number' ? estimation.most_likely : '-'}</TableCell>
+                <TableCell>{typeof estimation.worst_case === 'number' ? estimation.worst_case : '-'}</TableCell>
                 <TableCell>{
                   typeof estimation.weighted_estimate === 'number' 
                     ? estimation.weighted_estimate.toFixed(2) 
