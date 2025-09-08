@@ -14,11 +14,13 @@ use App\States\Feature\Implemented;
 use App\States\Feature\Obsolete;
 use App\States\Feature\Archived;
 use App\States\Feature\Deleted;
+use App\Models\Concerns\BelongsToTenant;
 
 class Feature extends Model
 {
     use HasFactory;
     use HasStates;
+    use BelongsToTenant;
 
     protected $fillable = [
         'jira_key',
@@ -27,6 +29,7 @@ class Feature extends Model
         'requester_id',
         'project_id',
         'created_at',
+        'tenant_id',
     ];
 
     /**

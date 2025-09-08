@@ -65,3 +65,11 @@ Deputies: Können Planungen bearbeiten, für die sie als Stellvertreter eingetra
 Stakeholder: Können an Planungen teilnehmen und Schätzungen abgeben
 Lizenz
 Das WSJF Planning Tool ist eine proprietäre Software. Alle Rechte vorbehalten.
+
+## Multi-Tenancy
+
+- Die Anwendung ist nun mandantenfähig (Single-DB mit `tenant_id`).
+- Es existiert eine Tabelle `tenants`; alle mandantenbezogenen Tabellen besitzen eine `tenant_id`-Spalte.
+- Standardverhalten: Bei der Registrierung wird für jeden Benutzer automatisch ein eigener Tenant angelegt und dem Benutzer zugewiesen.
+- Eloquent-Modelle sind mit einem globalen Scope versehen, der alle Abfragen auf den aktuellen Tenant des eingeloggten Benutzers einschränkt. Anonyme Benutzer sehen keine Tenant-Daten.
+- Nach dem Update bitte `php artisan migrate` ausführen. Eine Migrationsroutine erzeugt für bestehende Benutzer automatisch Tenants und weist vorhandene Datensätze korrekt zu.

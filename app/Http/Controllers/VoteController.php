@@ -27,8 +27,9 @@ class VoteController extends Controller
 
     public function create()
     {
+        $tenantId = Auth::user()->current_tenant_id;
         return Inertia::render('votes/create', [
-            'users' => User::all(['id', 'name']),
+            'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'features' => Feature::all(['id', 'jira_key', 'name']),
             'plannings' => Planning::all(['id', 'title']),
             'types' => ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'],
@@ -62,9 +63,10 @@ class VoteController extends Controller
 
     public function edit(Vote $vote)
     {
+        $tenantId = Auth::user()->current_tenant_id;
         return Inertia::render('votes/edit', [
             'vote' => $vote->load(['user', 'feature', 'planning']),
-            'users' => User::all(['id', 'name']),
+            'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'features' => Feature::all(['id', 'jira_key', 'name']),
             'plannings' => Planning::all(['id', 'title']),
             'types' => ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'],

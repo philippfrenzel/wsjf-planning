@@ -13,6 +13,7 @@ use App\Http\Controllers\CommitmentController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\TenantController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -86,6 +87,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('plans', PlanController::class)->only(['index', 'create', 'store']);
     Route::get('subscribe', [SubscriptionController::class, 'create'])->name('subscriptions.create');
     Route::post('subscribe', [SubscriptionController::class, 'store'])->name('subscriptions.store');
+
+    // Tenants: Übersicht, Wechsel, Einladungen
+    Route::get('tenants', [TenantController::class, 'index'])->name('tenants.index');
+    Route::post('tenants/{tenant}/switch', [TenantController::class, 'switch'])->name('tenants.switch');
+    Route::post('tenants/{tenant}/invite', [TenantController::class, 'invite'])->name('tenants.invite');
+    Route::post('tenants/accept', [TenantController::class, 'accept'])->name('tenants.accept');
 });
 
 require __DIR__ . '/settings.php';

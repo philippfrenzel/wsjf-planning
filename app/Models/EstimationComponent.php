@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\BelongsToTenant;
 
 class EstimationComponent extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
         'feature_id',
@@ -17,6 +18,7 @@ class EstimationComponent extends Model
         'description',
         'created_by',
         'status',
+        'tenant_id',
     ];
 
     // Status-Konstanten

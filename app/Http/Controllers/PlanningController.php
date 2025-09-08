@@ -26,7 +26,8 @@ class PlanningController extends Controller
 
     public function create()
     {
-        $users = User::all(['id', 'name']);
+        $tenantId = Auth::user()->current_tenant_id;
+        $users = User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']);
 
         return Inertia::render('plannings/create', [
             'users' => $users,
@@ -119,7 +120,8 @@ class PlanningController extends Controller
 
     public function edit(Planning $planning)
     {
-        $users = User::all(['id', 'name', 'email']); // E-Mail für alle Benutzer hinzugefügt
+        $tenantId = Auth::user()->current_tenant_id;
+        $users = User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name', 'email']);
         $features = Feature::where('project_id', $planning->project_id)
             ->get()
             ->map(fn($feature) => [
@@ -196,7 +198,8 @@ class PlanningController extends Controller
             abort(403);
         }
         $plannings = Planning::with(['project:id,name', 'creator:id,name', 'owner:id,name', 'deputy:id,name'])->get();
-        $users = User::all(['id', 'name']);
+        $tenantId = Auth::user()->current_tenant_id;
+        $users = User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']);
         return Inertia::render('plannings/admin', [
             'plannings' => $plannings,
             'users' => $users,

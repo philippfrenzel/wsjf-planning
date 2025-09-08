@@ -10,11 +10,13 @@ use App\States\Commitment\CommitmentState;
 use App\States\Commitment\Suggested;
 use App\States\Commitment\Accepted;
 use App\States\Commitment\Completed;
+use App\Models\Concerns\BelongsToTenant;
 
 class Commitment extends Model
 {
     use HasFactory;
     use HasStates;
+    use BelongsToTenant;
 
     /**
      * Die Attribute, die massen-zuweisbar sind.
@@ -27,6 +29,7 @@ class Commitment extends Model
         'user_id',
         'commitment_type',
         'status',
+        'tenant_id',
     ];
 
     /**

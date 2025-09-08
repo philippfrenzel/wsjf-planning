@@ -13,7 +13,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        $tenantId = auth()->user()->current_tenant_id;
+        $users = User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get();
         return Inertia::render('users/index', [
             'users' => $users,
         ]);

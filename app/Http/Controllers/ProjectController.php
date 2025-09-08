@@ -36,8 +36,9 @@ class ProjectController extends Controller
      */
     public function create()
     {
+        $tenantId = Auth::user()->current_tenant_id;
         return Inertia::render('projects/create', [
-            'users' => User::all(['id', 'name']),
+            'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
         ]);
     }
 
@@ -170,9 +171,10 @@ class ProjectController extends Controller
                 }
             }
 
+            $tenantId = Auth::user()->current_tenant_id;
             return Inertia::render('projects/edit', [
                 'project' => $project,
-                'users' => User::all(['id', 'name']),
+                'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
                 'currentStatus' => [
                     'name' => is_string($project->status)
                         ? ucfirst(str_replace('-', ' ', $project->status))
@@ -191,9 +193,10 @@ class ProjectController extends Controller
             ]);
         } catch (\Exception $e) {
             // Bei einem Fehler einfach nur die Basis-Daten ohne Status-Informationen senden
+            $tenantId = Auth::user()->current_tenant_id;
             return Inertia::render('projects/edit', [
                 'project' => $project,
-                'users' => User::all(['id', 'name']),
+                'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
                 'currentStatus' => [
                     'name' => is_string($project->status) ? ucfirst(str_replace('-', ' ', $project->status)) : 'In Planung',
                     'color' => 'bg-blue-100 text-blue-800'

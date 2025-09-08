@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Tenant;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,6 +42,20 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // Standard: Für jeden neuen Benutzer einen eigenen Tenant anlegen
+        $tenant = Tenant::create([
+            'name' => ($user->name ?: $user->email) . ' Tenant',
+            'owner_user_id' => $user->id,
+        ]);
+
+        // Set default and current tenant
+        $user->tenant_id = $tenant->id;
+        $user->current_tenant_id = $tenant->id;
+        $user->save();
+
+        // Add membership for own tenant
+        $user->tenants()->syncWithoutDetaching([$tenant->id]);
 
         event(new Registered($user));
 
