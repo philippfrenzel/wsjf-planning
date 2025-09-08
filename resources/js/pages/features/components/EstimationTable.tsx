@@ -26,6 +26,17 @@ interface EstimationTableProps {
 }
 
 export default function EstimationTable({ estimations }: EstimationTableProps) {
+  // Hilfsfunktion zum Umwandeln von Zeilenumbrüchen in React-Elemente
+  const renderMultilineText = (text: string) => {
+    if (!text) return null;
+    return text.split('\n').map((line, index) => (
+      <React.Fragment key={index}>
+        {index > 0 && <br />}
+        {line}
+      </React.Fragment>
+    ));
+  };
+
   return (
     <div>
       <h4 className="text-md font-medium mb-3">Erfasste Schätzungen ({estimations.length})</h4>
@@ -65,7 +76,7 @@ export default function EstimationTable({ estimations }: EstimationTableProps) {
                 <TableRow>
                   <TableCell colSpan={7} className="bg-gray-50">
                     <div className="p-2 text-sm text-gray-700">
-                      <strong>Notiz:</strong> {estimation.notes}
+                      <strong>Notiz:</strong> {renderMultilineText(estimation.notes)}
                     </div>
                   </TableCell>
                 </TableRow>
