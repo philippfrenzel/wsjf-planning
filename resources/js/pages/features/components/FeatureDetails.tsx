@@ -1,5 +1,3 @@
-import FeatureDescription from "./FeatureDescription";
-
 interface FeatureDetailsProps {
   jiraKey: string;
   projectName?: string;
@@ -11,10 +9,8 @@ export default function FeatureDetails({
   jiraKey,
   projectName,
   requesterName,
-  description,
 }: FeatureDetailsProps) {
-  // FeatureDescription Editor importieren
-  // ...existing code...
+  // Beschreibung wird jetzt separat dargestellt
   return (
     <div className="grid gap-4 mb-6">
       <div>
@@ -25,17 +21,6 @@ export default function FeatureDetails({
       </div>
       <div>
         <strong>Anforderer:</strong> {requesterName ?? "-"}
-      </div>
-      <div>
-        <strong>Beschreibung:</strong>
-        {description ? (
-          <div className="mt-2">
-            {/* Read-only Editor für die Beschreibung */}
-            <FeatureDescription content={description} />
-          </div>
-        ) : (
-          "-"
-        )}
       </div>
     </div>
   );
