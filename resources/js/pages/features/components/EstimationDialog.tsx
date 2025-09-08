@@ -2,6 +2,7 @@ import { FormEvent } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -58,6 +59,11 @@ export default function EstimationDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Schätzung bearbeiten' : 'Neue Schätzung'}</DialogTitle>
+          <DialogDescription>
+            {isEditing 
+              ? 'Bearbeiten Sie die Werte der ausgewählten Schätzung.'
+              : 'Geben Sie die Werte für Ihre neue Schätzung ein.'}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
