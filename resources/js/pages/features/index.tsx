@@ -3,7 +3,7 @@ import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Eye, Pencil, Trash2, ArrowUp, ArrowDown, Search, X, Check } from "lucide-react";
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/popover";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 interface Feature {
   id: number;
@@ -71,9 +72,13 @@ export default function Index({ features }: IndexProps) {
   const [sortField, setSortField] = useState<SortField>("jira_key");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
-  // Pagination
+  // Pagination (mit persistenter Seitengröße pro Nutzer/Ansicht)
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const userId = (usePage().props as any)?.auth?.user?.id ?? "guest";
+  const [itemsPerPage, setItemsPerPage] = useLocalStorage<number>(
+    `tablePrefs:${userId}:features.index:itemsPerPage`,
+    10
+  );
 
   // Extrahiere alle eindeutigen Projekte, Anforderer und Status für die Autovervollständigung
   const uniqueProjects = useMemo(() => {
