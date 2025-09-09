@@ -29,9 +29,14 @@ class TenantController extends Controller
             ->get(['tenants.id', 'tenants.name']);
 
         $owned = Tenant::where('owner_user_id', $user->id)
-            ->with(['members' => function ($q) {
-                $q->select('users.id', 'users.name', 'users.email');
-            }])
+            ->with([
+                'members' => function ($q) {
+                    $q->select('users.id', 'users.name', 'users.email');
+                },
+                'invitations' => function ($q) {
+                    $q->select('id', 'tenant_id', 'email', 'accepted_at', 'created_at');
+                },
+            ])
             ->get(['id', 'name']);
         $invitations = TenantInvitation::where('email', $user->email)
             ->whereNull('accepted_at')
