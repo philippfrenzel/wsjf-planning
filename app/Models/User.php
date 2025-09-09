@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 // Do not add Tenant global scope here to avoid auth recursion
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -50,6 +51,22 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected $appends = [
+        'avatar',
+    ];
+
+    public function getAvatarAttribute(): ?string
+    {
+        if (!$this->avatar_path) {
+            return null;
+        }
+        // If already a full URL, return as is
+        if (str_starts_with($this->avatar_path, 'http://') || str_starts_with($this->avatar_path, 'https://')) {
+            return $this->avatar_path;
+        }
+        return Storage::disk('public')->url($this->avatar_path);
     }
 
     /**
