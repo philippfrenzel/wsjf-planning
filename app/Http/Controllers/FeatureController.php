@@ -168,9 +168,10 @@ class FeatureController extends Controller
 
     public function create()
     {
+        $tenantId = Auth::user()->current_tenant_id;
         return Inertia::render('features/create', [
             'projects' => Project::all(['id', 'name']),
-            'users' => User::all(['id', 'name']),
+            'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
         ]);
     }
 
@@ -325,10 +326,11 @@ class FeatureController extends Controller
             }
         }
 
+        $tenantId = Auth::user()->current_tenant_id;
         return Inertia::render('features/edit', [
             'feature' => $feature->load(['project', 'requester']),
             'projects' => Project::all(['id', 'name']),
-            'users' => User::all(['id', 'name']),
+            'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'statusOptions' => $statusOptions,
         ]);
     }

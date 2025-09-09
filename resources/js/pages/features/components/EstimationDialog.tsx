@@ -2,6 +2,7 @@ import { FormEvent } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -29,6 +30,7 @@ interface EstimationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   estimationData: EstimationData;
+  isEditing?: boolean;
   onBestCaseChange: (value: number) => void;
   onMostLikelyChange: (value: number) => void;
   onWorstCaseChange: (value: number) => void;
@@ -41,6 +43,7 @@ export default function EstimationDialog({
   open,
   onOpenChange,
   estimationData,
+  isEditing = false,
   onBestCaseChange,
   onMostLikelyChange,
   onWorstCaseChange,
@@ -55,7 +58,12 @@ export default function EstimationDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Neue Schätzung</DialogTitle>
+          <DialogTitle>{isEditing ? 'Schätzung bearbeiten' : 'Neue Schätzung'}</DialogTitle>
+          <DialogDescription>
+            {isEditing 
+              ? 'Bearbeiten Sie die Werte der ausgewählten Schätzung.'
+              : 'Geben Sie die Werte für Ihre neue Schätzung ein.'}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
@@ -66,8 +74,11 @@ export default function EstimationDialog({
                 type="number"
                 step="0.1"
                 min="0"
-                value={estimationData.best_case}
-                onChange={(e) => onBestCaseChange(parseFloat(e.target.value))}
+                value={estimationData.best_case || ""}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                  onBestCaseChange(isNaN(value) ? 0 : value);
+                }}
                 required
               />
             </div>
@@ -78,8 +89,11 @@ export default function EstimationDialog({
                 type="number"
                 step="0.1"
                 min="0"
-                value={estimationData.most_likely}
-                onChange={(e) => onMostLikelyChange(parseFloat(e.target.value))}
+                value={estimationData.most_likely || ""}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                  onMostLikelyChange(isNaN(value) ? 0 : value);
+                }}
                 required
               />
             </div>
@@ -90,8 +104,11 @@ export default function EstimationDialog({
                 type="number"
                 step="0.1"
                 min="0"
-                value={estimationData.worst_case}
-                onChange={(e) => onWorstCaseChange(parseFloat(e.target.value))}
+                value={estimationData.worst_case || ""}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                  onWorstCaseChange(isNaN(value) ? 0 : value);
+                }}
                 required
               />
             </div>
@@ -124,7 +141,9 @@ export default function EstimationDialog({
             />
           </div>
           
-          <Button type="submit" className="w-full">Schätzung speichern</Button>
+          <Button type="submit" className="w-full">
+            {isEditing ? 'Schätzung aktualisieren' : 'Schätzung speichern'}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

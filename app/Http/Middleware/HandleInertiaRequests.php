@@ -45,6 +45,8 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
+                'tenants' => fn () => $request->user()?->tenants()->get(['tenants.id','tenants.name']) ?? [],
+                'currentTenant' => fn () => $request->user()?->currentTenant()->first(['id','name']),
             ],
             'locale' => app()->getLocale(),
             'ziggy' => fn (): array => [

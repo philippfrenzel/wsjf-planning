@@ -11,11 +11,13 @@ use App\States\Project\InPlanning;
 use App\States\Project\InRealization;
 use App\States\Project\InApproval;
 use App\States\Project\Closed;
+use App\Models\Concerns\BelongsToTenant;
 
 class Project extends Model
 {
     use HasFactory;
     use HasStates;
+    use BelongsToTenant;
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +34,7 @@ class Project extends Model
         'deputy_leader_id',
         'created_by',
         'status',
+        'tenant_id',
     ];
 
     /**

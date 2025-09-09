@@ -2,6 +2,7 @@ import { FormEvent } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -40,6 +41,9 @@ export default function EditComponentDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Komponente bearbeiten</DialogTitle>
+          <DialogDescription>
+            Hier können Sie den Namen und die Beschreibung der Komponente ändern.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>

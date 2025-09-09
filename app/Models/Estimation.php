@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\BelongsToTenant;
 
 class Estimation extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
         'component_id',
@@ -18,7 +19,8 @@ class Estimation extends Model
         'worst_case',
         'unit',
         'notes',
-        'created_by'
+        'created_by',
+        'tenant_id',
     ];
 
     /**

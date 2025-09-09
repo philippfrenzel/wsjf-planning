@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\BelongsToTenant;
 
 class Planning extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
         'project_id',
@@ -22,6 +23,7 @@ class Planning extends Model
         'owner_id',      // ID des Hauptverantwortlichen
         'deputy_id',     // ID des Stellvertreters
         // weitere Felder nach Bedarf
+        'tenant_id',
     ];
 
     /**

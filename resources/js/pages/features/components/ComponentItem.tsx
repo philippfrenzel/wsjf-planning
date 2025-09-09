@@ -18,6 +18,8 @@ interface ComponentItemProps {
   onArchive: (id: number) => void;
   onActivate: (id: number) => void;
   onAddEstimation: (id: number) => void;
+  onEditEstimation?: (componentId: number, estimation: any) => void;
+  onDeleteEstimation?: (componentId: number, estimationId: number) => void;
 }
 
 export default function ComponentItem({
@@ -26,6 +28,8 @@ export default function ComponentItem({
   onArchive,
   onActivate,
   onAddEstimation,
+  onEditEstimation,
+  onDeleteEstimation
 }: ComponentItemProps) {
   return (
     <Card>
@@ -82,7 +86,11 @@ export default function ComponentItem({
         <p className="mb-4">{component.description}</p>
         
         {component.estimations && component.estimations.length > 0 ? (
-          <EstimationTable estimations={component.estimations} />
+          <EstimationTable 
+            estimations={component.estimations} 
+            onEdit={onEditEstimation ? (estimation) => onEditEstimation(component.id, estimation) : undefined}
+            onDelete={onDeleteEstimation ? (estimationId) => onDeleteEstimation(component.id, estimationId) : undefined}
+          />
         ) : (
           <p className="text-gray-500">Noch keine Schätzungen vorhanden.</p>
         )}

@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+// Do not add Tenant global scope here to avoid auth recursion
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 
 class User extends Authenticatable
 {
@@ -22,6 +25,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'tenant_id',
+        'current_tenant_id',
     ];
 
     /**
@@ -55,5 +60,21 @@ class User extends Authenticatable
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
+    }
+
+    /**
+     * Tenants, in denen der User Mitglied ist.
+     */
+    public function tenants(): EloquentBelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_user')->withTimestamps();
+    }
+
+    /**
+     * Aktueller Tenant des Users (für Kontext/Scope)
+     */
+    public function currentTenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'current_tenant_id');
     }
 }

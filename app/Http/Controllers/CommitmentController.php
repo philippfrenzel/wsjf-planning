@@ -149,10 +149,11 @@ class CommitmentController extends Controller
             ->select('features.id', 'features.jira_key', 'features.name')
             ->get();
 
+        $tenantId = Auth::user()->current_tenant_id;
         return Inertia::render('commitments/edit', [
             'commitment' => $commitment,
             'features' => $features,
-            'users' => User::all(['id', 'name']),
+            'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'commitmentTypes' => [
                 ['value' => 'A', 'label' => 'Hohe Priorität & Dringlichkeit'],
                 ['value' => 'B', 'label' => 'Hohe Priorität, geringe Dringlichkeit'],

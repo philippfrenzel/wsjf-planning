@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\BelongsToTenant;
 
 class EstimationHistory extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     public $timestamps = false;
 
@@ -19,6 +20,7 @@ class EstimationHistory extends Model
         'new_value',
         'changed_by',
         'changed_at',
+        'tenant_id',
     ];
 
     protected $casts = [

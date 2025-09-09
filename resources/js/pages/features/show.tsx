@@ -96,8 +96,11 @@ export default function Show({ feature, auth }: ShowProps) {
   const {
     estimationDialogOpen,
     estimationData,
+    isEditing,
     openEstimationDialog,
+    openEditEstimationDialog,
     handleEstimationSubmit,
+    handleDeleteEstimation,
     setEstimationDialogOpen,
     updateEstimationData,
   } = useEstimationManagement(feature.id);
@@ -118,17 +121,6 @@ export default function Show({ feature, auth }: ShowProps) {
             requesterName={feature.requester?.name}
           />
 
-          {/* Button zum Hinzufügen einer Komponente */}
-          <div className="mt-6 mb-4">
-            <Button 
-              onClick={toggleComponentForm}
-              variant="default"
-              className="w-full sm:w-auto"
-            >
-              {showComponentForm ? "Abbrechen" : "Komponente hinzufügen"}
-            </Button>
-          </div>
-
           {/* Formular zum Erstellen einer neuen Komponente */}
           {showComponentForm && (
             <ComponentForm
@@ -148,11 +140,23 @@ export default function Show({ feature, auth }: ShowProps) {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium">Schätzungskomponenten</h3>
               
-              {/* Toggle für archivierte Komponenten */}
-              <ArchiveToggle
-                showArchived={showArchived}
-                toggleArchived={toggleArchivedVisibility}
-              />
+              <div className="flex items-center gap-3">
+                {/* Button zum Hinzufügen einer Komponente */}
+                <Button 
+                  onClick={toggleComponentForm}
+                  variant="default"
+                  size="sm"
+                  className="whitespace-nowrap"
+                >
+                  {showComponentForm ? "Abbrechen" : "Komponente hinzufügen"}
+                </Button>
+
+                {/* Toggle für archivierte Komponenten */}
+                <ArchiveToggle
+                  showArchived={showArchived}
+                  toggleArchived={toggleArchivedVisibility}
+                />
+              </div>
             </div>
           
           {/* Liste der Komponenten */}
@@ -168,6 +172,8 @@ export default function Show({ feature, auth }: ShowProps) {
                     onArchive={archiveComponent}
                     onActivate={activateComponent}
                     onAddEstimation={openEstimationDialog}
+                    onEditEstimation={openEditEstimationDialog}
+                    onDeleteEstimation={handleDeleteEstimation}
                   />
                 ))}
             </div>
@@ -190,11 +196,12 @@ export default function Show({ feature, auth }: ShowProps) {
         </CardContent>
       </Card>
 
-      {/* Dialog zum Erstellen einer Schätzung */}
+      {/* Dialog zum Erstellen oder Bearbeiten einer Schätzung */}
       <EstimationDialog
         open={estimationDialogOpen}
         onOpenChange={setEstimationDialogOpen}
         estimationData={estimationData}
+        isEditing={isEditing}
         onBestCaseChange={(value) => updateEstimationData('best_case', value)}
         onMostLikelyChange={(value) => updateEstimationData('most_likely', value)}
         onWorstCaseChange={(value) => updateEstimationData('worst_case', value)}
