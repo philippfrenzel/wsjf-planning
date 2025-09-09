@@ -22,8 +22,17 @@ class TenantController extends Controller
     public function index(): Response
     {
         $user = Auth::user();
-        $tenants = $user->tenants()->select('tenants.id', 'tenants.name')->get();
-        $owned = Tenant::where('owner_user_id', $user->id)->get(['id', 'name']);
+        $tenants = $user->tenants()
+            ->with(['members' => function ($q) {
+                $q->select('users.id', 'users.name', 'users.email');
+            }])
+            ->get(['tenants.id', 'tenants.name']);
+
+        $owned = Tenant::where('owner_user_id', $user->id)
+            ->with(['members' => function ($q) {
+                $q->select('users.id', 'users.name', 'users.email');
+            }])
+            ->get(['id', 'name']);
         $invitations = TenantInvitation::where('email', $user->email)
             ->whereNull('accepted_at')
             ->select('id', 'tenant_id', 'email', 'token', 'expires_at')

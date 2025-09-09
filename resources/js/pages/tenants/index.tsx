@@ -7,8 +7,8 @@ import { type SharedData } from '@/types';
 
 export default function TenantsIndex() {
     const page = usePage<SharedData>();
-    const tenants = (page.props.tenants as { id: number; name: string }[]) ?? [];
-    const ownedTenants = (page.props.ownedTenants as { id: number; name: string }[]) ?? [];
+    const tenants = (page.props.tenants as { id: number; name: string; members?: { id: number; name: string; email: string }[] }[]) ?? [];
+    const ownedTenants = (page.props.ownedTenants as { id: number; name: string; members?: { id: number; name: string; email: string }[] }[]) ?? [];
     const currentTenantId = (page.props.currentTenantId as number | null) ?? null;
     const invitations = (page.props.pendingInvitations as any[]) ?? [];
 
@@ -27,7 +27,7 @@ export default function TenantsIndex() {
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Home', href: '/' }, { title: 'Tenants', href: route('tenants.index') }]}>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <Card>
                     <CardHeader>
                         <CardTitle>Deine Tenants</CardTitle>
@@ -101,6 +101,32 @@ export default function TenantsIndex() {
                                 </ul>
                             </div>
                         )}
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Mitglieder (aktueller Tenant)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {(() => {
+                            const current = tenants.find((t) => t.id === currentTenantId);
+                            const members = current?.members ?? [];
+                            if (!current) return <div className="text-sm text-neutral-600">Kein aktueller Tenant ausgewählt.</div>;
+                            if (members.length === 0)
+                                return <div className="text-sm text-neutral-600">Noch keine Mitglieder vorhanden.</div>;
+                            return (
+                                <ul className="space-y-2">
+                                    {members.map((m) => (
+                                        <li key={m.id} className="flex items-center justify-between">
+                                            <span>
+                                                <span className="font-medium">{m.name}</span>
+                                                <span className="ml-2 text-xs text-neutral-500">{m.email}</span>
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            );
+                        })()}
                     </CardContent>
                 </Card>
             </div>
