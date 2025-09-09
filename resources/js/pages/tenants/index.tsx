@@ -7,8 +7,13 @@ import { type SharedData } from '@/types';
 
 export default function TenantsIndex() {
     const page = usePage<SharedData>();
-    const tenants = (page.props.tenants as { id: number; name: string }[]) ?? [];
-    const ownedTenants = (page.props.ownedTenants as { id: number; name: string }[]) ?? [];
+    const tenants = (page.props.tenants as { id: number; name: string; members?: { id: number; name: string; email: string }[] }[]) ?? [];
+    const ownedTenants = (page.props.ownedTenants as {
+        id: number;
+        name: string;
+        members?: { id: number; name: string; email: string }[];
+        invitations?: { id: number; email: string; accepted_at?: string | null; created_at?: string }[];
+    }[]) ?? [];
     const currentTenantId = (page.props.currentTenantId as number | null) ?? null;
     const invitations = (page.props.pendingInvitations as any[]) ?? [];
 
@@ -81,6 +86,7 @@ export default function TenantsIndex() {
                                 Einladung erstellen
                             </Button>
                         </form>
+                        {/* Eigene, an dich gerichtete Einladungen */}
                         {invitations.length > 0 && (
                             <div className="mt-6 text-sm text-neutral-600">
                                 <div className="mb-2 font-medium">Ausstehende Einladungen für deine E-Mail:</div>
@@ -101,6 +107,83 @@ export default function TenantsIndex() {
                                 </ul>
                             </div>
                         )}
+
+                        {/* Einladungen für den ausgewählten (eigenen) Tenant */}
+                        {(() => {
+                            const selected = ownedTenants.find((t) => t.id === data.tenant_id);
+                            if (!selected) return null;
+                            const pend = (selected.invitations ?? []).filter((i) => !i.accepted_at);
+                            const accepted = (selected.invitations ?? []).filter((i) => !!i.accepted_at);
+                            return (
+                                <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div>
+                                        <div className="mb-2 text-sm font-medium">Ausstehend ({pend.length})</div>
+                                        {pend.length === 0 ? (
+                                            <div className="text-xs text-neutral-500">Keine ausstehenden Einladungen</div>
+                                        ) : (
+                                            <ul className="space-y-1 text-sm">
+                                                {pend.map((p) => (
+                                                    <li key={p.id} className="flex items-center justify-between">
+                                                        <span>{p.email}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <div className="mb-2 text-sm font-medium">Angenommen ({accepted.length})</div>
+                                        {accepted.length === 0 ? (
+                                            <div className="text-xs text-neutral-500">Noch keine angenommenen Einladungen</div>
+                                        ) : (
+                                            <ul className="space-y-1 text-sm">
+                                                {accepted.map((a) => {
+                                                    const member = (selected.members ?? []).find((m) => m.email === a.email);
+                                                    return (
+                                                        <li key={a.id} className="flex items-center justify-between">
+                                                            <span>
+                                                                {member ? (
+                                                                    <>
+                                                                        <span className="font-medium">{member.name}</span>
+                                                                        <span className="ml-2 text-xs text-neutral-500">{member.email}</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <span>{a.email}</span>
+                                                                )}
+                                                            </span>
+                                                            <span className="text-xs text-neutral-500">{a.accepted_at?.slice(0, 10)}</span>
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                    </CardContent>
+                </Card>
+                <Card className="md:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Mitglieder (aktueller Tenant)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {(() => {
+                            const current = tenants.find((t) => t.id === currentTenantId);
+                            const members = current?.members ?? [];
+                            if (!current) return <div className="text-sm text-neutral-600">Kein aktueller Tenant ausgewählt.</div>;
+                            if (members.length === 0)
+                                return <div className="text-sm text-neutral-600">Noch keine Mitglieder vorhanden.</div>;
+                            return (
+                                <ul className="space-y-2">
+                                    {members.map((m) => (
+                                        <li key={m.id} className="py-1">
+                                            <div className="font-medium leading-tight">{m.name}</div>
+                                            <div className="text-xs text-neutral-500 leading-tight">{m.email}</div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            );
+                        })()}
                     </CardContent>
                 </Card>
             </div>

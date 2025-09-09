@@ -1,6 +1,6 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 import DeleteUser from '@/components/delete-user';
@@ -24,7 +24,7 @@ type ProfileForm = {
     email: string;
 }
 
-export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
+export default function Profile({ mustVerifyEmail, status, imageSupport }: { mustVerifyEmail: boolean; status?: string; imageSupport?: { imagick: boolean; gd: boolean; jpeg: boolean } }) {
     const { auth } = usePage<SharedData>().props;
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
@@ -40,12 +40,46 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         });
     };
 
+    const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        const form = new FormData();
+        form.append('avatar', e.target.files[0]);
+        router.post(route('profile.avatar'), form, {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => {
+                // clear file input value
+                e.target.value = '';
+            },
+        });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Profile settings" />
 
             <SettingsLayout>
                 <div className="space-y-6">
+                    <HeadingSmall title="Avatar" description="Lade ein Profilbild hoch (wird automatisch optimiert)" />
+                    <div className="flex items-center gap-4">
+                        <img
+                            src={auth.user.avatar || '/logo.svg'}
+                            alt={auth.user.name}
+                            className="h-16 w-16 rounded-full object-cover ring-1 ring-neutral-200"
+                        />
+                        <div>
+                            <Label htmlFor="avatar">Profilbild</Label>
+                            <Input id="avatar" type="file" accept="image/*" onChange={onAvatarChange} />
+                            <p className="mt-1 text-xs text-neutral-500">Max. 5 MB. Quadratisch 256×256, WebP.</p>
+                            <InputError className="mt-1" message={(usePage() as any).props.errors?.avatar as string} />
+                            {imageSupport && imageSupport.jpeg === false && (
+                                <div className="mt-2 rounded-md border border-yellow-200 bg-yellow-50 p-3 text-xs text-yellow-800">
+                                    Hinweis: JPEG-Unterstützung ist auf dem Server aktuell nicht verfügbar. Bitte PNG oder WebP hochladen oder die Server-Erweiterung (Imagick oder GD mit JPEG) aktivieren.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     <HeadingSmall title="Profile information" description="Update your name and email address" />
 
                     <form onSubmit={submit} className="space-y-6">
