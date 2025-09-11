@@ -14,16 +14,7 @@ class FeatureController extends Controller
 {
     public function index(Request $request)
     {
-        $userId = Auth::id();
-
-        // Hole alle Projekt-IDs, bei denen der Nutzer Besitzer, Stellvertreter oder Projektleiter ist
-        $projectIds = Project::where(function ($query) use ($userId) {
-            $query->where('project_leader_id', $userId)
-                ->orWhere('deputy_leader_id', $userId)
-                ->orWhere('created_by', $userId); // Projektleiter-Beziehung hinzugefügt
-        })->pluck('id');
-
-        // Zeige nur Features, die zu diesen Projekten gehören
+        // Zeige alle Features des aktuellen Tenants (TenantScope greift automatisch)
         $features = Feature::with([
             'project:id,name,jira_base_uri',
             'requester:id,name',
@@ -31,7 +22,6 @@ class FeatureController extends Controller
             'estimationComponents.estimations'  // Lade alle Schätzungen der Komponenten
         ])
             ->withCount('estimationComponents as estimation_components_count')
-            ->whereIn('project_id', $projectIds)
             ->get()
             ->map(function ($feature) {
                 // Berechne die Summe der weighted_case manuell
@@ -85,22 +75,13 @@ class FeatureController extends Controller
 
     public function board(Request $request)
     {
-        $userId = Auth::id();
-
-        // Ermittle Projekte, bei denen der Nutzer berechtigt ist
-        $projects = Project::where(function ($query) use ($userId) {
-            $query->where('project_leader_id', $userId)
-                ->orWhere('deputy_leader_id', $userId)
-                ->orWhere('created_by', $userId);
-        })->get(['id', 'name']);
-
-        $projectIds = $projects->pluck('id')->toArray();
+        // Zeige alle Projekte des aktuellen Tenants (TenantScope greift automatisch)
+        $projects = Project::get(['id', 'name']);
 
         // Filtere nach Projekt, wenn ein Filter gesetzt ist
         $selectedProjectId = $request->input('project_id');
 
         $featuresQuery = Feature::with(['project:id,name', 'estimationComponents'])
-            ->whereIn('project_id', $projectIds)
             ->withCount('estimationComponents');
 
         // Filter nach Projekt anwenden, wenn ausgewählt
