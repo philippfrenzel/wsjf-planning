@@ -13,10 +13,19 @@ return new class extends Migration
         ) WHERE (tenant_id IS NULL OR tenant_id = 0) AND project_id IS NOT NULL');
 
         // Votes am Planning ausrichten (robuster als via User)
-        DB::statement('UPDATE votes v
-            JOIN plannings p ON p.id = v.planning_id
-            SET v.tenant_id = p.tenant_id
-            WHERE v.tenant_id IS NULL OR v.tenant_id <> p.tenant_id');
+        $driver = DB::getDriverName();
+
+        if ($driver === 'pgsql') {
+            DB::statement('UPDATE votes v SET tenant_id = p.tenant_id
+                FROM plannings p
+                WHERE p.id = v.planning_id
+                  AND (v.tenant_id IS NULL OR v.tenant_id <> p.tenant_id)');
+        } else {
+            DB::statement('UPDATE votes v
+                JOIN plannings p ON p.id = v.planning_id
+                SET v.tenant_id = p.tenant_id
+                WHERE v.tenant_id IS NULL OR v.tenant_id <> p.tenant_id');
+        }
     }
 
     public function down(): void
