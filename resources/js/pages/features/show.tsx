@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import FeatureHeader from "./components/FeatureHeader";
@@ -50,6 +51,13 @@ interface EstimationComponent {
   status: 'active' | 'archived';
 }
 
+interface DependencyItem {
+  id: number;
+  type: 'ermoeglicht' | 'verhindert' | 'bedingt' | 'ersetzt' | string;
+  related?: { id: number; jira_key: string; name: string } | null;
+  feature?: { id: number; jira_key: string; name: string } | null;
+}
+
 interface Feature {
   id: number;
   jira_key: string;
@@ -58,6 +66,8 @@ interface Feature {
   requester?: { id: number; name: string } | null;
   project?: { id: number; name: string } | null;
   estimation_components: EstimationComponent[];
+  dependencies?: DependencyItem[];
+  dependents?: DependencyItem[];
 }
 
 interface ShowProps {
@@ -120,6 +130,51 @@ export default function Show({ feature, auth }: ShowProps) {
             projectName={feature.project?.name}
             requesterName={feature.requester?.name}
           />
+
+          {/* Abhängigkeiten anzeigen */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <h3 className="text-lg font-medium mb-3">Abhängigkeiten</h3>
+            {feature.dependencies && feature.dependencies.length > 0 ? (
+              <ul className="space-y-2">
+                {feature.dependencies.map((dep) => (
+                  <li key={dep.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Badge className={typeBadgeClass(dep.type)}>{translateDepType(dep.type)}</Badge>
+                      {dep.related ? (
+                        <Link href={route('features.show', { feature: dep.related.id })} className="text-blue-600 hover:underline">
+                          {dep.related.jira_key} – {dep.related.name}
+                        </Link>
+                      ) : (
+                        <span>-</span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500">Keine Abhängigkeiten erfasst.</p>
+            )}
+
+            {feature.dependents && feature.dependents.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium mb-2">Wird referenziert von</h4>
+                <ul className="space-y-2">
+                  {feature.dependents.map((dep) => (
+                    <li key={`dep-${dep.id}`} className="flex items-center gap-2">
+                      <Badge variant="outline">{translateDepType(dep.type)}</Badge>
+                      {dep.feature ? (
+                        <Link href={route('features.show', { feature: dep.feature.id })} className="text-blue-600 hover:underline">
+                          {dep.feature.jira_key} – {dep.feature.name}
+                        </Link>
+                      ) : (
+                        <span>-</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
 
           {/* Formular zum Erstellen einer neuen Komponente */}
           {showComponentForm && (
@@ -226,4 +281,24 @@ export default function Show({ feature, auth }: ShowProps) {
       </div>
     </AppLayout>
   );
+}
+
+function translateDepType(t: string): string {
+  switch (t) {
+    case 'ermoeglicht': return 'ermöglicht';
+    case 'verhindert': return 'verhindert';
+    case 'bedingt': return 'bedingt';
+    case 'ersetzt': return 'ersetzt';
+    default: return t;
+  }
+}
+
+function typeBadgeClass(t: string): string {
+  switch (t) {
+    case 'ermoeglicht': return 'bg-green-100 text-green-800';
+    case 'verhindert': return 'bg-red-100 text-red-800';
+    case 'bedingt': return 'bg-amber-100 text-amber-800';
+    case 'ersetzt': return 'bg-purple-100 text-purple-800';
+    default: return 'bg-gray-100 text-gray-800';
+  }
 }

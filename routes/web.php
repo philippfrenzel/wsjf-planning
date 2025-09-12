@@ -6,6 +6,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PlanningController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FeatureController;
+use App\Http\Controllers\FeatureDependencyController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\EstimationComponentController;
 use App\Http\Controllers\FeatureImportController;
@@ -63,6 +64,9 @@ Route::resource('plannings', PlanningController::class);
 Route::get('features/board', [FeatureController::class, 'board'])->name('features.board');
 Route::post('features/{feature}/status', [FeatureController::class, 'updateStatus'])->name('features.status.update');
 Route::resource('features', FeatureController::class);
+// Feature-Abhängigkeiten
+Route::post('features/{feature}/dependencies', [FeatureDependencyController::class, 'store'])->name('features.dependencies.store');
+Route::delete('features/{feature}/dependencies/{dependency}', [FeatureDependencyController::class, 'destroy'])->name('features.dependencies.destroy');
 // Feature-Import (projektbezogen)
 Route::get('projects/{project}/features/import', [FeatureImportController::class, 'create'])->name('projects.features.import');
 Route::post('projects/{project}/features/import', [FeatureImportController::class, 'store'])->name('projects.features.import.store');

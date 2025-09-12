@@ -204,7 +204,10 @@ class FeatureController extends Controller
             },
             'estimationComponents.creator:id,name',
             'estimationComponents.estimations.creator:id,name',
-            'estimationComponents.latestEstimation'
+            'estimationComponents.latestEstimation',
+            // Abhängigkeiten
+            'dependencies.related:id,jira_key,name,project_id',
+            'dependents.feature:id,jira_key,name,project_id'
         ]);
 
         return Inertia::render('features/show', [
@@ -327,11 +330,28 @@ class FeatureController extends Controller
         }
 
         $tenantId = Auth::user()->current_tenant_id;
+        $featureOptions = Feature::where('id', '!=', $feature->id)
+            ->when($feature->project_id, fn($q) => $q->where('project_id', $feature->project_id))
+            ->orderBy('jira_key')
+            ->get(['id','jira_key','name','project_id']);
+
         return Inertia::render('features/edit', [
-            'feature' => $feature->load(['project', 'requester']),
+            'feature' => $feature->load(['project', 'requester', 'dependencies.related']),
             'projects' => Project::all(['id', 'name']),
             'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'statusOptions' => $statusOptions,
+            'featureOptions' => $featureOptions,
+            'dependencies' => $feature->dependencies->map(function($dep){
+                return [
+                    'id' => $dep->id,
+                    'type' => $dep->type,
+                    'related' => $dep->related ? [
+                        'id' => $dep->related->id,
+                        'jira_key' => $dep->related->jira_key,
+                        'name' => $dep->related->name,
+                    ] : null,
+                ];
+            }),
         ]);
     }
 

@@ -20,6 +20,15 @@ return new class extends Migration
                 FROM plannings p
                 WHERE p.id = v.planning_id
                   AND (v.tenant_id IS NULL OR v.tenant_id <> p.tenant_id)');
+        } elseif ($driver === 'sqlite') {
+            // SQLite unterstützt kein UPDATE ... JOIN; nutze korrelierte Subqueries
+            DB::statement('UPDATE votes
+                SET tenant_id = (
+                    SELECT p.tenant_id FROM plannings p WHERE p.id = votes.planning_id
+                )
+                WHERE tenant_id IS NULL OR tenant_id <> (
+                    SELECT p.tenant_id FROM plannings p WHERE p.id = votes.planning_id
+                )');
         } else {
             DB::statement('UPDATE votes v
                 JOIN plannings p ON p.id = v.planning_id
@@ -33,4 +42,3 @@ return new class extends Migration
         // Kein Down nötig; Korrektur ist idempotent.
     }
 };
-
