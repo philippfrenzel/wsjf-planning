@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Feature;
 use App\Models\Project;
+use App\Models\Planning;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -80,6 +81,7 @@ class FeatureController extends Controller
 
         // Filtere nach Projekt, wenn ein Filter gesetzt ist
         $selectedProjectId = $request->input('project_id');
+        $selectedPlanningId = $request->input('planning_id');
 
         $featuresQuery = Feature::with(['project:id,name', 'estimationComponents'])
             ->withCount('estimationComponents');
@@ -89,7 +91,22 @@ class FeatureController extends Controller
             $featuresQuery->where('project_id', $selectedProjectId);
         }
 
+        // Optional: Filter nach Planning anwenden (nur Features, die in diesem Planning sind)
+        if ($selectedPlanningId) {
+            $featuresQuery->whereIn('features.id', function ($q) use ($selectedPlanningId) {
+                $q->select('feature_id')
+                  ->from('feature_planning')
+                  ->where('planning_id', $selectedPlanningId);
+            });
+        }
+
         $features = $featuresQuery->get();
+
+        // Plannings-Liste für Filter (optional nach Projekt einschränken)
+        $plannings = Planning::select('id', 'title')
+            ->when($selectedProjectId, fn($q) => $q->where('project_id', $selectedProjectId))
+            ->orderBy('title')
+            ->get();
 
         $statuses = [
             ['key' => 'in-planning', 'name' => 'In Planung', 'color' => 'bg-blue-100 text-blue-800'],
@@ -141,8 +158,10 @@ class FeatureController extends Controller
         return Inertia::render('features/board', [
             'lanes' => $lanes,
             'projects' => $projects,
+            'plannings' => $plannings,
             'filters' => [
                 'project_id' => $selectedProjectId,
+                'planning_id' => $selectedPlanningId,
             ],
         ]);
     }

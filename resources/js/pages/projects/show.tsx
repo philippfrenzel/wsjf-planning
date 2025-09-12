@@ -1,13 +1,9 @@
 import React from "react";
 import { PageProps } from "@inertiajs/inertia";
 import { Head, usePage } from "@inertiajs/react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
 
 type Project = {
@@ -36,11 +32,16 @@ export default function ProjectShow() {
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title={`Projekt: ${project.name}`} />
       <Card>
-        <CardHeader>
-          <CardTitle>{project.name}</CardTitle>
-          <CardDescription>
-            Projektnummer: {project.project_number}
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>{project.name}</CardTitle>
+            <CardDescription>Projektnummer: {project.project_number}</CardDescription>
+          </div>
+          <div className="shrink-0">
+            <Button asChild variant="outline">
+              <Link href={route('projects.features.import', project.id)}>Feature-Import</Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-4">
