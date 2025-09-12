@@ -362,11 +362,11 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
                         )}
                       </TableCell>
                       <TableCell>
-                        {feature.name && feature.name.length > 200 ? (
+                        {feature.name && feature.name.length > 50 ? (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="cursor-help">
-                                {feature.name.slice(0, 200)}&hellip;
+                                {feature.name.slice(0, 50)}&hellip;
                               </span>
                             </TooltipTrigger>
                             <TooltipContent>
