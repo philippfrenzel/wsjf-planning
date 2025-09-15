@@ -166,6 +166,46 @@ class FeatureController extends Controller
         ]);
     }
 
+    public function lineage()
+    {
+        $features = Feature::with('dependencies.related')->get();
+
+        $lineages = $features->map(function ($feature) {
+            return $this->buildLineage($feature);
+        })->values();
+
+        return Inertia::render('features/lineage', [
+            'features' => $lineages,
+        ]);
+    }
+
+    protected function buildLineage(Feature $feature, array $visited = [])
+    {
+        if (in_array($feature->id, $visited)) {
+            return [
+                'id' => $feature->id,
+                'jira_key' => $feature->jira_key,
+                'name' => $feature->name,
+                'dependencies' => [],
+            ];
+        }
+
+        $visited[] = $feature->id;
+
+        return [
+            'id' => $feature->id,
+            'jira_key' => $feature->jira_key,
+            'name' => $feature->name,
+            'dependencies' => $feature->dependencies
+                ->map(function ($dep) use ($visited) {
+                    return $dep->related ? $this->buildLineage($dep->related, $visited) : null;
+                })
+                ->filter()
+                ->values()
+                ->all(),
+        ];
+    }
+
     public function create()
     {
         $tenantId = Auth::user()->current_tenant_id;

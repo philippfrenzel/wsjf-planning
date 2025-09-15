@@ -219,12 +219,17 @@ export default function Index({ features }: IndexProps) {
       {/* Titel-Bereich bleibt unverändert */}
       <div className="p-5 flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Features</h1>
-        <Button asChild>
-          <Link href={route("features.create")}>
-            <Plus className="w-4 h-4 mr-2" />
-            Neues Feature
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild>
+            <Link href={route("features.create")}>
+              <Plus className="w-4 h-4 mr-2" />
+              Neues Feature
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href={route("features.lineage")}>Lineage</Link>
+          </Button>
+        </div>
       </div>
       
       {/* Gesamtcontainer für Filter und Tabelle */}
