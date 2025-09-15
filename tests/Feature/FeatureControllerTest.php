@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Feature;
+use App\Models\FeatureDependency;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 class FeatureControllerTest extends TestCase
 {
@@ -101,5 +103,43 @@ class FeatureControllerTest extends TestCase
         $response->assertRedirect(route('features.index', absolute: false));
 
         $this->assertModelMissing($feature);
+    }
+
+    public function test_lineage_view_displays_all_features()
+    {
+        $user = User::factory()->create();
+        $project = $this->createProject($user);
+
+        $featureA = Feature::create([
+            'jira_key' => 'FEA-100',
+            'name' => 'Feature A',
+            'project_id' => $project->id,
+        ]);
+
+        $featureB = Feature::create([
+            'jira_key' => 'FEA-101',
+            'name' => 'Feature B',
+            'project_id' => $project->id,
+        ]);
+
+        $featureC = Feature::create([
+            'jira_key' => 'FEA-102',
+            'name' => 'Feature C',
+            'project_id' => $project->id,
+        ]);
+
+        FeatureDependency::create([
+            'feature_id' => $featureA->id,
+            'related_feature_id' => $featureB->id,
+            'type' => 'ermoeglicht',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('features.lineage', absolute: false));
+
+        $response->assertOk()
+            ->assertInertia(fn (Assert $page) =>
+                $page->component('features/lineage')
+                     ->has('features', 3)
+            );
     }
 }
