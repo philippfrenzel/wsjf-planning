@@ -45,6 +45,7 @@ interface BoardProps {
   filters: {
     project_id?: number | null;
     planning_id?: number | null;
+    status?: string | null;
   };
   plannings: { id: number; title: string }[];
 }
@@ -140,6 +141,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
   const [laneState, setLaneState] = useState(lanes);
   const [activeFeatureId, setActiveFeatureId] = useState<number | null>(null);
   const [overLaneKey, setOverLaneKey] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(filters.status || null);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(filters.project_id || null);
   const [selectedPlanningId, setSelectedPlanningId] = useState<number | null>(filters.planning_id || null);
 
@@ -306,7 +308,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
         >
           <div className="flex gap-4 overflow-x-auto pb-4 pt-2">
             {laneState.map((lane: Lane) => (
-              <LaneColumn key={lane.key} lane={lane} highlight={overLaneKey === lane.key}>
+              <LaneColumn key={lane.key} lane={lane} highlight={overLaneKey === lane.key || selectedStatus === lane.key}>
                 {lane.features.map((feature: Feature) => (
                   <div key={feature.id} className="mb-2">
                     <FeatureCard feature={feature} />

@@ -15,16 +15,30 @@ class FeatureController extends Controller
 {
     public function index(Request $request)
     {
-        // Zeige alle Features des aktuellen Tenants (TenantScope greift automatisch)
-        $features = Feature::with([
+        // Optionaler Initial-Filter (z. B. via Dashboard-Drilldown)
+        $initialStatus = $request->input('status');
+
+        // Basiskonfiguration der Abfrage (TenantScope greift automatisch)
+        $query = Feature::with([
             'project:id,name,jira_base_uri',
             'requester:id,name',
             'estimationComponents',  // Lade alle Komponenten
             'estimationComponents.estimations'  // Lade alle Schätzungen der Komponenten
-        ])
-            ->withCount('estimationComponents as estimation_components_count')
-            ->get()
-            ->map(function ($feature) {
+        ])->withCount('estimationComponents as estimation_components_count');
+
+        // Serverseitiger Status-Filter, falls gesetzt
+        if ($initialStatus) {
+            if ($initialStatus === 'in-planning') {
+                $query->where(function ($q) {
+                    $q->whereNull('status')->orWhere('status', 'in-planning');
+                });
+            } else {
+                $query->where('status', $initialStatus);
+            }
+        }
+
+        // Daten abrufen und für das Frontend aufbereiten
+        $features = $query->get()->map(function ($feature) {
                 // Berechne die Summe der weighted_case manuell
                 $totalWeightedCase = $feature->estimationComponents->flatMap(function ($component) {
                     return $component->estimations;
@@ -71,6 +85,9 @@ class FeatureController extends Controller
 
         return Inertia::render('features/index', [
             'features' => $features,
+            'initialFilters' => [
+                'status' => $initialStatus,
+            ],
         ]);
     }
 
@@ -82,6 +99,7 @@ class FeatureController extends Controller
         // Filtere nach Projekt, wenn ein Filter gesetzt ist
         $selectedProjectId = $request->input('project_id');
         $selectedPlanningId = $request->input('planning_id');
+        $selectedStatus = $request->input('status');
 
         $featuresQuery = Feature::with(['project:id,name', 'estimationComponents'])
             ->withCount('estimationComponents');
@@ -162,6 +180,7 @@ class FeatureController extends Controller
             'filters' => [
                 'project_id' => $selectedProjectId,
                 'planning_id' => $selectedPlanningId,
+                'status' => $selectedStatus,
             ],
         ]);
     }

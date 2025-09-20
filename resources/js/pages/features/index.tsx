@@ -55,13 +55,23 @@ export default function Index({ features }: IndexProps) {
     { title: "Features", href: "#" },
   ];
 
-  // Filter-Zustände
+  // Initiale Filter (z. B. Drilldown vom Dashboard)
+  const pageProps = usePage().props as any;
+  const initialFiltersProp = (pageProps?.initialFilters ?? {}) as Partial<{
+    jira_key: string;
+    name: string;
+    project: string;
+    requester: string;
+    status: string;
+  }>;
+
+  // Filter-Zustände (mit Initialwerten aus Props)
   const [filters, setFilters] = useState({
     jira_key: "",
     name: "",
     project: "",
     requester: "",
-    status: "",
+    status: initialFiltersProp.status ?? "",
   });
 
   // Zustände für Popover
