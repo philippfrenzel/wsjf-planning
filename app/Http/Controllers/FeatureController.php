@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Feature;
 use App\Models\Project;
+use App\Models\Planning;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,26 +15,30 @@ class FeatureController extends Controller
 {
     public function index(Request $request)
     {
-        $userId = Auth::id();
+        // Optionaler Initial-Filter (z. B. via Dashboard-Drilldown)
+        $initialStatus = $request->input('status');
 
-        // Hole alle Projekt-IDs, bei denen der Nutzer Besitzer, Stellvertreter oder Projektleiter ist
-        $projectIds = Project::where(function ($query) use ($userId) {
-            $query->where('project_leader_id', $userId)
-                ->orWhere('deputy_leader_id', $userId)
-                ->orWhere('created_by', $userId); // Projektleiter-Beziehung hinzugefügt
-        })->pluck('id');
-
-        // Zeige nur Features, die zu diesen Projekten gehören
-        $features = Feature::with([
+        // Basiskonfiguration der Abfrage (TenantScope greift automatisch)
+        $query = Feature::with([
             'project:id,name,jira_base_uri',
             'requester:id,name',
             'estimationComponents',  // Lade alle Komponenten
             'estimationComponents.estimations'  // Lade alle Schätzungen der Komponenten
-        ])
-            ->withCount('estimationComponents as estimation_components_count')
-            ->whereIn('project_id', $projectIds)
-            ->get()
-            ->map(function ($feature) {
+        ])->withCount('estimationComponents as estimation_components_count');
+
+        // Serverseitiger Status-Filter, falls gesetzt
+        if ($initialStatus) {
+            if ($initialStatus === 'in-planning') {
+                $query->where(function ($q) {
+                    $q->whereNull('status')->orWhere('status', 'in-planning');
+                });
+            } else {
+                $query->where('status', $initialStatus);
+            }
+        }
+
+        // Daten abrufen und für das Frontend aufbereiten
+        $features = $query->get()->map(function ($feature) {
                 // Berechne die Summe der weighted_case manuell
                 $totalWeightedCase = $feature->estimationComponents->flatMap(function ($component) {
                     return $component->estimations;
@@ -80,27 +85,23 @@ class FeatureController extends Controller
 
         return Inertia::render('features/index', [
             'features' => $features,
+            'initialFilters' => [
+                'status' => $initialStatus,
+            ],
         ]);
     }
 
     public function board(Request $request)
     {
-        $userId = Auth::id();
-
-        // Ermittle Projekte, bei denen der Nutzer berechtigt ist
-        $projects = Project::where(function ($query) use ($userId) {
-            $query->where('project_leader_id', $userId)
-                ->orWhere('deputy_leader_id', $userId)
-                ->orWhere('created_by', $userId);
-        })->get(['id', 'name']);
-
-        $projectIds = $projects->pluck('id')->toArray();
+        // Zeige alle Projekte des aktuellen Tenants (TenantScope greift automatisch)
+        $projects = Project::get(['id', 'name']);
 
         // Filtere nach Projekt, wenn ein Filter gesetzt ist
         $selectedProjectId = $request->input('project_id');
+        $selectedPlanningId = $request->input('planning_id');
+        $selectedStatus = $request->input('status');
 
         $featuresQuery = Feature::with(['project:id,name', 'estimationComponents'])
-            ->whereIn('project_id', $projectIds)
             ->withCount('estimationComponents');
 
         // Filter nach Projekt anwenden, wenn ausgewählt
@@ -108,7 +109,22 @@ class FeatureController extends Controller
             $featuresQuery->where('project_id', $selectedProjectId);
         }
 
+        // Optional: Filter nach Planning anwenden (nur Features, die in diesem Planning sind)
+        if ($selectedPlanningId) {
+            $featuresQuery->whereIn('features.id', function ($q) use ($selectedPlanningId) {
+                $q->select('feature_id')
+                  ->from('feature_planning')
+                  ->where('planning_id', $selectedPlanningId);
+            });
+        }
+
         $features = $featuresQuery->get();
+
+        // Plannings-Liste für Filter (optional nach Projekt einschränken)
+        $plannings = Planning::select('id', 'title')
+            ->when($selectedProjectId, fn($q) => $q->where('project_id', $selectedProjectId))
+            ->orderBy('title')
+            ->get();
 
         $statuses = [
             ['key' => 'in-planning', 'name' => 'In Planung', 'color' => 'bg-blue-100 text-blue-800'],
@@ -160,10 +176,53 @@ class FeatureController extends Controller
         return Inertia::render('features/board', [
             'lanes' => $lanes,
             'projects' => $projects,
+            'plannings' => $plannings,
             'filters' => [
                 'project_id' => $selectedProjectId,
+                'planning_id' => $selectedPlanningId,
+                'status' => $selectedStatus,
             ],
         ]);
+    }
+
+    public function lineage()
+    {
+        $features = Feature::with('dependencies.related')->get();
+
+        $lineages = $features->map(function ($feature) {
+            return $this->buildLineage($feature);
+        })->values();
+
+        return Inertia::render('features/lineage', [
+            'features' => $lineages,
+        ]);
+    }
+
+    protected function buildLineage(Feature $feature, array $visited = [])
+    {
+        if (in_array($feature->id, $visited)) {
+            return [
+                'id' => $feature->id,
+                'jira_key' => $feature->jira_key,
+                'name' => $feature->name,
+                'dependencies' => [],
+            ];
+        }
+
+        $visited[] = $feature->id;
+
+        return [
+            'id' => $feature->id,
+            'jira_key' => $feature->jira_key,
+            'name' => $feature->name,
+            'dependencies' => $feature->dependencies
+                ->map(function ($dep) use ($visited) {
+                    return $dep->related ? $this->buildLineage($dep->related, $visited) : null;
+                })
+                ->filter()
+                ->values()
+                ->all(),
+        ];
     }
 
     public function create()
@@ -204,7 +263,10 @@ class FeatureController extends Controller
             },
             'estimationComponents.creator:id,name',
             'estimationComponents.estimations.creator:id,name',
-            'estimationComponents.latestEstimation'
+            'estimationComponents.latestEstimation',
+            // Abhängigkeiten
+            'dependencies.related:id,jira_key,name,project_id',
+            'dependents.feature:id,jira_key,name,project_id'
         ]);
 
         return Inertia::render('features/show', [
@@ -327,11 +389,28 @@ class FeatureController extends Controller
         }
 
         $tenantId = Auth::user()->current_tenant_id;
+        $featureOptions = Feature::where('id', '!=', $feature->id)
+            ->when($feature->project_id, fn($q) => $q->where('project_id', $feature->project_id))
+            ->orderBy('jira_key')
+            ->get(['id','jira_key','name','project_id']);
+
         return Inertia::render('features/edit', [
-            'feature' => $feature->load(['project', 'requester']),
+            'feature' => $feature->load(['project', 'requester', 'dependencies.related']),
             'projects' => Project::all(['id', 'name']),
             'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'statusOptions' => $statusOptions,
+            'featureOptions' => $featureOptions,
+            'dependencies' => $feature->dependencies->map(function($dep){
+                return [
+                    'id' => $dep->id,
+                    'type' => $dep->type,
+                    'related' => $dep->related ? [
+                        'id' => $dep->related->id,
+                        'jira_key' => $dep->related->jira_key,
+                        'name' => $dep->related->name,
+                    ] : null,
+                ];
+            }),
         ]);
     }
 

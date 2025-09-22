@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import PlanningDetailsCard from "./components/PlanningDetailsCard";
 
 // Interface für Stakeholder anpassen (mit votes_count)
@@ -127,7 +128,22 @@ function FeaturesTable({ features }: { features?: Feature[] }) {
                   </Button>
                 </TableCell>
                 <TableCell>{feature.jira_key}</TableCell>
-                <TableCell>{feature.name}</TableCell>
+                <TableCell>
+                  {feature.name && feature.name.length > 50 ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help">
+                          {feature.name.slice(0, 50)}&hellip;
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <span className="whitespace-pre-line max-w-xl break-words">{feature.name}</span>
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    feature.name
+                  )}
+                </TableCell>
                 <TableCell>
                   {feature.votes && feature.votes.length > 0 ? (
                     <Badge variant="outline" className="bg-blue-50">

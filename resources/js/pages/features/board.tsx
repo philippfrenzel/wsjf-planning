@@ -44,7 +44,10 @@ interface BoardProps {
   projects: Project[];
   filters: {
     project_id?: number | null;
+    planning_id?: number | null;
+    status?: string | null;
   };
+  plannings: { id: number; title: string }[];
 }
 
 function LaneColumn({ lane, children, highlight }: { lane: Lane; children: React.ReactNode; highlight: boolean }) {
@@ -128,7 +131,7 @@ function FeatureCard({ feature }: { feature: Feature }) {
     </div>
   );
 }
-export default function Board({ lanes, projects, filters }: BoardProps) {
+export default function Board({ lanes, projects, plannings, filters }: BoardProps) {
   const breadcrumbs = [
     { title: "Startseite", href: "/" },
     { title: "Board Features", href: "#" },
@@ -138,7 +141,9 @@ export default function Board({ lanes, projects, filters }: BoardProps) {
   const [laneState, setLaneState] = useState(lanes);
   const [activeFeatureId, setActiveFeatureId] = useState<number | null>(null);
   const [overLaneKey, setOverLaneKey] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(filters.status || null);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(filters.project_id || null);
+  const [selectedPlanningId, setSelectedPlanningId] = useState<number | null>(filters.planning_id || null);
 
   // Verbesserte Dnd-Kit Sensoren für zuverlässigere Drag-and-Drop-Erkennung
   const sensors = useSensors(
@@ -225,6 +230,8 @@ export default function Board({ lanes, projects, filters }: BoardProps) {
   const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newProjectId = e.target.value ? Number(e.target.value) : null;
     setSelectedProjectId(newProjectId);
+    // Reset Planning Filter wenn Projekt wechselt
+    setSelectedPlanningId(null);
     
     // Zum Board mit Projektfilter navigieren
     // Pfad direkt erstellen, da kein spezifischer Router-Import verfügbar ist
@@ -233,6 +240,16 @@ export default function Board({ lanes, projects, filters }: BoardProps) {
       : '/features/board';
     
     window.location.href = url;
+  };
+
+  const handlePlanningChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newPlanningId = e.target.value ? Number(e.target.value) : null;
+    setSelectedPlanningId(newPlanningId);
+    const params = new URLSearchParams();
+    if (selectedProjectId) params.set('project_id', String(selectedProjectId));
+    if (newPlanningId) params.set('planning_id', String(newPlanningId));
+    const qs = params.toString();
+    window.location.href = qs ? `/features/board?${qs}` : '/features/board';
   };
 
   return (
@@ -260,6 +277,24 @@ export default function Board({ lanes, projects, filters }: BoardProps) {
                   ))}
                 </select>
               </div>
+              <div className="w-64">
+                <label htmlFor="planningFilter" className="block text-sm font-medium text-gray-700 mb-1">
+                  Planning (optional)
+                </label>
+                <select
+                  id="planningFilter"
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  value={selectedPlanningId || ''}
+                  onChange={handlePlanningChange}
+                >
+                  <option value="">Alle Plannings</option>
+                  {plannings.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -273,7 +308,7 @@ export default function Board({ lanes, projects, filters }: BoardProps) {
         >
           <div className="flex gap-4 overflow-x-auto pb-4 pt-2">
             {laneState.map((lane: Lane) => (
-              <LaneColumn key={lane.key} lane={lane} highlight={overLaneKey === lane.key}>
+              <LaneColumn key={lane.key} lane={lane} highlight={overLaneKey === lane.key || selectedStatus === lane.key}>
                 {lane.features.map((feature: Feature) => (
                   <div key={feature.id} className="mb-2">
                     <FeatureCard feature={feature} />

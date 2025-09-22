@@ -15,6 +15,7 @@ use App\States\Feature\Obsolete;
 use App\States\Feature\Archived;
 use App\States\Feature\Deleted;
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\FeatureDependency;
 
 class Feature extends Model
 {
@@ -233,5 +234,21 @@ class Feature extends Model
     public function commitments(): HasMany
     {
         return $this->hasMany(Commitment::class);
+    }
+
+    /**
+     * Ausgehende Abhängigkeiten dieses Features.
+     */
+    public function dependencies()
+    {
+        return $this->hasMany(FeatureDependency::class, 'feature_id')->with('related:id,jira_key,name,project_id');
+    }
+
+    /**
+     * Eingehende Abhängigkeiten (andere Features, die von diesem abhängen/bezogen sind).
+     */
+    public function dependents()
+    {
+        return $this->hasMany(FeatureDependency::class, 'related_feature_id')->with('feature:id,jira_key,name,project_id');
     }
 }

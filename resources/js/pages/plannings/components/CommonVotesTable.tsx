@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { router, useForm } from "@inertiajs/react";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import CommitmentModal from "./CommitmentModal";
 
 interface User {
@@ -360,7 +361,22 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
                           feature.jira_key
                         )}
                       </TableCell>
-                      <TableCell>{feature.name}</TableCell>
+                      <TableCell>
+                        {feature.name && feature.name.length > 50 ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="cursor-help">
+                                {feature.name.slice(0, 50)}&hellip;
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <span className="whitespace-pre-line max-w-xl break-words">{feature.name}</span>
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          feature.name
+                        )}
+                      </TableCell>
                       {voteTypes.map(type => {
                         const vote = feature.commonvotes?.find(v => v.type === type);
                         return (
