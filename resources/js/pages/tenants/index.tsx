@@ -15,11 +15,26 @@ export default function TenantsIndex() {
         invitations?: { id: number; email: string; accepted_at?: string | null; created_at?: string }[];
     }[]) ?? [];
     const currentTenantId = (page.props.currentTenantId as number | null) ?? null;
-    const invitations = (page.props.pendingInvitations as any[]) ?? [];
+    const invitations =
+        (page.props.pendingInvitations as {
+            id: number;
+            tenant_id: number;
+            email: string;
+            token: string;
+            expires_at?: string | null;
+            tenant: { id: number; name: string };
+        }[]) ?? [];
 
     const { data, setData, post, processing, reset } = useForm<{ email: string; tenant_id: number | '' }>(
         { email: '', tenant_id: ownedTenants[0]?.id ?? '' }
     );
+
+    const revokeInvitation = (tenantId: number, invitationId: number) => {
+        router.delete(route('tenants.invitations.destroy', { tenant: tenantId, invitation: invitationId }), {
+            preserveScroll: true,
+            onBefore: () => confirm('Möchtest du diese Einladung wirklich zurückziehen?'),
+        });
+    };
 
     const invite = (e: React.FormEvent) => {
         e.preventDefault();
@@ -123,8 +138,15 @@ export default function TenantsIndex() {
                                         ) : (
                                             <ul className="space-y-1 text-sm">
                                                 {pend.map((p) => (
-                                                    <li key={p.id} className="flex items-center justify-between">
+                                                    <li key={p.id} className="flex items-center justify-between gap-2">
                                                         <span>{p.email}</span>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="destructive"
+                                                            onClick={() => revokeInvitation(selected.id, p.id)}
+                                                        >
+                                                            Zurückziehen
+                                                        </Button>
                                                     </li>
                                                 ))}
                                             </ul>

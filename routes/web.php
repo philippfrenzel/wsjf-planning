@@ -101,6 +101,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('tenants', [TenantController::class, 'index'])->name('tenants.index');
     Route::post('tenants/{tenant}/switch', [TenantController::class, 'switch'])->name('tenants.switch');
     Route::post('tenants/{tenant}/invite', [TenantController::class, 'invite'])->name('tenants.invite');
+    Route::delete('tenants/{tenant}/invitations/{invitation}', [TenantController::class, 'revokeInvitation'])
+        ->name('tenants.invitations.destroy');
 });
 
 Route::post('tenants/accept', [TenantController::class, 'accept'])->name('tenants.accept');
