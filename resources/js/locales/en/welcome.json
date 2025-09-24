@@ -37,5 +37,6 @@
     "getting_started_title": "Getting started",
     "getting_started_subtitle": "Just a few steps to your first planning:",
     "getting_started_steps": ["Create an account and sign in", "Create a new planning and invite team members", "Add features and estimate effort"],
-    "getting_started_cta": "Start now"
+    "getting_started_cta": "Start now",
+    "imprint_link": "Legal notice & privacy"
 }

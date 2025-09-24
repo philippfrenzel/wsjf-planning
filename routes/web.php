@@ -21,6 +21,10 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+Route::get('/impressum', function () {
+    return Inertia::render('legal/impressum');
+})->name('imprint');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard-Route auf den neuen DashboardController umleiten
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
