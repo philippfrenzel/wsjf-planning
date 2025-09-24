@@ -239,8 +239,14 @@ export default function Welcome() {
                 
                 {/* Footer-Bereich */}
                 <div className="w-full bg-black text-white py-8 mt-auto">
-                    <div className="max-w-[335px] mx-auto lg:max-w-4xl px-4 text-center text-xs">
-                        © {new Date().getFullYear()} WSJF Planning Tool
+                    <div className="max-w-[335px] mx-auto lg:max-w-4xl px-4 text-center text-xs space-y-2">
+                        <Link
+                            href={route('imprint')}
+                            className="text-white underline-offset-4 hover:underline"
+                        >
+                            {t('imprint_link')}
+                        </Link>
+                        <p>© {new Date().getFullYear()} WSJF Planning Tool</p>
                     </div>
                 </div>
             </div>

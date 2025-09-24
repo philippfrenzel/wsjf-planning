@@ -54,12 +54,12 @@ export function AppSidebar({ hasProjects, firstPlanningId }: AppSidebarProps) {
     const footerNavItems: NavItem[] = [
         {
             title: 'Repository',
-            href: 'https://github.com/laravel/react-starter-kit',
+            href: 'https://github.com/philippfrenzel/wsjf-planning',
             icon: Folder,
         },
         {
             title: 'Documentation',
-            href: 'https://laravel.com/docs/starter-kits#react',
+            href: 'https://github.com/philippfrenzel/wsjf-planning/tree/main/docs',
             icon: BookOpen,
         },
     ];

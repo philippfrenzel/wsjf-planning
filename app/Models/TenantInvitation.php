@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 class TenantInvitation extends Model
 {
@@ -32,6 +33,21 @@ class TenantInvitation extends Model
     public function inviter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'inviter_id');
+    }
+
+    public function acceptFor(User $user): void
+    {
+        DB::transaction(function () use ($user) {
+            $user->tenants()->syncWithoutDetaching([$this->tenant_id]);
+
+            $this->forceFill([
+                'accepted_at' => now(),
+            ])->save();
+
+            $user->forceFill([
+                'current_tenant_id' => $this->tenant_id,
+            ])->save();
+        });
     }
 }
 

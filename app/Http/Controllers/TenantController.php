@@ -16,7 +16,7 @@ class TenantController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(['auth', 'verified'])->except('accept');
     }
 
     public function index(): Response
@@ -90,6 +90,27 @@ class TenantController extends Controller
         return back()->with('success', 'Einladung erstellt. Token: ' . $token);
     }
 
+    public function revokeInvitation(Request $request, Tenant $tenant, TenantInvitation $invitation): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if ($tenant->owner_user_id !== $user->id) {
+            abort(403);
+        }
+
+        if ($invitation->tenant_id !== $tenant->id) {
+            abort(404);
+        }
+
+        if ($invitation->accepted_at) {
+            return back()->with('error', 'Diese Einladung wurde bereits angenommen und kann nicht zurückgezogen werden.');
+        }
+
+        $invitation->delete();
+
+        return back()->with('success', 'Einladung wurde zurückgezogen.');
+    }
+
     public function accept(Request $request): RedirectResponse
     {
         $request->validate([
@@ -97,24 +118,34 @@ class TenantController extends Controller
         ]);
 
         $inv = TenantInvitation::where('token', $request->token)
+            ->whereNull('accepted_at')
             ->where(function ($q) {
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             })
             ->firstOrFail();
 
+        if (!Auth::check()) {
+            $request->session()->put('tenant_invitation_token', $inv->token);
+
+            return redirect()->route('login')->with('status', 'Bitte melde dich an, um die Einladung anzunehmen.');
+        }
+
+        /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        if (!$user->hasVerifiedEmail()) {
+            $request->session()->put('tenant_invitation_token', $inv->token);
+
+            return redirect()->route('verification.notice');
+        }
+
         if ($inv->email !== $user->email) {
             abort(403, 'Invitation is for a different email');
         }
 
-        // Mitgliedschaft hinzufügen
-        $user->tenants()->syncWithoutDetaching([$inv->tenant_id]);
-        $inv->accepted_at = now();
-        $inv->save();
+        $inv->acceptFor($user);
 
-        // Optional: direkt zu diesem Tenant wechseln
-        $user->current_tenant_id = $inv->tenant_id;
-        $user->save();
+        $request->session()->forget('tenant_invitation_token');
 
         return back()->with('success', 'Einladung akzeptiert und Tenant gewechselt.');
     }

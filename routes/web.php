@@ -21,6 +21,10 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+Route::get('/impressum', function () {
+    return Inertia::render('legal/impressum');
+})->name('imprint');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard-Route auf den neuen DashboardController umleiten
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
@@ -101,8 +105,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('tenants', [TenantController::class, 'index'])->name('tenants.index');
     Route::post('tenants/{tenant}/switch', [TenantController::class, 'switch'])->name('tenants.switch');
     Route::post('tenants/{tenant}/invite', [TenantController::class, 'invite'])->name('tenants.invite');
-    Route::post('tenants/accept', [TenantController::class, 'accept'])->name('tenants.accept');
+    Route::delete('tenants/{tenant}/invitations/{invitation}', [TenantController::class, 'revokeInvitation'])
+        ->name('tenants.invitations.destroy');
 });
+
+Route::post('tenants/accept', [TenantController::class, 'accept'])->name('tenants.accept');
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
