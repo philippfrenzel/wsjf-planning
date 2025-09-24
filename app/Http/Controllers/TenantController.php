@@ -90,6 +90,27 @@ class TenantController extends Controller
         return back()->with('success', 'Einladung erstellt. Token: ' . $token);
     }
 
+    public function revokeInvitation(Request $request, Tenant $tenant, TenantInvitation $invitation): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if ($tenant->owner_user_id !== $user->id) {
+            abort(403);
+        }
+
+        if ($invitation->tenant_id !== $tenant->id) {
+            abort(404);
+        }
+
+        if ($invitation->accepted_at) {
+            return back()->with('error', 'Diese Einladung wurde bereits angenommen und kann nicht zurückgezogen werden.');
+        }
+
+        $invitation->delete();
+
+        return back()->with('success', 'Einladung wurde zurückgezogen.');
+    }
+
     public function accept(Request $request): RedirectResponse
     {
         $request->validate([
