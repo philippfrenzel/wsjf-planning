@@ -12,7 +12,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'WSJF Planner'),
+    'name' => env('APP_NAME', 'SaFE Planner'),
 
     /*
     |--------------------------------------------------------------------------

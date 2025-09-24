@@ -4,7 +4,7 @@ describe('Home page', () => {
   });
 
   it('displays the heading and auth links', () => {
-    cy.contains('h1', 'WSJF Planning').should('be.visible');
+    cy.contains('h1', 'SaFE Planner').should('be.visible');
     cy.contains('nav a', 'Log in').should('be.visible');
     cy.contains('nav a', 'Register').should('be.visible');
   });
@@ -17,7 +17,7 @@ describe('Home page', () => {
   });
 
   it('has a hero background image', () => {
-    cy.contains('h1', 'WSJF Planning')
+    cy.contains('h1', 'SaFE Planner')
       .parents('section')
       .first()
       .should('have.css', 'background-image')

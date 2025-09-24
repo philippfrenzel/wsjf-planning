@@ -246,7 +246,7 @@ export default function Welcome() {
                         >
                             {t('imprint_link')}
                         </Link>
-                        <p>© {new Date().getFullYear()} WSJF Planning Tool</p>
+                        <p>© {new Date().getFullYear()} SaFE Planner</p>
                     </div>
                 </div>
             </div>

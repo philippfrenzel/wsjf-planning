@@ -39,7 +39,7 @@ export function AppSidebar({ hasProjects, firstPlanningId }: AppSidebarProps) {
             icon: Kanban,
         },
         hasProjects && {
-            title: 'WSJF Verwaltung',
+            title: 'SaFE Verwaltung',
             href: '/plannings?project_id=' + (firstPlanningId || ''),
             icon: Route,
         },

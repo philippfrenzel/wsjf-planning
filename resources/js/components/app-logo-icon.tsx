@@ -1,6 +1,6 @@
 import { SVGAttributes } from 'react';
 
-// Minimal WSJF Planner glyph: collaborative triad + ascending bars.
+// Minimal SaFE Planner glyph: collaborative triad + ascending bars.
 export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
   return (
     <svg {...props} viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
