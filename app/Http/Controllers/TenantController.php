@@ -133,12 +133,6 @@ class TenantController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if (!$user->hasVerifiedEmail()) {
-            $request->session()->put('tenant_invitation_token', $inv->token);
-
-            return redirect()->route('verification.notice');
-        }
-
         if ($inv->email !== $user->email) {
             abort(403, 'Invitation is for a different email');
         }
