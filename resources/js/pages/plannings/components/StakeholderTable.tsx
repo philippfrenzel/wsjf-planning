@@ -16,7 +16,7 @@ interface StakeholderTableProps {
 }
 
 const StakeholderTable = ({ stakeholders }: StakeholderTableProps) => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   // Prüfen, ob Stakeholder-Daten vorhanden sind
   if (!stakeholders || stakeholders.length === 0) {
     return <div className="py-2">Keine Stakeholder vorhanden.</div>;
