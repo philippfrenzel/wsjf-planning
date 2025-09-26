@@ -75,6 +75,9 @@ class PlanningController extends Controller
             'user_id' => $planning->created_by,
         ]);
 
+        // IDs der dem Planning zugeordneten Stakeholder (Stammdaten)
+        $stakeholderIds = $planning->stakeholders()->pluck('users.id');
+
         $planning->load([
             'project:id,name,jira_base_uri',
             'stakeholders:id,name,email',
@@ -84,8 +87,11 @@ class PlanningController extends Controller
                     ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
             },
             'features.project:id,name,jira_base_uri',
-            'features.votes' => function ($query) use ($planning) {
+            'features.votes' => function ($query) use ($planning, $stakeholderIds) {
                 $query->where('planning_id', $planning->id)
+                    // Nur Stimmen von als Stakeholder (Stammdaten) zugeordneten Nutzern berücksichtigen
+                    ->whereIn('user_id', $stakeholderIds)
+                    // Den Planning-Ersteller (Creator) aus der Individual-Übersicht ausblenden
                     ->whereHas('user', function ($subQuery) use ($planning) {
                         $subQuery->where('id', '!=', $planning->created_by);
                     });
