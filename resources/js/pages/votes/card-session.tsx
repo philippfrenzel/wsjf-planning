@@ -29,6 +29,9 @@ interface Feature {
     jira_key: string;
     name: string;
     description?: string;
+    project?: {
+        jira_base_uri?: string | null;
+    } | null;
 }
 
 interface Planning {
@@ -117,8 +120,22 @@ const FeatureCard: React.FC<{
             <Dialog open={showDetails} onOpenChange={setShowDetails}>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader>
-                        <DialogTitle>
-                            {feature.jira_key}: {feature.name}
+                        <DialogTitle className="space-y-1">
+                            <span>
+                                {feature.project?.jira_base_uri ? (
+                                    <a
+                                        href={`${feature.project.jira_base_uri}${feature.jira_key}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                        {feature.jira_key}
+                                    </a>
+                                ) : (
+                                    feature.jira_key
+                                )}
+                                {feature.name ? `: ${feature.name}` : ""}
+                            </span>
                         </DialogTitle>
                     </DialogHeader>
 
@@ -216,8 +233,22 @@ const SortableFeatureCard: React.FC<{
             <Dialog open={showDetails} onOpenChange={setShowDetails}>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader>
-                        <DialogTitle>
-                            {feature.jira_key}: {feature.name}
+                        <DialogTitle className="space-y-1">
+                            <span>
+                                {feature.project?.jira_base_uri ? (
+                                    <a
+                                        href={`${feature.project.jira_base_uri}${feature.jira_key}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                        {feature.jira_key}
+                                    </a>
+                                ) : (
+                                    feature.jira_key
+                                )}
+                                {feature.name ? `: ${feature.name}` : ""}
+                            </span>
                         </DialogTitle>
                     </DialogHeader>
 
@@ -257,6 +288,10 @@ const CategoryTabContent: React.FC<{
 
     // Zustand für die Detailanzeige
     const [showDetails, setShowDetails] = useState<number | null>(null);
+
+    const detailFeature = showDetails !== null
+        ? categorizedFeatures[type]?.unsorted.find(f => f.id === showDetails) ?? null
+        : null;
 
     // State nicht nötig, da wir direkt die onDragEnd-Funktion aufrufen
     const handleMoveToSorted = (featureId: number) => {
@@ -411,18 +446,32 @@ const CategoryTabContent: React.FC<{
                 </DndContext>
                 
                 {/* Details-Dialog für unbewertete Features */}
-                {showDetails && (
+                {showDetails && detailFeature && (
                     <Dialog open={showDetails !== null} onOpenChange={() => setShowDetails(null)}>
                         <DialogContent className="max-w-3xl">
                             <DialogHeader>
-                                <DialogTitle>
-                                    {categorizedFeatures[type]?.unsorted.find(f => f.id === showDetails)?.jira_key}: {categorizedFeatures[type]?.unsorted.find(f => f.id === showDetails)?.name}
+                                <DialogTitle className="space-y-1">
+                                    <span>
+                                        {detailFeature.project?.jira_base_uri ? (
+                                            <a
+                                                href={`${detailFeature.project.jira_base_uri}${detailFeature.jira_key}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:text-blue-800 hover:underline"
+                                            >
+                                                {detailFeature.jira_key}
+                                            </a>
+                                        ) : (
+                                            detailFeature.jira_key
+                                        )}
+                                        {detailFeature.name ? `: ${detailFeature.name}` : ""}
+                                    </span>
                                 </DialogTitle>
                             </DialogHeader>
-                            
+
                             <div className="prose prose-sm max-w-none overflow-auto">
-                                {categorizedFeatures[type]?.unsorted.find(f => f.id === showDetails)?.description ? (
-                                    <div dangerouslySetInnerHTML={{ __html: categorizedFeatures[type]?.unsorted.find(f => f.id === showDetails)?.description || "" }} />
+                                {detailFeature.description ? (
+                                    <div dangerouslySetInnerHTML={{ __html: detailFeature.description }} />
                                 ) : (
                                     <p>Keine Beschreibung vorhanden.</p>
                                 )}

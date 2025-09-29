@@ -108,7 +108,8 @@ class VoteController extends Controller
 
         // Korrekt: nur die Features, die mit dem Planning verknüpft sind
         $features = $planning->features()
-            ->select('features.id', 'features.jira_key', 'features.name', 'features.description')
+            ->select('features.id', 'features.jira_key', 'features.name', 'features.description', 'features.project_id')
+            ->with('project:id,jira_base_uri')
             ->get();
 
         // Bereits abgegebene Votes des Users für dieses Planning laden
@@ -262,7 +263,8 @@ class VoteController extends Controller
 
         // Features laden, die mit dem Planning verknüpft sind
         $features = $planning->features()
-            ->select('features.id', 'features.jira_key', 'features.name', 'features.description')
+            ->select('features.id', 'features.jira_key', 'features.name', 'features.description', 'features.project_id')
+            ->with('project:id,jira_base_uri')
             ->get();
 
         // Bereits abgegebene Votes des Users für dieses Planning laden
