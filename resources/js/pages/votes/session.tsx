@@ -14,6 +14,9 @@ interface Feature {
   jira_key: string;
   name: string;
   description?: string;
+  project?: {
+    jira_base_uri?: string | null;
+  } | null;
 }
 
 interface Planning {
@@ -136,8 +139,22 @@ export default function VoteSession({ planning, features, types, existingVotes, 
       <Dialog open={!!selectedFeature} onOpenChange={() => setSelectedFeature(null)}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>
-              {selectedFeature?.jira_key}: {selectedFeature?.name}
+            <DialogTitle className="space-y-1">
+              <span>
+                {selectedFeature?.project?.jira_base_uri && selectedFeature?.jira_key ? (
+                  <a
+                    href={`${selectedFeature.project.jira_base_uri}${selectedFeature.jira_key}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {selectedFeature.jira_key}
+                  </a>
+                ) : (
+                  selectedFeature?.jira_key
+                )}
+                {selectedFeature?.name ? `: ${selectedFeature.name}` : ""}
+              </span>
             </DialogTitle>
           </DialogHeader>
           
