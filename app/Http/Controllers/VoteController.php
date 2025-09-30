@@ -6,6 +6,7 @@ use App\Models\Planning;
 use App\Models\Vote;
 use App\Models\User;
 use App\Models\Feature;
+use App\States\Planning\Completed as PlanningCompleted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -14,6 +15,25 @@ use Illuminate\Support\Facades\Log;
 
 class VoteController extends Controller
 {
+    /**
+     * Prüft, ob ein Planning abgeschlossen ist.
+     */
+    private function isPlanningCompleted(Planning $planning): bool
+    {
+        $status = $planning->status;
+        if ($status === null) {
+            return false;
+        }
+        if (is_string($status)) {
+            return $status === 'completed';
+        }
+        // State-Objekt
+        try {
+            return $status instanceof PlanningCompleted || (method_exists($status, 'getValue') && $status->getValue() === 'completed');
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
     public function index()
     {
         $votes = Vote::with(['user:id,name', 'feature:id,jira_key,name', 'planning:id,title'])
@@ -101,6 +121,10 @@ class VoteController extends Controller
      */
     public function voteSession(Request $request, Planning $planning)
     {
+        if ($this->isPlanningCompleted($planning)) {
+            return redirect()->route('plannings.show', $planning->id)
+                ->with('error', 'Dieses Planning ist abgeschlossen. Abstimmungen sind nicht mehr möglich.');
+        }
         $user = Auth::user();
 
         // Aktuell: alle Features aus dem Projekt
@@ -135,6 +159,10 @@ class VoteController extends Controller
 
     public function voteSessionStore(Request $request, Planning $planning)
     {
+        if ($this->isPlanningCompleted($planning)) {
+            return redirect()->route('plannings.show', $planning->id)
+                ->with('error', 'Dieses Planning ist abgeschlossen. Abstimmungen sind nicht mehr möglich.');
+        }
         $user = Auth::user();
 
         // Erwartet: votes = [ "featureId_type" => value, ... ]
@@ -259,6 +287,10 @@ class VoteController extends Controller
      */
     public function cardVoteSession(Request $request, Planning $planning)
     {
+        if ($this->isPlanningCompleted($planning)) {
+            return redirect()->route('plannings.show', $planning->id)
+                ->with('error', 'Dieses Planning ist abgeschlossen. Abstimmungen sind nicht mehr möglich.');
+        }
         $user = Auth::user();
 
         // Features laden, die mit dem Planning verknüpft sind
