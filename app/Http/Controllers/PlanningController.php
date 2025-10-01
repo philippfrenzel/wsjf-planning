@@ -165,6 +165,7 @@ class PlanningController extends Controller
             'stakeholder_ids.*' => 'exists:users,id',
             'feature_ids' => 'array',
             'feature_ids.*' => 'exists:features,id',
+            'status' => 'required|string|in:in-planning,in-execution,completed',
         ]);
 
         $planning->update($validated);

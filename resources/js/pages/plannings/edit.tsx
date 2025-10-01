@@ -58,6 +58,11 @@ interface Planning {
   deputy_id?: number;
   owner?: User;
   deputy?: User;
+  status_details?: {
+    value: string;
+    name: string;
+    color: string;
+  };
 }
 
 interface EditProps {
@@ -91,6 +96,7 @@ export default function Edit({
     executed_at: formatDateForInput(planning.executed_at),
     owner_id: planning.owner_id ? String(planning.owner_id) : "",     // Neu: Owner-ID
     deputy_id: planning.deputy_id ? String(planning.deputy_id) : "",  // Neu: Deputy-ID
+    status: planning.status_details?.value ?? "in-planning",
     stakeholder_ids: planning.stakeholders
       ? planning.stakeholders.map((u) => String(u.id))
       : [],
@@ -101,7 +107,7 @@ export default function Edit({
 
   const [featureStatusFilter, setFeatureStatusFilter] = useState<string>("");
 
-  const statusOptions = useMemo(() => {
+  const featureStatusOptions = useMemo(() => {
     const map = new Map<string, string>();
     features.forEach((f) => {
       if (f.status_details) {
@@ -110,6 +116,15 @@ export default function Edit({
     });
     return Array.from(map.entries()).map(([value, name]) => ({ value, name }));
   }, [features]);
+
+  const planningStatusOptions = useMemo(
+    () => [
+      { value: "in-planning", label: "In Planung" },
+      { value: "in-execution", label: "In Durchführung" },
+      { value: "completed", label: "Abgeschlossen" },
+    ],
+    []
+  );
 
   const filteredFeatures = useMemo(
     () =>
@@ -166,6 +181,27 @@ export default function Edit({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={values.status}
+                onValueChange={(value) => handleSelectChange("status", value)}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Status wählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {planningStatusOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.status && (
+                <p className="text-sm text-red-600 mt-1">{errors.status}</p>
+              )}
+            </div>
             <div>
               <Label htmlFor="project_id">Projekt</Label>
               <Select
@@ -334,7 +370,7 @@ export default function Edit({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Alle Status</SelectItem>
-                      {statusOptions.map((opt) => (
+                      {featureStatusOptions.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
                           {opt.name}
                         </SelectItem>
