@@ -67,10 +67,19 @@ interface EditProps {
   features: Feature[]; // Features aus dem gleichen Projekt
 }
 
-export default function Edit({ 
-  planning, 
-  projects, 
-  users, 
+const formatDateForInput = (dateString?: string) => {
+  if (!dateString) {
+    return "";
+  }
+
+  const [datePart] = dateString.split(/[T ]/);
+  return datePart ?? "";
+};
+
+export default function Edit({
+  planning,
+  projects,
+  users,
   features = [] // Standardwert als leeres Array
 }: EditProps) {
   const { errors } = usePage().props as { errors: Record<string, string> };
@@ -78,8 +87,8 @@ export default function Edit({
     project_id: planning.project_id ? String(planning.project_id) : "",
     title: planning.title || "",
     description: planning.description || "",
-    planned_at: planning.planned_at || "",
-    executed_at: planning.executed_at || "",
+    planned_at: formatDateForInput(planning.planned_at),
+    executed_at: formatDateForInput(planning.executed_at),
     owner_id: planning.owner_id ? String(planning.owner_id) : "",     // Neu: Owner-ID
     deputy_id: planning.deputy_id ? String(planning.deputy_id) : "",  // Neu: Deputy-ID
     stakeholder_ids: planning.stakeholders
