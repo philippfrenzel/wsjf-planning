@@ -7,6 +7,7 @@ use App\Http\Controllers\PlanningController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\FeatureDependencyController;
+use App\Http\Controllers\FeatureStateHistoryController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\EstimationComponentController;
 use App\Http\Controllers\FeatureImportController;
@@ -69,6 +70,8 @@ Route::get('features/board', [FeatureController::class, 'board'])->name('feature
 Route::post('features/{feature}/status', [FeatureController::class, 'updateStatus'])->name('features.status.update');
 Route::get('features/lineage', [FeatureController::class, 'lineage'])->name('features.lineage');
 Route::resource('features', FeatureController::class);
+Route::get('api/features/state-history', [FeatureStateHistoryController::class, 'index'])
+    ->name('api.features.state-history');
 // Feature-Abhängigkeiten
 Route::post('features/{feature}/dependencies', [FeatureDependencyController::class, 'store'])->name('features.dependencies.store');
 Route::delete('features/{feature}/dependencies/{dependency}', [FeatureDependencyController::class, 'destroy'])->name('features.dependencies.destroy');

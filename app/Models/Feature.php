@@ -16,6 +16,7 @@ use App\States\Feature\Archived;
 use App\States\Feature\Deleted;
 use App\Models\Concerns\BelongsToTenant;
 use App\Models\FeatureDependency;
+use App\Models\FeatureStateHistory;
 
 class Feature extends Model
 {
@@ -109,6 +110,11 @@ class Feature extends Model
     public function votes()
     {
         return $this->hasMany(Vote::class);
+    }
+
+    public function stateHistories(): HasMany
+    {
+        return $this->hasMany(FeatureStateHistory::class)->orderBy('changed_at');
     }
 
     /**
