@@ -13,10 +13,11 @@ use App\States\Planning\PlanningState;
 use App\States\Planning\InPlanning as PlanningInPlanning;
 use App\States\Planning\InExecution;
 use App\States\Planning\Completed;
+use App\Models\Concerns\SoftDeletesWithUser;
 
 class Planning extends Model
 {
-    use HasFactory, BelongsToTenant, HasStates;
+    use HasFactory, BelongsToTenant, HasStates, SoftDeletesWithUser;
 
     protected $fillable = [
         'project_id',

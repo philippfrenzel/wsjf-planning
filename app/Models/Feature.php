@@ -17,12 +17,14 @@ use App\States\Feature\Deleted;
 use App\Models\Concerns\BelongsToTenant;
 use App\Models\FeatureDependency;
 use App\Models\FeatureStateHistory;
+use App\Models\Concerns\SoftDeletesWithUser;
 
 class Feature extends Model
 {
     use HasFactory;
     use HasStates;
     use BelongsToTenant;
+    use SoftDeletesWithUser;
 
     protected $fillable = [
         'jira_key',
