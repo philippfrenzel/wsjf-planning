@@ -294,19 +294,18 @@ export default function TwoFactorSetupModal({
     }, [twoFactorEnabled, clearSetupData]);
 
     useEffect(() => {
-        if (!isOpen) {
-            resetModalState();
-
-            return;
-        }
-
-        if (!qrCodeSvg) {
+        if (isOpen && !qrCodeSvg) {
             fetchSetupData();
         }
     }, [isOpen, qrCodeSvg, fetchSetupData, resetModalState]);
 
+    const handleClose = useCallback(() => {
+        resetModalState();
+        onClose();
+    }, [onClose, resetModalState]);
+
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader className="flex items-center justify-center">
                     <GridScanIcon />
