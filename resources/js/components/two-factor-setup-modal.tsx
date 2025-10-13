@@ -278,7 +278,6 @@ export default function TwoFactorSetupModal({
     const handleModalNextStep = useCallback(() => {
         if (requiresConfirmation) {
             setShowVerificationStep(true);
-
             return;
         }
 
@@ -288,6 +287,7 @@ export default function TwoFactorSetupModal({
 
     const resetModalState = useCallback(() => {
         setShowVerificationStep(false);
+
         if (twoFactorEnabled) {
             clearSetupData();
         }
@@ -297,7 +297,7 @@ export default function TwoFactorSetupModal({
         if (isOpen && !qrCodeSvg) {
             fetchSetupData();
         }
-    }, [isOpen, qrCodeSvg, fetchSetupData, resetModalState]);
+    }, [isOpen, qrCodeSvg, fetchSetupData]);
 
     const handleClose = useCallback(() => {
         resetModalState();
