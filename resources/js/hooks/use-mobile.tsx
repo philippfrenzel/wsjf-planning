@@ -12,9 +12,10 @@ function mediaQueryListener(callback: (event: MediaQueryListEvent) => void) {
     };
 }
 
+function isSmallerThanBreakpoint() {
+    return window.innerWidth < MOBILE_BREAKPOINT;
+}
+
 export function useIsMobile() {
-    return useSyncExternalStore(
-        mediaQueryListener,
-        () => window.innerWidth < MOBILE_BREAKPOINT,
-    );
+    return useSyncExternalStore(mediaQueryListener, isSmallerThanBreakpoint);
 }
