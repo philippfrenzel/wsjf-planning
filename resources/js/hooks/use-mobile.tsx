@@ -13,7 +13,7 @@ function mediaQueryListener(callback: (event: MediaQueryListEvent) => void) {
 }
 
 function isSmallerThanBreakpoint() {
-    return window.innerWidth < MOBILE_BREAKPOINT;
+    return mql.matches;
 }
 
 export function useIsMobile() {
