@@ -268,7 +268,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-       {isMobile || state === "collapsed" ? <PanelLeftOpenIcon /> : <PanelLeftCloseIcon />}
+      {isMobile || state === "collapsed" ? <PanelLeftOpenIcon /> : <PanelLeftCloseIcon />}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
