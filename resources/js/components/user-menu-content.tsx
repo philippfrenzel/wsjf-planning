@@ -37,7 +37,6 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                     <Link
                         className="block w-full cursor-pointer"
                         href={edit()}
-                        as="button"
                         prefetch
                         onClick={cleanup}
                     >
