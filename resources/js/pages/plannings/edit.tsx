@@ -73,6 +73,8 @@ interface EditProps {
   features: Feature[]; // Features aus dem gleichen Projekt
 }
 
+const closedFeatureStatuses = ["rejected", "implemented", "obsolete"];
+
 const formatDateForInput = (dateString?: string) => {
   if (!dateString) {
     return "";
@@ -102,21 +104,28 @@ export default function Edit({
       ? planning.stakeholders.map((u) => String(u.id))
       : [],
     feature_ids: planning.features
-      ? planning.features.map((f) => String(f.id))
+      ? planning.features
+          .filter((f) => !closedFeatureStatuses.includes(f.status_details?.value ?? ""))
+          .map((f) => String(f.id))
       : [],
   });
 
   const [featureStatusFilter, setFeatureStatusFilter] = useState<string>("");
 
+  const availableFeatures = useMemo(
+    () => features.filter((f) => !closedFeatureStatuses.includes(f.status_details?.value ?? "")),
+    [features]
+  );
+
   const featureStatusOptions = useMemo(() => {
     const map = new Map<string, string>();
-    features.forEach((f) => {
+    availableFeatures.forEach((f) => {
       if (f.status_details) {
         map.set(f.status_details.value, f.status_details.name);
       }
     });
     return Array.from(map.entries()).map(([value, name]) => ({ value, name }));
-  }, [features]);
+  }, [availableFeatures]);
 
   const planningStatusOptions = useMemo(
     () => [
@@ -129,12 +138,12 @@ export default function Edit({
 
   const filteredFeatures = useMemo(
     () =>
-      features.filter(
+      availableFeatures.filter(
         (f) =>
           featureStatusFilter === "" ||
           f.status_details?.value === featureStatusFilter
       ),
-    [features, featureStatusFilter]
+    [availableFeatures, featureStatusFilter]
   );
 
   const handleChange = (
@@ -403,10 +412,10 @@ export default function Edit({
                     </div>
                   )}
                   <div className="flex flex-wrap gap-2">
-                    {features.length === 0 && (
+                        {availableFeatures.length === 0 && (
                       <span className="text-sm text-gray-500">Keine Features im Projekt vorhanden.</span>
                     )}
-                    {features.length > 0 && (
+                        {availableFeatures.length > 0 && (
                       <Table>
                         <TableHeader>
                           <TableRow>
