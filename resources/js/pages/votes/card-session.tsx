@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     DndContext,
     closestCenter,
@@ -509,6 +509,11 @@ export default function CardVoteSession({ planning, features, types, existingVot
         return initial;
     });
 
+    const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const initialLoad = useRef(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
+
     // Zustand für die aktuelle Kategorie
     const [activeCategory, setActiveCategory] = useState<string>(types[0]);
 
@@ -778,16 +783,32 @@ export default function CardVoteSession({ planning, features, types, existingVot
     };
 
     // Form-Submission
+    const saveVotes = (next?: () => void) => {
+        setIsSaving(true);
+        setSaveError(null);
+
+        Inertia.post(route("votes.session.store", planning.id), { votes }, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+            onFinish: () => {
+                setIsSaving(false);
+                next?.();
+            },
+            onError: () => {
+                setIsSaving(false);
+                setSaveError("Speichern fehlgeschlagen – bitte erneut versuchen.");
+            },
+        });
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Votes in ein Format konvertieren, das von FormData verstanden wird
-        const formData = new FormData();
-
-        // Votes als JSON-String hinzufügen
-        formData.append('votes', JSON.stringify(votes));
-
-        Inertia.post(route("votes.session.store", planning.id), formData);
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+            saveTimer.current = null;
+        }
+        saveVotes();
     };
 
     // Modal schließen
@@ -800,8 +821,31 @@ export default function CardVoteSession({ planning, features, types, existingVot
 
     // Wechsel zur Standard-Tabellen-Ansicht
     const switchToStandardView = () => {
-        Inertia.get(route("votes.session", planning.id));
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+            saveTimer.current = null;
+        }
+        saveVotes(() => Inertia.get(route("votes.session", planning.id)));
     };
+
+    useEffect(() => {
+        if (initialLoad.current) {
+            initialLoad.current = false;
+            return;
+        }
+
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+        }
+
+        saveTimer.current = setTimeout(() => saveVotes(), 1000);
+
+        return () => {
+            if (saveTimer.current) {
+                clearTimeout(saveTimer.current);
+            }
+        };
+    }, [votes]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -831,6 +875,9 @@ export default function CardVoteSession({ planning, features, types, existingVot
                                 </CardDescription>
                             </div>
                             <div className="flex space-x-2">
+                                    <div className="text-xs text-muted-foreground flex items-center px-2">
+                                        {isSaving ? "Speichern..." : saveError || "Autosave aktiv"}
+                                    </div>
                                 <Button variant="outline" onClick={switchToStandardView}>
                                     <MoveHorizontal className="h-4 w-4 mr-2" />
                                     Zur Tabellen-Ansicht
