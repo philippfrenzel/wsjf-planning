@@ -95,7 +95,7 @@ function FeatureCard({ feature }: { feature: Feature }) {
         id={String(feature.id)}
       >
         <CardHeader className="p-3 pb-2">
-          <CardTitle className="text-sm truncate">
+          <CardTitle className="text-sm whitespace-normal leading-snug break-words">
             {feature.jira_key} - {feature.name}
           </CardTitle>
         </CardHeader>
