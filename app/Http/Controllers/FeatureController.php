@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use App\Http\Requests\StoreFeatureRequest;
 use App\Http\Requests\UpdateFeatureRequest;
-use App\Support\FeatureStatus;
+use App\Support\StatusMapper;
+use Spatie\ModelStates\State;
 
 class FeatureController extends Controller
 {
@@ -71,20 +72,7 @@ class FeatureController extends Controller
                         'name' => $feature->project->name,
                         'jira_base_uri' => $feature->project->jira_base_uri,
                     ] : null,
-                    'status' => isset($feature->status) ? (
-                        // Prüfen, ob es ein Objekt oder ein String ist
-                        is_object($feature->status) ? [
-                            'name' => $feature->status->name(),
-                            'color' => $feature->status->color(),
-                        ] : [
-                            // Fallback für String-Status
-                            'name' => ucfirst(str_replace('-', ' ', $feature->status)),
-                            'color' => $this->getDefaultColorForStatus($feature->status),
-                        ]
-                    ) : [
-                        'name' => 'In Planung',
-                        'color' => 'bg-gray-100 text-gray-800',
-                    ],
+                    'status' => StatusMapper::details(StatusMapper::FEATURE, $feature->status, 'in-planning'),
                     'estimation_components_count' => $feature->estimation_components_count,
                     'total_weighted_case' => $totalWeightedCase,
                     'estimation_units' => $units,
@@ -279,115 +267,29 @@ class FeatureController extends Controller
 
     public function edit(Feature $feature)
     {
-        // Status-Informationen für das Feature aufbereiten
-        $currentStatus = null;
-        $statusClass = null;
+        $currentStatus = StatusMapper::details(StatusMapper::FEATURE, $feature->status, 'in-planning');
+        $currentValue = $currentStatus['value'] ?? 'in-planning';
+        $transitionValues = StatusMapper::transitionTargets(StatusMapper::FEATURE, $currentValue);
 
-        // Prüfe den aktuellen Status und erstelle ein Status-Objekt
-        if (is_string($feature->status)) {
-            // Wenn der Status als String vorliegt
-            $statusMapping = [
-                'in-planning' => \App\States\Feature\InPlanning::class,
-                'approved' => \App\States\Feature\Approved::class,
-                'rejected' => \App\States\Feature\Rejected::class,
-                'implemented' => \App\States\Feature\Implemented::class,
-                'obsolete' => \App\States\Feature\Obsolete::class,
-                'archived' => \App\States\Feature\Archived::class,
-                'deleted' => \App\States\Feature\Deleted::class
-            ];
+        $statusOptions = [[
+            'value' => $currentValue,
+            'label' => $currentStatus['name'] ?? 'In Planung',
+            'color' => $currentStatus['color'] ?? 'bg-blue-100 text-blue-800',
+            'current' => true,
+        ]];
 
-            if (isset($statusMapping[$feature->status])) {
-                $statusClass = $statusMapping[$feature->status];
-                $currentStatus = (object)[
-                    'name' => method_exists($statusClass, 'name')
-                        ? (
-                            (new \ReflectionMethod($statusClass, 'name'))->isStatic()
-                            ? call_user_func([$statusClass, 'name'])
-                            : (new $statusClass($feature))->name()
-                        )
-                        : ucfirst(str_replace('-', ' ', $feature->status)),
-                    'color' => method_exists($statusClass, 'color')
-                        ? (
-                            (new \ReflectionMethod($statusClass, 'color'))->isStatic()
-                            ? call_user_func([$statusClass, 'color'])
-                            : (new $statusClass($feature))->color()
-                        )
-                        : 'bg-blue-100 text-blue-800'
-                ];
-            }
-        } else {
-            $currentStatus = $feature->status;
-        }
-
-        // Mögliche Status-Übergänge basierend auf dem Workflow definieren
-        $possibleTransitions = [];
-
-        // Manuelle Definition der erlaubten Übergänge basierend auf dem aktuellen Status
-        if ($feature->status instanceof \App\States\Feature\InPlanning || $feature->status === 'in-planning') {
-            $possibleTransitions[] = \App\States\Feature\Approved::class;
-            $possibleTransitions[] = \App\States\Feature\Rejected::class;
-            $possibleTransitions[] = \App\States\Feature\Obsolete::class;
-        } elseif ($feature->status instanceof \App\States\Feature\Approved || $feature->status === 'approved') {
-            $possibleTransitions[] = \App\States\Feature\Implemented::class;
-            $possibleTransitions[] = \App\States\Feature\Obsolete::class;
-            $possibleTransitions[] = \App\States\Feature\Archived::class;
-        } elseif ($feature->status instanceof \App\States\Feature\Rejected || $feature->status === 'rejected') {
-            $possibleTransitions[] = \App\States\Feature\Obsolete::class;
-            $possibleTransitions[] = \App\States\Feature\Archived::class;
-        } elseif ($feature->status instanceof \App\States\Feature\Implemented || $feature->status === 'implemented') {
-            $possibleTransitions[] = \App\States\Feature\Archived::class;
-        } elseif ($feature->status instanceof \App\States\Feature\Obsolete || $feature->status === 'obsolete') {
-            $possibleTransitions[] = \App\States\Feature\Archived::class;
-        } elseif ($feature->status instanceof \App\States\Feature\Archived || $feature->status === 'archived') {
-            $possibleTransitions[] = \App\States\Feature\Deleted::class;
-        }
-
-        // Status-Informationen für das Frontend aufbereiten
-        $statusOptions = [
-            [
-                'value' => is_string($feature->status) ? $feature->status : (
-                    is_object($feature->status)
-                    ? (new \ReflectionClass(get_class($feature->status)))->getStaticProperties()['name'] ?? 'in-planning'
-                    : 'in-planning'
-                ),
-                'label' => is_string($feature->status)
-                    ? ucfirst(str_replace('-', ' ', $feature->status))
-                    : (is_object($currentStatus) && method_exists($currentStatus, 'name')
-                        ? $currentStatus->name()
-                        : (isset($currentStatus->name) ? $currentStatus->name : 'In Planung')
-                    ),
-                'color' => is_string($feature->status)
-                    ? 'bg-blue-100 text-blue-800'
-                    : (is_object($currentStatus) && method_exists($currentStatus, 'color')
-                        ? $currentStatus->color()
-                        : (isset($currentStatus->color) ? $currentStatus->color : 'bg-blue-100 text-blue-800')
-                    ),
-                'current' => true
-            ]
-        ];
-
-        foreach ($possibleTransitions as $transition) {
-            try {
-                // Wir erstellen eine Reflection-Klasse, um die statischen Methoden zu nutzen
-                // anstatt eine Instanz zu erstellen
-                // Get the $name static property from the transition class using reflection
-                $reflectionClass = new \ReflectionClass($transition);
-                $nameProperty = $reflectionClass->getStaticProperties()['name'] ?? '';
-
-                $statusOptions[] = [
-                    'value' => $nameProperty,
-                    'label' => (new \ReflectionMethod($transition, 'name'))->isStatic()
-                        ? call_user_func([$transition, 'name'])
-                        : (new $transition($feature))->name(),
-                    'color' => (new \ReflectionMethod($transition, 'color'))->isStatic()
-                        ? call_user_func([$transition, 'color'])
-                        : (new $transition($feature))->color(),
-                    'current' => false
-                ];
-            } catch (\Exception $e) {
-                Log::error("Fehler beim Erstellen der Status-Option: " . $e->getMessage());
+        foreach ($transitionValues as $value) {
+            $details = StatusMapper::details(StatusMapper::FEATURE, $value, 'in-planning');
+            if (!$details) {
                 continue;
             }
+
+            $statusOptions[] = [
+                'value' => $details['value'],
+                'label' => $details['name'],
+                'color' => $details['color'],
+                'current' => false,
+            ];
         }
 
         $tenantId = Auth::user()->current_tenant_id;
@@ -433,27 +335,28 @@ class FeatureController extends Controller
             'project_id' => $validated['project_id'],
         ]);
 
-        // Status-Übergang durchführen, wenn sich der Status geändert hat
-        if ($newStatus && (
-            (is_string($currentStatus) && $newStatus !== $currentStatus) ||
-            (is_object($currentStatus) && method_exists($currentStatus, 'getMorphClass') && $newStatus !== $currentStatus->getMorphClass())
-        )) {
-            try {
-                $targetClass = FeatureStatus::classFor($newStatus);
+        if ($newStatus) {
+            $currentValue = $currentStatus instanceof State ? $currentStatus->getValue() : (string) $currentStatus;
 
-                if (is_string($feature->status)) {
-                    if ($targetClass) {
-                        $feature->status = $newStatus;
-                        $feature->save();
+            if ($newStatus !== $currentValue) {
+                try {
+                    $targetClass = StatusMapper::classFor(StatusMapper::FEATURE, $newStatus);
+
+                    if (!$targetClass) {
+                        return redirect()->back()->withErrors(['status' => 'Ungültiger Status']);
                     }
-                } else {
-                    $feature->status->transitionTo($targetClass ?? \App\States\Feature\InPlanning::class);
-                }
 
-                $feature->save();
-            } catch (\Exception $e) {
-                Log::error("Fehler bei der Status-Änderung des Features: " . $e->getMessage());
-                return redirect()->back()->withErrors(['status' => 'Status-Änderung nicht möglich: ' . $e->getMessage()]);
+                    if ($feature->status instanceof State) {
+                        $feature->status->transitionTo($targetClass);
+                    } else {
+                        $feature->status = $targetClass;
+                    }
+
+                    $feature->save();
+                } catch (\Exception $e) {
+                    Log::error("Fehler bei der Status-Änderung des Features: " . $e->getMessage());
+                    return redirect()->back()->withErrors(['status' => 'Status-Änderung nicht möglich: ' . $e->getMessage()]);
+                }
             }
         }
 
@@ -490,22 +393,26 @@ class FeatureController extends Controller
         ]);
 
         try {
-            $targetClass = FeatureStatus::classFor($newStatus);
+            $targetClass = StatusMapper::classFor(StatusMapper::FEATURE, $newStatus);
 
-            if (is_string($feature->status) || is_null($feature->status)) {
-                if ($targetClass) {
-                    $feature->status = $newStatus;
-                    $feature->save();
-                }
+            if (!$targetClass) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ungültiger Status',
+                ], 422);
+            }
+
+            if ($feature->status instanceof State) {
+                $feature->status->transitionTo($targetClass);
             } else {
-                $feature->status->transitionTo($targetClass ?? \App\States\Feature\InPlanning::class);
+                $feature->status = $targetClass;
             }
 
             $feature->save();
 
             Log::info('Feature Status erfolgreich aktualisiert', [
                 'feature_id' => $feature->id,
-                'new_status' => $feature->status
+                'new_status' => $feature->status,
             ]);
 
             return response()->json([
@@ -521,14 +428,4 @@ class FeatureController extends Controller
         }
     }
 
-    /**
-     * Gibt eine passende Farbe für einen Status-String zurück
-     *
-     * @param string $status
-     * @return string
-     */
-    private function getDefaultColorForStatus(string $status): string
-    {
-        return FeatureStatus::colorFor($status);
-    }
 }

@@ -17,7 +17,7 @@ use App\States\Feature\Deleted;
 use App\Models\Concerns\BelongsToTenant;
 use App\Models\FeatureDependency;
 use App\Models\FeatureStateHistory;
-use App\Support\FeatureStatus;
+use App\Support\StatusMapper;
 
 class Feature extends Model
 {
@@ -59,26 +59,7 @@ class Feature extends Model
             ->allowTransition(Rejected::class, Obsolete::class)
             ->allowTransition(Rejected::class, Archived::class)
             ->allowTransition(Obsolete::class, Archived::class)
-            ->allowTransition(Archived::class, Deleted::class)
-            ->castUsing(static function ($value) {
-                // Beim Auslesen aus der Datenbank konvertieren wir den Status-String in ein Objekt
-                if (is_string($value)) {
-                    $statusMapping = [
-                        'in-planning' => InPlanning::class,
-                        'approved' => Approved::class,
-                        'rejected' => Rejected::class,
-                        'implemented' => Implemented::class,
-                        'obsolete' => Obsolete::class,
-                        'archived' => Archived::class,
-                        'deleted' => Deleted::class
-                    ];
-
-                    $statusClass = $statusMapping[$value] ?? InPlanning::class;
-                    return new $statusClass();
-                }
-
-                return $value;
-            });
+            ->allowTransition(Archived::class, Deleted::class);
     }
 
     /**
@@ -125,19 +106,7 @@ class Feature extends Model
      */
     public function getStatusDetailsAttribute()
     {
-        return FeatureStatus::detailsFromStatus($this->status);
-    }
-
-    /**
-     * Formatiert einen Status-Namen aus einem CamelCase-Klassennamen
-     * 
-     * @param string $name
-     * @return string
-     */
-    private function formatStateName(string $name): string
-    {
-        $result = preg_replace('/(?<!^)[A-Z]/', ' $0', $name);
-        return $result ?: $name;
+        return StatusMapper::details(StatusMapper::FEATURE, $this->status, 'in-planning');
     }
 
     /**

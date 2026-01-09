@@ -11,7 +11,7 @@ use App\States\Commitment\Suggested;
 use App\States\Commitment\Accepted;
 use App\States\Commitment\Completed;
 use App\Models\Concerns\BelongsToTenant;
-use App\Support\CommitmentStatus;
+use App\Support\StatusMapper;
 
 class Commitment extends Model
 {
@@ -103,6 +103,6 @@ class Commitment extends Model
      */
     public function getStatusDetailsAttribute(): ?array
     {
-        return CommitmentStatus::detailsFromStatus($this->status);
+        return StatusMapper::details(StatusMapper::COMMITMENT, $this->status, 'suggested');
     }
 }

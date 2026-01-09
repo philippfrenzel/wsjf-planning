@@ -13,7 +13,7 @@ use App\States\Planning\PlanningState;
 use App\States\Planning\InPlanning as PlanningInPlanning;
 use App\States\Planning\InExecution;
 use App\States\Planning\Completed;
-use App\Support\PlanningStatus;
+use App\Support\StatusMapper;
 
 class Planning extends Model
 {
@@ -48,19 +48,7 @@ class Planning extends Model
         $this->addState('status', PlanningState::class)
             ->default(PlanningInPlanning::class)
             ->allowTransition(PlanningInPlanning::class, InExecution::class)
-            ->allowTransition(InExecution::class, Completed::class)
-            ->castUsing(static function ($value) {
-                if (is_string($value)) {
-                    $map = [
-                        'in-planning' => PlanningInPlanning::class,
-                        'in-execution' => InExecution::class,
-                        'completed' => Completed::class,
-                    ];
-                    $cls = $map[$value] ?? PlanningInPlanning::class;
-                    return new $cls();
-                }
-                return $value;
-            });
+            ->allowTransition(InExecution::class, Completed::class);
     }
 
     /**
@@ -126,6 +114,6 @@ class Planning extends Model
      */
     public function getStatusDetailsAttribute(): array
     {
-        return PlanningStatus::detailsFromStatus($this->status);
+        return StatusMapper::details(StatusMapper::PLANNING, $this->status, 'in-planning') ?? [];
     }
 }
