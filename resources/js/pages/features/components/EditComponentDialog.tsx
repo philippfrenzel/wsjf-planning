@@ -67,12 +67,12 @@ export default function EditComponentDialog({
           <div className="flex justify-end gap-2">
             <Button 
               type="button" 
-              variant="outline" 
+              variant="cancel" 
               onClick={() => onOpenChange(false)}
             >
               Abbrechen
             </Button>
-            <Button type="submit">Änderungen speichern</Button>
+            <Button type="submit" variant="success">Änderungen speichern</Button>
           </div>
         </form>
       </DialogContent>

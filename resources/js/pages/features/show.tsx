@@ -228,7 +228,7 @@ export default function Show({ feature, auth }: ShowProps) {
                   <div className="flex items-center gap-3">
                     <Button 
                       onClick={toggleComponentForm}
-                      variant="default"
+                      variant={showComponentForm ? "cancel" : "success"}
                       size="sm"
                       className="whitespace-nowrap"
                     >

@@ -247,13 +247,13 @@ export default function Index({ features }: IndexProps) {
       <div className="p-5 flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Features</h1>
         <div className="flex gap-2">
-          <Button asChild>
+          <Button asChild variant="success">
             <Link href={route("features.create")}>
               <Plus className="w-4 h-4 mr-2" />
               Neues Feature
             </Link>
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="secondary" asChild>
             <Link href={route("features.lineage")}>Lineage</Link>
           </Button>
         </div>
@@ -643,12 +643,12 @@ export default function Index({ features }: IndexProps) {
                     </TableCell>
                     {/* Aktionen */}
                     <TableCell className="flex gap-2 justify-end">
-                      <Button asChild size="icon" variant="outline">
+                      <Button asChild size="icon" variant="secondary">
                         <Link href={route("features.show", { feature: feature.id })}>
                           <Eye className="w-4 h-4" />
                         </Link>
                       </Button>
-                      <Button asChild size="icon" variant="outline">
+                      <Button asChild size="icon" variant="cancel">
                         <Link href={route("features.edit", { feature: feature.id })}>
                           <Pencil className="w-4 h-4" />
                         </Link>
