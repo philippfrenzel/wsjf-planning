@@ -121,10 +121,12 @@ export default function Show({ feature, auth }: ShowProps) {
     <AppLayout breadcrumbs={breadcrumbs}>
       <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
       <Card className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
-        <div className="flex items-start justify-between gap-3">
-          <FeatureHeader featureName={feature.name} />
-          <Link href={route("features.edit", feature.id)}>
-            <Button size="sm" variant="outline" className="inline-flex items-center gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <FeatureHeader featureName={feature.name} />
+          </div>
+          <Link href={route("features.edit", feature.id)} className="shrink-0">
+            <Button size="sm" variant="outline" className="inline-flex items-center gap-2 whitespace-nowrap">
               <Edit2 className="h-4 w-4" />
               Bearbeiten
             </Button>
@@ -147,7 +149,7 @@ export default function Show({ feature, auth }: ShowProps) {
               />
 
               {/* Abhängigkeiten anzeigen */}
-              <div className="pt-6 border-t border-gray-200">
+              <div className="rounded-lg border border-slate-200 bg-white/70 px-4 py-3 shadow-sm">
                 <h3 className="text-lg font-medium mb-3">Abhängigkeiten</h3>
                 {feature.dependencies && feature.dependencies.length > 0 ? (
                   <ul className="space-y-2">
@@ -192,7 +194,7 @@ export default function Show({ feature, auth }: ShowProps) {
               </div>
 
               {/* Feature Beschreibung */}
-              <div className="pt-6 border-t border-gray-200">
+              <div className="rounded-lg border border-slate-200 bg-white/70 px-4 py-3 shadow-sm">
                 <h3 className="text-lg font-medium my-4">Beschreibung</h3>
                 {feature.description ? (
                   <div className="prose prose-sm max-w-none">
