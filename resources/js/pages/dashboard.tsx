@@ -27,7 +27,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 type FeatureStatusDatum = { status: string; count: number };
 type CommittedDatum = { planning_id: number; planning: string; committed: number };
-type VotesByDayDatum = { day: string; count: number };
+type FeatureAgingDatum = { day: string; open_count: number };
 
 const STATUS_LABELS: Record<string, string> = {
     'in-planning': 'In Planung',
@@ -49,17 +49,17 @@ export default function Dashboard() {
         validPlannings,
         featureStatus = [],
         committedByPlanning = [],
-        votesByDay = [],
-  } = usePage().props as {
-    myProjectsCount: number;
-    activePlanningsCount: number;
-    visibleFeatureCount: number;
-    validPlannings: { id: number; title: string }[];
-    featureStatus: FeatureStatusDatum[];
-    committedByPlanning: CommittedDatum[];
-    votesByDay: VotesByDayDatum[];
-    wsjfCoverage: { planning: string; planning_id: number; rated: number; open: number; total: number }[];
-  };
+        featureAging = [],
+    } = usePage().props as {
+        myProjectsCount: number;
+        activePlanningsCount: number;
+        visibleFeatureCount: number;
+        validPlannings: { id: number; title: string }[];
+        featureStatus: FeatureStatusDatum[];
+        committedByPlanning: CommittedDatum[];
+        featureAging: FeatureAgingDatum[];
+        wsjfCoverage: { planning: string; planning_id: number; rated: number; open: number; total: number }[];
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -164,19 +164,19 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Votes (letzte 30 Tage) */}
+                    {/* Feature Aging: laufender Open-Count */}
                     <div className="border-sidebar-border/70 dark:border-sidebar-border relative overflow-hidden rounded-xl border bg-white dark:bg-neutral-900">
-                        <div className="p-4 border-b dark:border-neutral-800 font-semibold">Votes (letzte 30 Tage)</div>
+                        <div className="p-4 border-b dark:border-neutral-800 font-semibold">Feature Aging (offene Features)</div>
                         <div className="p-4 h-[260px]">
-                            {votesByDay.length === 0 ? (
+                            {featureAging.length === 0 ? (
                                 <div className="text-sm text-muted-foreground">Keine Daten</div>
                             ) : (
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={votesByDay}>
+                                    <AreaChart data={featureAging}>
                                         <XAxis dataKey="day" hide />
                                         <YAxis allowDecimals={false} />
                                         <ReTooltip />
-                                        <Area dataKey="count" stroke="#3b82f6" fill="#bfdbfe" />
+                                        <Area dataKey="open_count" stroke="#0ea5e9" fill="#bae6fd" />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             )}
