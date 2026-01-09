@@ -42,7 +42,7 @@ class PlanningController extends Controller
 
         return Inertia::render('plannings/create', [
             'users' => $users,
-            'projects' => Project::all(['id', 'name']),
+            'projects' => Project::where('tenant_id', $tenantId)->get(['id', 'name']),
         ]);
     }
 
@@ -143,7 +143,7 @@ class PlanningController extends Controller
                 'features:id,name,jira_key,project_id'
             ]),
             'users' => $users,
-            'projects' => Project::all(['id', 'name']),
+            'projects' => Project::where('tenant_id', $tenantId)->get(['id', 'name']),
             'features' => $features, // Features an die Komponente übergeben
         ]);
     }

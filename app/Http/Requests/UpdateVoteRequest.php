@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Vote;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateVoteRequest extends FormRequest
 {
@@ -14,10 +15,12 @@ class UpdateVoteRequest extends FormRequest
 
     public function rules(): array
     {
+        $tenantId = $this->user()?->current_tenant_id;
+
         return [
-            'user_id' => ['required', 'exists:users,id'],
-            'feature_id' => ['required', 'exists:features,id'],
-            'planning_id' => ['required', 'exists:plannings,id'],
+            'user_id' => ['required', Rule::exists('tenant_user', 'user_id')->where('tenant_id', $tenantId)],
+            'feature_id' => ['required', Rule::exists('features', 'id')->where('tenant_id', $tenantId)],
+            'planning_id' => ['required', Rule::exists('plannings', 'id')->where('tenant_id', $tenantId)],
             'type' => ['required', 'in:BusinessValue,TimeCriticality,RiskOpportunity'],
             'value' => ['required', 'numeric'],
             'voted_at' => ['required', 'date'],

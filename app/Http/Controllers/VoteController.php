@@ -57,8 +57,8 @@ class VoteController extends Controller
         $tenantId = Auth::user()->current_tenant_id;
         return Inertia::render('votes/create', [
             'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
-            'features' => Feature::all(['id', 'jira_key', 'name']),
-            'plannings' => Planning::all(['id', 'title']),
+            'features' => Feature::where('tenant_id', $tenantId)->get(['id', 'jira_key', 'name']),
+            'plannings' => Planning::where('tenant_id', $tenantId)->get(['id', 'title']),
             'types' => ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'],
         ]);
     }
@@ -87,8 +87,8 @@ class VoteController extends Controller
         return Inertia::render('votes/edit', [
             'vote' => $vote->load(['user', 'feature', 'planning']),
             'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
-            'features' => Feature::all(['id', 'jira_key', 'name']),
-            'plannings' => Planning::all(['id', 'title']),
+            'features' => Feature::where('tenant_id', $tenantId)->get(['id', 'jira_key', 'name']),
+            'plannings' => Planning::where('tenant_id', $tenantId)->get(['id', 'title']),
             'types' => ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'],
         ]);
     }
