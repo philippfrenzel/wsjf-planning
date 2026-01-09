@@ -4,15 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Support\StatusMapper;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 use Spatie\ModelStates\State;
-use App\Support\StatusMapper;
-use App\Support\StatusMapper;
-use Spatie\ModelStates\State;
-use Illuminate\Validation\Rule;
 
 class ProjectController extends Controller
 {
