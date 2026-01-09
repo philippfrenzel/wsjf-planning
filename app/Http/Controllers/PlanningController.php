@@ -9,14 +9,17 @@ use App\Models\Feature; // Feature Model importieren
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\VoteController;
+use App\Services\PlanningService;
+use App\Services\VoteService;
 use App\Http\Requests\StorePlanningRequest;
 use App\Http\Requests\UpdatePlanningRequest;
 
 class PlanningController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly PlanningService $planningService,
+        private readonly VoteService $voteService,
+    ) {
         $this->authorizeResource(Planning::class, 'planning');
     }
 
@@ -52,15 +55,11 @@ class PlanningController extends Controller
 
         unset($validated['stakeholder_ids'], $validated['feature_ids']);
 
-        $planning = Planning::create($validated + ['created_by' => Auth::id()]);
-
-        if ($stakeholderIds) {
-            $planning->stakeholders()->sync($stakeholderIds);
-        }
-
-        if ($featureIds) {
-            $planning->features()->sync($featureIds);
-        }
+        $planning = $this->planningService->create(
+            $validated + ['created_by' => Auth::id()],
+            $stakeholderIds,
+            $featureIds
+        );
 
         return redirect()->route('plannings.index')->with('success', 'Planning erfolgreich erstellt.');
     }
@@ -158,9 +157,7 @@ class PlanningController extends Controller
 
         unset($validated['stakeholder_ids'], $validated['feature_ids']);
 
-        $planning->update($validated);
-        $planning->stakeholders()->sync($stakeholderIds);
-        $planning->features()->sync($featureIds);
+        $this->planningService->update($planning, $validated, $stakeholderIds, $featureIds);
 
         return redirect()->route('plannings.index')->with('success', 'Planning erfolgreich aktualisiert.');
     }
@@ -179,7 +176,7 @@ class PlanningController extends Controller
         $planning = Planning::findOrFail($planningId);
         $this->authorize('update', $planning);
         // Vote-Logik über Service aufrufen
-        app(\App\Services\VoteService::class)->calculateAverageVotesForCreator($planning);
+        $this->voteService->calculateAverageVotesForCreator($planning);
 
         return redirect()->route('plannings.show', $planning->id)
             ->with('success', 'Common Votes wurden neu berechnet.');

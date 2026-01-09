@@ -13,11 +13,12 @@ use Inertia\Inertia;
 use App\Http\Requests\StoreFeatureRequest;
 use App\Http\Requests\UpdateFeatureRequest;
 use App\Support\StatusMapper;
+use App\Services\FeatureService;
 use Spatie\ModelStates\State;
 
 class FeatureController extends Controller
 {
-    public function __construct()
+    public function __construct(private readonly FeatureService $featureService)
     {
         $this->authorizeResource(Feature::class, 'feature');
     }
@@ -185,9 +186,7 @@ class FeatureController extends Controller
     {
         $features = Feature::with('dependencies.related')->get();
 
-        $lineages = $features->map(function ($feature) {
-            return $this->buildLineage($feature);
-        })->values();
+        $lineages = $features->map(fn($feature) => $this->featureService->buildLineage($feature))->values();
 
         return Inertia::render('features/lineage', [
             'features' => $lineages,
@@ -196,29 +195,7 @@ class FeatureController extends Controller
 
     protected function buildLineage(Feature $feature, array $visited = [])
     {
-        if (in_array($feature->id, $visited)) {
-            return [
-                'id' => $feature->id,
-                'jira_key' => $feature->jira_key,
-                'name' => $feature->name,
-                'dependencies' => [],
-            ];
-        }
-
-        $visited[] = $feature->id;
-
-        return [
-            'id' => $feature->id,
-            'jira_key' => $feature->jira_key,
-            'name' => $feature->name,
-            'dependencies' => $feature->dependencies
-                ->map(function ($dep) use ($visited) {
-                    return $dep->related ? $this->buildLineage($dep->related, $visited) : null;
-                })
-                ->filter()
-                ->values()
-                ->all(),
-        ];
+        return $this->featureService->buildLineage($feature, $visited);
     }
 
     public function create()
@@ -340,19 +317,7 @@ class FeatureController extends Controller
 
             if ($newStatus !== $currentValue) {
                 try {
-                    $targetClass = StatusMapper::classFor(StatusMapper::FEATURE, $newStatus);
-
-                    if (!$targetClass) {
-                        return redirect()->back()->withErrors(['status' => 'Ungültiger Status']);
-                    }
-
-                    if ($feature->status instanceof State) {
-                        $feature->status->transitionTo($targetClass);
-                    } else {
-                        $feature->status = $targetClass;
-                    }
-
-                    $feature->save();
+                    $this->featureService->updateStatus($feature, $newStatus);
                 } catch (\Exception $e) {
                     Log::error("Fehler bei der Status-Änderung des Features: " . $e->getMessage());
                     return redirect()->back()->withErrors(['status' => 'Status-Änderung nicht möglich: ' . $e->getMessage()]);
@@ -393,22 +358,7 @@ class FeatureController extends Controller
         ]);
 
         try {
-            $targetClass = StatusMapper::classFor(StatusMapper::FEATURE, $newStatus);
-
-            if (!$targetClass) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ungültiger Status',
-                ], 422);
-            }
-
-            if ($feature->status instanceof State) {
-                $feature->status->transitionTo($targetClass);
-            } else {
-                $feature->status = $targetClass;
-            }
-
-            $feature->save();
+            $this->featureService->updateStatus($feature, $newStatus);
 
             Log::info('Feature Status erfolgreich aktualisiert', [
                 'feature_id' => $feature->id,

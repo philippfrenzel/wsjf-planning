@@ -173,8 +173,6 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
                   </TableRow>
                 ))}
               </TableBody>
-                {commitmentData.map((commitment) => (
-          )}
           {pagination && pagination.last_page > 1 && (
             <div className="flex justify-end gap-4 mt-4 text-sm text-muted-foreground">
               <span>
