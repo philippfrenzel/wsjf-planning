@@ -15,6 +15,8 @@ import {
 import axios from "axios";
 import AppLayout from "@/layouts/app-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "@inertiajs/react";
 
 interface Feature {
   id: number;
@@ -126,6 +128,18 @@ function FeatureCard({ feature }: { feature: Feature }) {
               )}
             </div>
           )}
+
+          <div className="mt-3 flex justify-end">
+            <Link
+              href={route("features.show", feature.id)}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button size="sm" variant="outline">
+                Details
+              </Button>
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
