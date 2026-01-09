@@ -16,6 +16,7 @@ import FeatureDescription from "./components/FeatureDescription";
 
 import { useComponentManagement } from "@/hooks/useComponentManagement";
 import { useEstimationManagement } from "@/hooks/useEstimationManagement";
+import { Edit2 } from "lucide-react";
 
 interface EstimationHistory {
   id: number;
@@ -119,9 +120,15 @@ export default function Show({ feature, auth }: ShowProps) {
     <AppLayout breadcrumbs={breadcrumbs}>
       <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
       <Card className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
-        <FeatureHeader
-          featureName={feature.name}
-        />
+        <div className="flex items-start justify-between gap-3">
+          <FeatureHeader featureName={feature.name} />
+          <Link href={route("features.edit", feature.id)}>
+            <Button size="sm" variant="outline" className="inline-flex items-center gap-2">
+              <Edit2 className="h-4 w-4" />
+              Bearbeiten
+            </Button>
+          </Link>
+        </div>
 
         <CardContent>
           {/* Feature-Details anzeigen */}
