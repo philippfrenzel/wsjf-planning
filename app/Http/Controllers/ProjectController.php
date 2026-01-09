@@ -83,10 +83,7 @@ class ProjectController extends Controller
         // Wir verwenden try-catch, um mögliche Fehler abzufangen
         try {
             // Importieren der Status-Klassen
-            $statusMapping = [
-                'in-planning' => \App\States\Project\InPlanning::class,
-                'in-realization' => \App\States\Project\InRealization::class,
-                'in-approval' => \App\States\Project\InApproval::class,
+            $projects = Project::orderByDesc('created_at')->paginate(25);
                 'closed' => \App\States\Project\Closed::class
             ];
 

@@ -13,6 +13,7 @@ use App\States\Planning\PlanningState;
 use App\States\Planning\InPlanning as PlanningInPlanning;
 use App\States\Planning\InExecution;
 use App\States\Planning\Completed;
+use App\Support\PlanningStatus;
 
 class Planning extends Model
 {
@@ -125,43 +126,6 @@ class Planning extends Model
      */
     public function getStatusDetailsAttribute(): array
     {
-        $status = $this->status;
-
-        if ($status === null) {
-            return [
-                'value' => 'in-planning',
-                'name' => 'In Planung',
-                'color' => 'bg-blue-100 text-blue-800',
-            ];
-        }
-
-        if (is_string($status)) {
-            try {
-                $map = [
-                    'in-planning' => PlanningInPlanning::class,
-                    'in-execution' => InExecution::class,
-                    'completed' => Completed::class,
-                ];
-                $cls = $map[$status] ?? PlanningInPlanning::class;
-                $obj = new $cls($this);
-                return [
-                    'value' => $status,
-                    'name' => $obj->name(),
-                    'color' => $obj->color(),
-                ];
-            } catch (\Throwable $e) {
-                return [
-                    'value' => $status,
-                    'name' => ucfirst(str_replace('-', ' ', $status)),
-                    'color' => 'bg-gray-100 text-gray-800',
-                ];
-            }
-        }
-
-        return [
-            'value' => $status->getValue(),
-            'name' => $status->name(),
-            'color' => $status->color(),
-        ];
+        return PlanningStatus::detailsFromStatus($this->status);
     }
 }

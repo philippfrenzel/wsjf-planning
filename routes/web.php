@@ -65,7 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::resource('projects', ProjectController::class);
-Route::resource('plannings', PlanningController::class);
+Route::resource('plannings', PlanningController::class)->middleware(['auth', 'verified']);
 Route::get('features/board', [FeatureController::class, 'board'])->name('features.board');
 Route::post('features/{feature}/status', [FeatureController::class, 'updateStatus'])->name('features.status.update');
 Route::get('features/lineage', [FeatureController::class, 'lineage'])->name('features.lineage');

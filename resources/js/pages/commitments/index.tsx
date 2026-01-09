@@ -36,8 +36,18 @@ interface Commitment {
   };
 }
 
+type Paginated<T> = {
+  data: T[];
+  meta?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+};
+
 interface CommitmentsIndexProps {
-  commitments: Commitment[];
+  commitments: Commitment[] | Paginated<Commitment>;
   plannings: Planning[];
   selectedPlanning?: number;
 }
@@ -67,6 +77,8 @@ function getStatusBadge(statusDetails: Commitment['status_details']) {
 }
 
 export default function CommitmentsIndex({ commitments, plannings, selectedPlanning }: CommitmentsIndexProps) {
+  const commitmentData = Array.isArray(commitments) ? commitments : commitments.data;
+  const pagination = Array.isArray(commitments) ? undefined : commitments.meta;
   const [planningFilter, setPlanningFilter] = useState<string>(selectedPlanning ? String(selectedPlanning) : "all");
 
   const handlePlanningChange = (value: string) => {
@@ -111,7 +123,7 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
           <CardTitle>Alle Commitments</CardTitle>
         </CardHeader>
         <CardContent>
-          {commitments.length === 0 ? (
+          {commitmentData.length === 0 ? (
             <div className="text-center py-4 text-gray-500">Keine Commitments gefunden.</div>
           ) : (
             <Table>
@@ -161,7 +173,14 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+                {commitmentData.map((commitment) => (
+          )}
+          {pagination && pagination.last_page > 1 && (
+            <div className="flex justify-end gap-4 mt-4 text-sm text-muted-foreground">
+              <span>
+                Seite {pagination.current_page} / {pagination.last_page}
+              </span>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -10,9 +10,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use App\Http\Requests\StoreFeatureRequest;
+use App\Http\Requests\UpdateFeatureRequest;
+use App\Support\FeatureStatus;
 
 class FeatureController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Feature::class, 'feature');
+    }
+
     public function index(Request $request)
     {
         // Optionaler Initial-Filter (z. B. via Dashboard-Drilldown)
@@ -37,8 +45,8 @@ class FeatureController extends Controller
             }
         }
 
-        // Daten abrufen und für das Frontend aufbereiten
-        $features = $query->get()->map(function ($feature) {
+        // Daten paginiert abrufen und für das Frontend aufbereiten
+        $features = $query->paginate(25)->through(function ($feature) {
                 // Berechne die Summe der weighted_case manuell
                 $totalWeightedCase = $feature->estimationComponents->flatMap(function ($component) {
                     return $component->estimations;
@@ -234,15 +242,9 @@ class FeatureController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreFeatureRequest $request)
     {
-        $validated = $request->validate([
-            'jira_key' => 'required|string|max:255',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'requester_id' => 'nullable|exists:users,id',
-            'project_id' => 'required|exists:projects,id',
-        ]);
+        $validated = $request->validated();
 
         Feature::create($validated);
 
@@ -414,16 +416,9 @@ class FeatureController extends Controller
         ]);
     }
 
-    public function update(Request $request, Feature $feature)
+    public function update(UpdateFeatureRequest $request, Feature $feature)
     {
-        $validated = $request->validate([
-            'jira_key' => 'required|string|max:255',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'requester_id' => 'nullable|exists:users,id',
-            'project_id' => 'required|exists:projects,id',
-            'status' => 'sometimes|string', // Status-Feld erlauben
-        ]);
+        $validated = $request->validated();
 
         // Status separat behandeln, um Spatie State Machine zu nutzen
         $newStatus = $request->input('status');
@@ -444,34 +439,17 @@ class FeatureController extends Controller
             (is_object($currentStatus) && method_exists($currentStatus, 'getMorphClass') && $newStatus !== $currentStatus->getMorphClass())
         )) {
             try {
-                // Statusübergang basierend auf dem neuen Statuswert
-                $statusMapping = [
-                    'in-planning' => \App\States\Feature\InPlanning::class,
-                    'approved' => \App\States\Feature\Approved::class,
-                    'rejected' => \App\States\Feature\Rejected::class,
-                    'implemented' => \App\States\Feature\Implemented::class,
-                    'obsolete' => \App\States\Feature\Obsolete::class,
-                    'archived' => \App\States\Feature\Archived::class,
-                    'deleted' => \App\States\Feature\Deleted::class
-                ];
+                $targetClass = FeatureStatus::classFor($newStatus);
 
-                // Wenn der aktuelle Status ein String ist, müssen wir ihn manuell aktualisieren
                 if (is_string($feature->status)) {
-                    if (isset($statusMapping[$newStatus])) {
-                        // Den Status direkt auf den neuen Wert setzen
+                    if ($targetClass) {
                         $feature->status = $newStatus;
                         $feature->save();
                     }
                 } else {
-                    // Wenn es ein State-Objekt ist, können wir transitionTo verwenden
-                    if (isset($statusMapping[$newStatus])) {
-                        $feature->status->transitionTo($statusMapping[$newStatus]);
-                    } else {
-                        $feature->status->transitionTo(\App\States\Feature\InPlanning::class);
-                    }
+                    $feature->status->transitionTo($targetClass ?? \App\States\Feature\InPlanning::class);
                 }
 
-                // Speichern nach Statusänderung
                 $feature->save();
             } catch (\Exception $e) {
                 Log::error("Fehler bei der Status-Änderung des Features: " . $e->getMessage());
@@ -497,6 +475,7 @@ class FeatureController extends Controller
      */
     public function updateStatus(Request $request, Feature $feature)
     {
+        $this->authorize('update', $feature);
         $validated = $request->validate([
             'status' => 'required|string',
         ]);
@@ -511,34 +490,17 @@ class FeatureController extends Controller
         ]);
 
         try {
-            // Statusübergang basierend auf dem neuen Statuswert
-            $statusMapping = [
-                'in-planning' => \App\States\Feature\InPlanning::class,
-                'approved' => \App\States\Feature\Approved::class,
-                'rejected' => \App\States\Feature\Rejected::class,
-                'implemented' => \App\States\Feature\Implemented::class,
-                'obsolete' => \App\States\Feature\Obsolete::class,
-                'archived' => \App\States\Feature\Archived::class,
-                'deleted' => \App\States\Feature\Deleted::class
-            ];
+            $targetClass = FeatureStatus::classFor($newStatus);
 
-            // Wenn der aktuelle Status ein String ist, müssen wir ihn manuell aktualisieren
             if (is_string($feature->status) || is_null($feature->status)) {
-                if (isset($statusMapping[$newStatus])) {
-                    // Den Status direkt auf den neuen Wert setzen
+                if ($targetClass) {
                     $feature->status = $newStatus;
                     $feature->save();
                 }
             } else {
-                // Wenn es ein State-Objekt ist, können wir transitionTo verwenden
-                if (isset($statusMapping[$newStatus])) {
-                    $feature->status->transitionTo($statusMapping[$newStatus]);
-                } else {
-                    $feature->status->transitionTo(\App\States\Feature\InPlanning::class);
-                }
+                $feature->status->transitionTo($targetClass ?? \App\States\Feature\InPlanning::class);
             }
 
-            // Speichern nach Statusänderung
             $feature->save();
 
             Log::info('Feature Status erfolgreich aktualisiert', [
@@ -567,16 +529,6 @@ class FeatureController extends Controller
      */
     private function getDefaultColorForStatus(string $status): string
     {
-        $colorMapping = [
-            'in-planning' => 'bg-blue-100 text-blue-800',
-            'approved' => 'bg-green-100 text-green-800',
-            'rejected' => 'bg-red-100 text-red-800',
-            'implemented' => 'bg-purple-100 text-purple-800',
-            'obsolete' => 'bg-gray-100 text-gray-800',
-            'archived' => 'bg-yellow-100 text-yellow-800',
-            'deleted' => 'bg-red-100 text-red-800'
-        ];
-
-        return $colorMapping[$status] ?? 'bg-gray-100 text-gray-800';
+        return FeatureStatus::colorFor($status);
     }
 }

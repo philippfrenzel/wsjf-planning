@@ -10,9 +10,16 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\StoreCommitmentRequest;
+use App\Http\Requests\UpdateCommitmentRequest;
 
 class CommitmentController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Commitment::class, 'commitment');
+    }
+
     /**
      * Zeigt eine Liste aller Commitments an.
      */
@@ -27,7 +34,7 @@ class CommitmentController extends Controller
             $query->where('planning_id', $planningId);
         }
 
-        $commitments = $query->get();
+        $commitments = $query->paginate(25);
 
         // Status-Details für jedes Commitment anreichern
         $commitments->each(function ($commitment) {
@@ -82,23 +89,9 @@ class CommitmentController extends Controller
     /**
      * Speichert ein neu erstelltes Commitment in der Datenbank.
      */
-    public function store(Request $request)
+    public function store(StoreCommitmentRequest $request)
     {
-        $validated = $request->validate([
-            'planning_id' => 'required|exists:plannings,id',
-            'feature_id' => [
-                'required',
-                'exists:features,id',
-                Rule::exists('feature_planning')->where(function ($query) use ($request) {
-                    $query->where('planning_id', $request->input('planning_id'))
-                        ->where('feature_id', $request->input('feature_id'));
-                }),
-            ],
-            'commitment_type' => 'required|in:A,B,C,D',
-            'status' => 'nullable|string|in:suggested,accepted,completed',
-        ], [
-            'feature_id.exists' => 'Das Feature muss zum ausgewählten Planning gehören.',
-        ]);
+        $validated = $request->validated();
 
         // Automatisch den aktuell angemeldeten Benutzer verwenden
         $validated['user_id'] = Auth::id();
@@ -239,23 +232,9 @@ class CommitmentController extends Controller
     /**
      * Aktualisiert ein bestimmtes Commitment in der Datenbank.
      */
-    public function update(Request $request, Commitment $commitment)
+    public function update(UpdateCommitmentRequest $request, Commitment $commitment)
     {
-        $validated = $request->validate([
-            'feature_id' => [
-                'required',
-                'exists:features,id',
-                Rule::exists('feature_planning')->where(function ($query) use ($request, $commitment) {
-                    $query->where('planning_id', $commitment->planning_id)
-                        ->where('feature_id', $request->input('feature_id'));
-                }),
-            ],
-            'user_id' => 'required|exists:users,id',
-            'commitment_type' => 'required|in:A,B,C,D',
-            'status' => 'nullable|string|in:suggested,accepted,completed',
-        ], [
-            'feature_id.exists' => 'Das Feature muss zum ausgewählten Planning gehören.',
-        ]);
+        $validated = $request->validated();
 
         // Prüfe, ob bereits ein Commitment für diese Kombination existiert (außer dem aktuellen)
         $existing = Commitment::where('planning_id', $commitment->planning_id)
@@ -329,11 +308,13 @@ class CommitmentController extends Controller
      */
     public function planningCommitments(Planning $planning)
     {
+        $this->authorize('view', $planning);
         // Features und zugehörige Commitments laden
         $planning->load([
             'features:id,jira_key,name',
             'features.commitments' => function ($query) use ($planning) {
-                $query->where('planning_id', $planning->id);
+                $query->where('planning_id', $planning->id)
+                    ->with('user:id,name');
             },
             'features.commitments.user:id,name',
         ]);
@@ -361,12 +342,13 @@ class CommitmentController extends Controller
      */
     public function getFeaturesForPlanning(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'planning_id' => 'required|exists:plannings,id'
         ]);
 
-        $planningId = $request->input('planning_id');
+        $planningId = $data['planning_id'];
         $planning = Planning::findOrFail($planningId);
+        $this->authorize('view', $planning);
 
         $features = $planning->features()
             ->select('features.id', 'features.jira_key', 'features.name')
