@@ -16,6 +16,7 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Check } from 'lucide-react';
 import React, { useState } from 'react';
+import { Comments } from '@/components/comments';
 
 interface Project {
     id: number;
@@ -367,6 +368,14 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
                                         <DependencyManager featureId={feature.id} options={featureOptions} initialItems={dependencies} />
                                     </CardContent>
                                 </Card>
+
+                                {/* Kommentare */}
+                                <Comments
+                                    entity={{
+                                        type: 'App\\Models\\Feature',
+                                        id: feature.id,
+                                    }}
+                                />
                             </div>
                         </div>
 

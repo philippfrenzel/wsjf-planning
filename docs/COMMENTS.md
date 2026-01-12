@@ -294,3 +294,103 @@ Potential improvements for the future:
 - Notifications for replies
 - Comment pinning
 - Comment history/edit tracking
+
+## Frontend Integration (React/TypeScript)
+
+### Components
+
+The frontend includes ready-to-use React components:
+
+#### `Comments` Component
+
+Main component for displaying and managing comments.
+
+```tsx
+import { Comments } from '@/components/comments';
+
+// In your page component
+<Comments
+    entity={{
+        type: 'App\\Models\\Feature',
+        id: feature.id,
+    }}
+/>
+```
+
+**Props:**
+- `entity`: Object with `type` (model class name) and `id` (entity ID)
+- `initialComments` (optional): Array of comments to display initially
+
+#### `CommentItem` Component
+
+Individual comment display with threaded replies support.
+
+**Features:**
+- User avatar and name display
+- Relative time formatting (e.g., "vor 2 Stunden")
+- Edit/delete buttons for comment owners
+- Reply functionality with threading (max 3 levels deep)
+- Inline editing mode
+- Nested replies display
+
+### Usage in Feature Edit Page
+
+The Comments component has been integrated into the Feature edit page (`resources/js/pages/features/edit.tsx`):
+
+```tsx
+import { Comments } from '@/components/comments';
+
+// Inside the right column, after Dependencies
+<Comments
+    entity={{
+        type: 'App\\Models\\Feature',
+        id: feature.id,
+    }}
+/>
+```
+
+### Adding Comments to Other Pages
+
+To add comments to any other entity:
+
+1. Import the component:
+```tsx
+import { Comments } from '@/components/comments';
+```
+
+2. Add it to your page:
+```tsx
+<Comments
+    entity={{
+        type: 'App\\Models\\Planning', // or 'App\\Models\\Project'
+        id: planning.id,
+    }}
+/>
+```
+
+### Customization
+
+The components use Tailwind CSS and shadcn/ui components, making them easy to customize:
+
+- Modify styling in the component files
+- Adjust max thread depth in `CommentItem` (default: 3 levels)
+- Change date formatting in `formatDate` function
+- Customize UI text (currently in German)
+
+### Available UI Actions
+
+- **Add Comment**: Type in textarea and click "Kommentar abschicken"
+- **Reply**: Click "Antworten" button on any comment
+- **Edit**: Click edit icon (only for own comments)
+- **Delete**: Click trash icon (only for own comments, with confirmation)
+- **Threaded Replies**: View nested conversations up to 3 levels deep
+
+### API Integration
+
+The component automatically handles all API calls:
+- `GET /comments` - Load comments
+- `POST /comments` - Create comment/reply
+- `PUT /comments/{id}` - Update comment
+- `DELETE /comments/{id}` - Delete comment
+
+All requests include proper authentication and CSRF tokens.
