@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { Link } from '@inertiajs/react';
@@ -148,67 +148,75 @@ export default function Show({ feature, auth }: ShowProps) {
                                 />
 
                                 {/* Abhängigkeiten anzeigen */}
-                                <div className="rounded-lg border border-slate-200 bg-white/70 px-4 py-3 shadow-sm">
-                                    <h3 className="mb-3 text-lg font-medium">Abhängigkeiten</h3>
-                                    {feature.dependencies && feature.dependencies.length > 0 ? (
-                                        <ul className="space-y-2">
-                                            {feature.dependencies.map((dep) => (
-                                                <li key={dep.id} className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        <Badge className={typeBadgeClass(dep.type)}>{translateDepType(dep.type)}</Badge>
-                                                        {dep.related ? (
-                                                            <Link
-                                                                href={route('features.show', { feature: dep.related.id })}
-                                                                className="text-blue-600 hover:underline"
-                                                            >
-                                                                {dep.related.jira_key} – {dep.related.name}
-                                                            </Link>
-                                                        ) : (
-                                                            <span>-</span>
-                                                        )}
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="text-gray-500">Keine Abhängigkeiten erfasst.</p>
-                                    )}
-
-                                    {feature.dependents && feature.dependents.length > 0 && (
-                                        <div className="mt-4">
-                                            <h4 className="mb-2 text-sm font-medium">Wird referenziert von</h4>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Abhängigkeiten</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {feature.dependencies && feature.dependencies.length > 0 ? (
                                             <ul className="space-y-2">
-                                                {feature.dependents.map((dep) => (
-                                                    <li key={`dep-${dep.id}`} className="flex items-center gap-2">
-                                                        <Badge variant="outline">{translateDepType(dep.type)}</Badge>
-                                                        {dep.feature ? (
-                                                            <Link
-                                                                href={route('features.show', { feature: dep.feature.id })}
-                                                                className="text-blue-600 hover:underline"
-                                                            >
-                                                                {dep.feature.jira_key} – {dep.feature.name}
-                                                            </Link>
-                                                        ) : (
-                                                            <span>-</span>
-                                                        )}
+                                                {feature.dependencies.map((dep) => (
+                                                    <li key={dep.id} className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge className={typeBadgeClass(dep.type)}>{translateDepType(dep.type)}</Badge>
+                                                            {dep.related ? (
+                                                                <Link
+                                                                    href={route('features.show', { feature: dep.related.id })}
+                                                                    className="text-blue-600 hover:underline"
+                                                                >
+                                                                    {dep.related.jira_key} – {dep.related.name}
+                                                                </Link>
+                                                            ) : (
+                                                                <span>-</span>
+                                                            )}
+                                                        </div>
                                                     </li>
                                                 ))}
                                             </ul>
-                                        </div>
-                                    )}
-                                </div>
+                                        ) : (
+                                            <p className="text-gray-500">Keine Abhängigkeiten erfasst.</p>
+                                        )}
+
+                                        {feature.dependents && feature.dependents.length > 0 && (
+                                            <div className="mt-4">
+                                                <h4 className="mb-2 text-sm font-medium">Wird referenziert von</h4>
+                                                <ul className="space-y-2">
+                                                    {feature.dependents.map((dep) => (
+                                                        <li key={`dep-${dep.id}`} className="flex items-center gap-2">
+                                                            <Badge variant="outline">{translateDepType(dep.type)}</Badge>
+                                                            {dep.feature ? (
+                                                                <Link
+                                                                    href={route('features.show', { feature: dep.feature.id })}
+                                                                    className="text-blue-600 hover:underline"
+                                                                >
+                                                                    {dep.feature.jira_key} – {dep.feature.name}
+                                                                </Link>
+                                                            ) : (
+                                                                <span>-</span>
+                                                            )}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
 
                                 {/* Feature Beschreibung */}
-                                <div className="rounded-lg border border-slate-200 bg-white/70 px-4 py-3 shadow-sm">
-                                    <h3 className="my-4 text-lg font-medium">Beschreibung</h3>
-                                    {feature.description ? (
-                                        <div className="prose prose-sm max-w-none">
-                                            <FeatureDescription content={feature.description} />
-                                        </div>
-                                    ) : (
-                                        <p className="text-gray-500">Keine Beschreibung vorhanden.</p>
-                                    )}
-                                </div>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Beschreibung</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {feature.description ? (
+                                            <div className="prose prose-sm max-w-none">
+                                                <FeatureDescription content={feature.description} />
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-500">Keine Beschreibung vorhanden.</p>
+                                        )}
+                                    </CardContent>
+                                </Card>
                             </TabsContent>
 
                             <TabsContent value="schaetzungen" className="space-y-6">
