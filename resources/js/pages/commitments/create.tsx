@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { useForm } from '@inertiajs/react';
-import axios from 'axios';
+import axios from '@/bootstrap';
 import React, { useEffect, useState } from 'react';
 
 interface Planning {

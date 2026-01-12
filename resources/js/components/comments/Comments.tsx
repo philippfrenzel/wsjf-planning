@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import type { Comment, CommentableEntity } from '@/types/comment';
-import axios from 'axios';
+import axios from '@/bootstrap';
 import { MessageSquare, Send } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { CommentItem } from './CommentItem';
