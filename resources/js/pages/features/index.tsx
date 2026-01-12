@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -72,12 +73,13 @@ export default function Index({ features }: IndexProps) {
         name: '',
         project: '',
         requester: '',
-        status: initialFiltersProp.status ?? '',
+        statuses: initialFiltersProp.status ? [initialFiltersProp.status] : [] as string[],
     });
 
     // Zustände für Popover
     const [projectPopoverOpen, setProjectPopoverOpen] = useState(false);
     const [requesterPopoverOpen, setRequesterPopoverOpen] = useState(false);
+    const [statusPopoverOpen, setStatusPopoverOpen] = useState(false);
 
     // Sortierungs-Zustände
     const [sortField, setSortField] = useState<SortField>('jira_key');
@@ -123,9 +125,21 @@ export default function Index({ features }: IndexProps) {
     }, [featureData]);
 
     // Handling für Filter-Änderungen
-    const handleFilterChange = (field: keyof typeof filters, value: string) => {
+    const handleFilterChange = (field: keyof typeof filters, value: string | string[]) => {
         setFilters((prev) => ({ ...prev, [field]: value }));
         setCurrentPage(1); // Bei Filteränderung zurück zur ersten Seite
+    };
+
+    // Handling für Status-Checkbox-Änderungen
+    const handleStatusToggle = (status: string) => {
+        setFilters((prev) => {
+            const currentStatuses = prev.statuses;
+            const newStatuses = currentStatuses.includes(status)
+                ? currentStatuses.filter((s) => s !== status)
+                : [...currentStatuses, status];
+            return { ...prev, statuses: newStatuses };
+        });
+        setCurrentPage(1);
     };
 
     // Handling für Sortierungs-Änderungen
@@ -145,7 +159,7 @@ export default function Index({ features }: IndexProps) {
             name: '',
             project: '',
             requester: '',
-            status: '',
+            statuses: [],
         });
     };
 
@@ -182,7 +196,7 @@ export default function Index({ features }: IndexProps) {
                 feature.name.toLowerCase().includes(filters.name.toLowerCase()) &&
                 (filters.project === '' || feature.project?.name?.toLowerCase().includes(filters.project.toLowerCase())) &&
                 (filters.requester === '' || feature.requester?.name?.toLowerCase().includes(filters.requester.toLowerCase())) &&
-                (filters.status === '' || feature.status?.name === filters.status)
+                (filters.statuses.length === 0 || filters.statuses.includes(feature.status?.name ?? ''))
             );
         });
 
@@ -305,21 +319,64 @@ export default function Index({ features }: IndexProps) {
                                     )}
                                 </div>
                             </div>
-                            {/* Status mit Dropdown */}
+                            {/* Status mit Checkbox-Dropdown */}
                             <div>
                                 <label className="mb-1 block text-sm font-medium">Status</label>
-                                <select
-                                    className="w-full rounded border px-2 py-1"
-                                    value={filters.status}
-                                    onChange={(e) => handleFilterChange('status', e.target.value)}
-                                >
-                                    <option value="">Alle anzeigen</option>
-                                    {uniqueStatuses.map((status) => (
-                                        <option key={status} value={status}>
-                                            {status}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div>
+                                    <Popover open={statusPopoverOpen} onOpenChange={setStatusPopoverOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                aria-expanded={statusPopoverOpen}
+                                                className="w-full justify-between"
+                                            >
+                                                {filters.statuses.length === 0
+                                                    ? 'Status wählen...'
+                                                    : filters.statuses.length === 1
+                                                      ? filters.statuses[0]
+                                                      : `${filters.statuses.length} Stati ausgewählt`}
+                                                <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-full p-0" align="start">
+                                            <Command>
+                                                <CommandInput placeholder="Status suchen..." className="h-9" />
+                                                <CommandEmpty>Kein Status gefunden.</CommandEmpty>
+                                                <CommandGroup className="max-h-64 overflow-y-auto">
+                                                    {uniqueStatuses.map((status) => (
+                                                        <CommandItem
+                                                            key={status}
+                                                            onSelect={() => handleStatusToggle(status)}
+                                                            className="text-sm"
+                                                        >
+                                                            <Checkbox
+                                                                checked={filters.statuses.includes(status)}
+                                                                className="mr-2"
+                                                            />
+                                                            {status}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+                                    {filters.statuses.length > 0 && (
+                                        <div className="mt-2 flex flex-wrap gap-1">
+                                            {filters.statuses.map((status) => (
+                                                <Badge key={status} variant="secondary" className="text-xs">
+                                                    {status}
+                                                    <button
+                                                        className="ml-1 text-gray-500 hover:text-gray-700"
+                                                        onClick={() => handleStatusToggle(status)}
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                         {/* Filter zweizeilig: Zweite Zeile */}
@@ -533,7 +590,9 @@ export default function Index({ features }: IndexProps) {
                                         <div className="flex flex-col items-center justify-center">
                                             <Search className="mb-2 h-8 w-8 text-gray-300" />
                                             <p className="text-gray-500">Keine Features gefunden</p>
-                                            {Object.values(filters).some((f) => f !== '') && (
+                                            {(Object.entries(filters).some(([key, value]) => 
+                                                key === 'statuses' ? (value as string[]).length > 0 : value !== ''
+                                            )) && (
                                                 <Button variant="link" onClick={resetFilters} className="mt-2">
                                                     Filter zurücksetzen
                                                 </Button>
