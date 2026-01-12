@@ -1,20 +1,21 @@
-import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useForm, usePage, router } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
 import { type SharedData } from '@/types';
+import { router, useForm, usePage } from '@inertiajs/react';
 
 export default function TenantsIndex() {
     const page = usePage<SharedData>();
     const tenants = (page.props.tenants as { id: number; name: string; members?: { id: number; name: string; email: string }[] }[]) ?? [];
-    const ownedTenants = (page.props.ownedTenants as {
-        id: number;
-        name: string;
-        members?: { id: number; name: string; email: string }[];
-        invitations?: { id: number; email: string; accepted_at?: string | null; created_at?: string }[];
-    }[]) ?? [];
+    const ownedTenants =
+        (page.props.ownedTenants as {
+            id: number;
+            name: string;
+            members?: { id: number; name: string; email: string }[];
+            invitations?: { id: number; email: string; accepted_at?: string | null; created_at?: string }[];
+        }[]) ?? [];
     const currentTenantId = (page.props.currentTenantId as number | null) ?? null;
     const invitations =
         (page.props.pendingInvitations as {
@@ -26,9 +27,10 @@ export default function TenantsIndex() {
             tenant: { id: number; name: string };
         }[]) ?? [];
 
-    const { data, setData, post, processing, reset } = useForm<{ email: string; tenant_id: number | '' }>(
-        { email: '', tenant_id: ownedTenants[0]?.id ?? '' }
-    );
+    const { data, setData, post, processing, reset } = useForm<{ email: string; tenant_id: number | '' }>({
+        email: '',
+        tenant_id: ownedTenants[0]?.id ?? '',
+    });
 
     const currentTenant = tenants.find((t) => t.id === currentTenantId);
     const selectedOwnedTenant = ownedTenants.find((t) => t.id === data.tenant_id);
@@ -75,13 +77,18 @@ export default function TenantsIndex() {
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Home', href: '/' }, { title: 'Tenants', href: route('tenants.index') }]}>
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Home', href: '/' },
+                { title: 'Tenants', href: route('tenants.index') },
+            ]}
+        >
             <div className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {kpiCards.map((kpi) => (
                         <Card key={kpi.label} className="border-slate-200 bg-slate-50/70 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs uppercase tracking-wide text-slate-500">{kpi.label}</CardDescription>
+                                <CardDescription className="text-xs tracking-wide text-slate-500 uppercase">{kpi.label}</CardDescription>
                                 <CardTitle className="text-2xl font-semibold text-slate-900">{kpi.value}</CardTitle>
                             </CardHeader>
                             <CardContent className="pt-0 text-xs text-slate-500">{kpi.hint}</CardContent>
@@ -107,7 +114,10 @@ export default function TenantsIndex() {
                                         <div className="text-sm font-medium text-slate-700">Deine Tenants</div>
                                         <ul className="space-y-2">
                                             {tenants.map((t) => (
-                                                <li key={t.id} className="flex items-center justify-between rounded border border-slate-200 bg-slate-50 px-3 py-2">
+                                                <li
+                                                    key={t.id}
+                                                    className="flex items-center justify-between rounded border border-slate-200 bg-slate-50 px-3 py-2"
+                                                >
                                                     <div className="flex flex-col">
                                                         <span className="font-medium text-slate-900">{t.name}</span>
                                                         {currentTenantId === t.id && (
@@ -171,7 +181,9 @@ export default function TenantsIndex() {
                                                     </span>
                                                     <Button
                                                         size="sm"
-                                                        onClick={() => router.post(route('tenants.accept'), { token: inv.token }, { preserveScroll: true })}
+                                                        onClick={() =>
+                                                            router.post(route('tenants.accept'), { token: inv.token }, { preserveScroll: true })
+                                                        }
                                                     >
                                                         Annehmen
                                                     </Button>

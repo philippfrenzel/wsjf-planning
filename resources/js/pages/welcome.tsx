@@ -16,8 +16,8 @@ export default function Welcome() {
             </Head>
             <div className="flex min-h-screen w-full flex-col items-center bg-[#bff04b] text-[#1b1b18] dark:bg-[#1e1e1e]">
                 {/* Schwarze Navigationsleiste */}
-                <header className="w-full bg-black text-white py-4">
-                    <div className="max-w-[335px] mx-auto lg:max-w-4xl px-4">
+                <header className="w-full bg-black py-4 text-white">
+                    <div className="mx-auto max-w-[335px] px-4 lg:max-w-4xl">
                         <nav className="flex items-center justify-end gap-4 text-sm">
                             {auth.user ? (
                                 <Link
@@ -45,7 +45,7 @@ export default function Welcome() {
                             <select
                                 value={locale}
                                 onChange={(e) => setLocale(e.target.value as 'en' | 'de')}
-                                className="ml-4 rounded-sm border border-[#ffffff35] px-2 py-1 text-sm bg-black text-white"
+                                className="ml-4 rounded-sm border border-[#ffffff35] bg-black px-2 py-1 text-sm text-white"
                             >
                                 <option value="en">EN</option>
                                 <option value="de">DE</option>
@@ -87,163 +87,159 @@ export default function Welcome() {
                         )}
                     </div>
                 </section>
-                  
+
                 {/* Container für den restlichen Inhalt mit begrenzter Breite */}
-                <div className="w-full max-w-[335px] mx-auto lg:max-w-4xl px-4 py-8">
-                   {/* Features-Liste */}
-                <section className="w-full text-center text-[#1b1b18] dark:text-[#EDEDEC]">
-                    <h2 className="mb-4 text-2xl font-semibold">{t('features_title')}</h2>
-                    <ul className="mx-auto max-w-xl list-disc space-y-1 text-left text-sm text-[#706f6c] dark:text-[#A1A09A]">
-                        {(t('features') as string[]).map((item) => (
-                            <li key={item}>{item}</li>
-                        ))}
-                    </ul>
-                </section>
+                <div className="mx-auto w-full max-w-[335px] px-4 py-8 lg:max-w-4xl">
+                    {/* Features-Liste */}
+                    <section className="w-full text-center text-[#1b1b18] dark:text-[#EDEDEC]">
+                        <h2 className="mb-4 text-2xl font-semibold">{t('features_title')}</h2>
+                        <ul className="mx-auto max-w-xl list-disc space-y-1 text-left text-sm text-[#706f6c] dark:text-[#A1A09A]">
+                            {(t('features') as string[]).map((item) => (
+                                <li key={item}>{item}</li>
+                            ))}
+                        </ul>
+                    </section>
                 </div>
 
                 {/* 4-Spalten Feature-Grid über die ganze Breite */}
                 <section className="mt-16 w-full">
-                    <div className="grid grid-cols-1 md:grid-cols-4 w-full">
-                        <div className="flex flex-col items-center py-12 px-6 bg-[#a1d933] dark:bg-[#283618] text-center transition-all hover:shadow-lg hover:translate-y-[-4px]">
+                    <div className="grid w-full grid-cols-1 md:grid-cols-4">
+                        <div className="flex flex-col items-center bg-[#a1d933] px-6 py-12 text-center transition-all hover:translate-y-[-4px] hover:shadow-lg dark:bg-[#283618]">
                             <Gauge className="mb-4 h-14 w-14 text-orange-500" />
-                            <h3 className="text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">{t('grid_wsjf_title')}</h3>
-                            <p className="text-sm text-[#2b3313] dark:text-[#BFC8A1] max-w-xs mx-auto">{t('grid_wsjf_text')}</p>
+                            <h3 className="mb-2 text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">{t('grid_wsjf_title')}</h3>
+                            <p className="mx-auto max-w-xs text-sm text-[#2b3313] dark:text-[#BFC8A1]">{t('grid_wsjf_text')}</p>
                         </div>
-                        <div className="flex flex-col items-center py-12 px-6 bg-[#b9e45a] dark:bg-[#3a4a1c] text-center transition-all hover:shadow-lg hover:translate-y-[-4px]">
+                        <div className="flex flex-col items-center bg-[#b9e45a] px-6 py-12 text-center transition-all hover:translate-y-[-4px] hover:shadow-lg dark:bg-[#3a4a1c]">
                             <CalendarCheck2 className="mb-4 h-14 w-14 text-orange-500" />
-                            <h3 className="text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">{t('grid_sprint_title')}</h3>
-                            <p className="text-sm text-[#2b3313] dark:text-[#BFC8A1] max-w-xs mx-auto">{t('grid_sprint_text')}</p>
+                            <h3 className="mb-2 text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">{t('grid_sprint_title')}</h3>
+                            <p className="mx-auto max-w-xs text-sm text-[#2b3313] dark:text-[#BFC8A1]">{t('grid_sprint_text')}</p>
                         </div>
-                        <div className="flex flex-col items-center py-12 px-6 bg-[#d1ee85] dark:bg-[#4c5e26] text-center transition-all hover:shadow-lg hover:translate-y-[-4px]">
+                        <div className="flex flex-col items-center bg-[#d1ee85] px-6 py-12 text-center transition-all hover:translate-y-[-4px] hover:shadow-lg dark:bg-[#4c5e26]">
                             <Users className="mb-4 h-14 w-14 text-orange-500" />
-                            <h3 className="text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">{t('grid_collab_title')}</h3>
-                            <p className="text-sm text-[#2b3313] dark:text-[#BFC8A1] max-w-xs mx-auto">{t('grid_collab_text')}</p>
+                            <h3 className="mb-2 text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">{t('grid_collab_title')}</h3>
+                            <p className="mx-auto max-w-xs text-sm text-[#2b3313] dark:text-[#BFC8A1]">{t('grid_collab_text')}</p>
                         </div>
-                        <div className="flex flex-col items-center py-12 px-6 bg-[#e9f7b7] dark:bg-[#5e7230] text-center transition-all hover:shadow-lg hover:translate-y-[-4px]">
+                        <div className="flex flex-col items-center bg-[#e9f7b7] px-6 py-12 text-center transition-all hover:translate-y-[-4px] hover:shadow-lg dark:bg-[#5e7230]">
                             <BarChart3 className="mb-4 h-14 w-14 text-orange-500" />
-                            <h3 className="text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">{t('grid_reports_title')}</h3>
-                            <p className="text-sm text-[#2b3313] dark:text-[#BFC8A1] max-w-xs mx-auto">{t('grid_reports_text')}</p>
-                        </div>
-                    </div>
-                </section>
-                
-                <div className="w-full max-w-[335px] mx-auto lg:max-w-4xl px-4 py-8">
-
-                {/* Detaillierte Funktionsbeschreibungen */}
-                <section className="mt-16 w-full text-[#1b1b18] dark:text-[#EDEDEC]">
-                    {/* WSJF Planning - Linke Spalte farbig */}
-                    <div className="w-full flex flex-col md:flex-row">
-                        <div className="w-full md:w-1/2 bg-[#a1d933] dark:bg-[#283618] p-8 flex flex-col justify-center items-center md:items-end">
-                            <div className="max-w-md">
-                                <Gauge className="mb-6 h-16 w-16 text-orange-500" />
-                                <h2 className="text-3xl font-semibold mb-4">{t('section_wsjf_title')}</h2>
-                                <p
-                                    className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]"
-                                    dangerouslySetInnerHTML={{ __html: t('section_wsjf_text') }}
-                                />
-                            </div>
-                        </div>
-                        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center items-center md:items-start">
-                            <div className="max-w-md">
-                                <h3 className="text-xl font-semibold mb-3">{t('Key Features')}</h3>
-                                <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
-                                    {(t('section_wsjf_points') as string[]).map((p) => (
-                                        <li key={p}>{p}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Sprint Planning - Rechte Spalte farbig */}
-                    <div className="w-full flex flex-col md:flex-row">
-                        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center items-center md:items-end order-1 md:order-none">
-                            <div className="max-w-md">
-                                <h3 className="text-xl font-semibold mb-3">{t('Key Features')}</h3>
-                                <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
-                                    {(t('section_sprint_points') as string[]).map((p) => (
-                                        <li key={p}>{p}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                        <div className="w-full md:w-1/2 bg-[#b9e45a] dark:bg-[#3a4a1c] p-8 flex flex-col justify-center items-center md:items-start order-none md:order-1">
-                            <div className="max-w-md">
-                                <CalendarCheck2 className="mb-6 h-16 w-16 text-orange-500" />
-                                <h2 className="text-3xl font-semibold mb-4">{t('section_sprint_title')}</h2>
-                                <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_sprint_text')}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Collaboration - Linke Spalte farbig */}
-                    <div className="w-full flex flex-col md:flex-row">
-                        <div className="w-full md:w-1/2 bg-[#d1ee85] dark:bg-[#4c5e26] p-8 flex flex-col justify-center items-center md:items-end">
-                            <div className="max-w-md">
-                                <Users className="mb-6 h-16 w-16 text-orange-500" />
-                                <h2 className="text-3xl font-semibold mb-4">{t('section_collab_title')}</h2>
-                                <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_collab_text')}</p>
-                            </div>
-                        </div>
-                        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center items-center md:items-start">
-                            <div className="max-w-md">
-                                <h3 className="text-xl font-semibold mb-3">{t('Key Features')}</h3>
-                                <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
-                                    {(t('section_collab_points') as string[]).map((p) => (
-                                        <li key={p}>{p}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Reports - Rechte Spalte farbig */}
-                    <div className="w-full flex flex-col md:flex-row">
-                        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center items-center md:items-end order-1 md:order-none">
-                            <div className="max-w-md">
-                                <h3 className="text-xl font-semibold mb-3">{t('Key Features')}</h3>
-                                <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
-                                    {(t('section_report_points') as string[]).map((p) => (
-                                        <li key={p}>{p}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                        <div className="w-full md:w-1/2 bg-[#e9f7b7] dark:bg-[#5e7230] p-8 flex flex-col justify-center items-center md:items-start order-none md:order-1">
-                            <div className="max-w-md">
-                                <BarChart3 className="mb-6 h-16 w-16 text-orange-500" />
-                                <h2 className="text-3xl font-semibold mb-4">{t('section_report_title')}</h2>
-                                <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_report_text')}</p>
-                            </div>
+                            <h3 className="mb-2 text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">{t('grid_reports_title')}</h3>
+                            <p className="mx-auto max-w-xs text-sm text-[#2b3313] dark:text-[#BFC8A1]">{t('grid_reports_text')}</p>
                         </div>
                     </div>
                 </section>
 
-                {/* Getting Started */}
-                <section className="mt-16 w-full text-center text-[#1b1b18] dark:text-[#EDEDEC]">
-                    <h2 className="mb-4 text-2xl font-semibold">{t('getting_started_title')}</h2>
-                    <p className="mx-auto mb-6 max-w-xl text-sm text-[#706f6c] dark:text-[#A1A09A]">{t('getting_started_subtitle')}</p>
-                    <ol className="mx-auto max-w-xl list-decimal space-y-1 text-left text-sm text-[#706f6c] dark:text-[#A1A09A]">
-                        {(t('getting_started_steps') as string[]).map((s) => (
-                            <li key={s}>{s}</li>
-                        ))}
-                    </ol>
-                    <Link
-                        href={route('register')}
-                        className="bg-primary hover:bg-primary/90 mt-6 inline-flex items-center rounded-md px-6 py-2 text-sm font-medium text-white shadow"
-                    >
-                        {t('getting_started_cta')}
-                    </Link>
-                </section>
-                </div>
-                
-                {/* Footer-Bereich */}
-                <div className="w-full bg-black text-white py-8 mt-auto">
-                    <div className="max-w-[335px] mx-auto lg:max-w-4xl px-4 text-center text-xs space-y-2">
+                <div className="mx-auto w-full max-w-[335px] px-4 py-8 lg:max-w-4xl">
+                    {/* Detaillierte Funktionsbeschreibungen */}
+                    <section className="mt-16 w-full text-[#1b1b18] dark:text-[#EDEDEC]">
+                        {/* WSJF Planning - Linke Spalte farbig */}
+                        <div className="flex w-full flex-col md:flex-row">
+                            <div className="flex w-full flex-col items-center justify-center bg-[#a1d933] p-8 md:w-1/2 md:items-end dark:bg-[#283618]">
+                                <div className="max-w-md">
+                                    <Gauge className="mb-6 h-16 w-16 text-orange-500" />
+                                    <h2 className="mb-4 text-3xl font-semibold">{t('section_wsjf_title')}</h2>
+                                    <p
+                                        className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]"
+                                        dangerouslySetInnerHTML={{ __html: t('section_wsjf_text') }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex w-full flex-col items-center justify-center p-8 md:w-1/2 md:items-start">
+                                <div className="max-w-md">
+                                    <h3 className="mb-3 text-xl font-semibold">{t('Key Features')}</h3>
+                                    <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
+                                        {(t('section_wsjf_points') as string[]).map((p) => (
+                                            <li key={p}>{p}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Sprint Planning - Rechte Spalte farbig */}
+                        <div className="flex w-full flex-col md:flex-row">
+                            <div className="order-1 flex w-full flex-col items-center justify-center p-8 md:order-none md:w-1/2 md:items-end">
+                                <div className="max-w-md">
+                                    <h3 className="mb-3 text-xl font-semibold">{t('Key Features')}</h3>
+                                    <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
+                                        {(t('section_sprint_points') as string[]).map((p) => (
+                                            <li key={p}>{p}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="order-none flex w-full flex-col items-center justify-center bg-[#b9e45a] p-8 md:order-1 md:w-1/2 md:items-start dark:bg-[#3a4a1c]">
+                                <div className="max-w-md">
+                                    <CalendarCheck2 className="mb-6 h-16 w-16 text-orange-500" />
+                                    <h2 className="mb-4 text-3xl font-semibold">{t('section_sprint_title')}</h2>
+                                    <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_sprint_text')}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Collaboration - Linke Spalte farbig */}
+                        <div className="flex w-full flex-col md:flex-row">
+                            <div className="flex w-full flex-col items-center justify-center bg-[#d1ee85] p-8 md:w-1/2 md:items-end dark:bg-[#4c5e26]">
+                                <div className="max-w-md">
+                                    <Users className="mb-6 h-16 w-16 text-orange-500" />
+                                    <h2 className="mb-4 text-3xl font-semibold">{t('section_collab_title')}</h2>
+                                    <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_collab_text')}</p>
+                                </div>
+                            </div>
+                            <div className="flex w-full flex-col items-center justify-center p-8 md:w-1/2 md:items-start">
+                                <div className="max-w-md">
+                                    <h3 className="mb-3 text-xl font-semibold">{t('Key Features')}</h3>
+                                    <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
+                                        {(t('section_collab_points') as string[]).map((p) => (
+                                            <li key={p}>{p}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Reports - Rechte Spalte farbig */}
+                        <div className="flex w-full flex-col md:flex-row">
+                            <div className="order-1 flex w-full flex-col items-center justify-center p-8 md:order-none md:w-1/2 md:items-end">
+                                <div className="max-w-md">
+                                    <h3 className="mb-3 text-xl font-semibold">{t('Key Features')}</h3>
+                                    <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
+                                        {(t('section_report_points') as string[]).map((p) => (
+                                            <li key={p}>{p}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="order-none flex w-full flex-col items-center justify-center bg-[#e9f7b7] p-8 md:order-1 md:w-1/2 md:items-start dark:bg-[#5e7230]">
+                                <div className="max-w-md">
+                                    <BarChart3 className="mb-6 h-16 w-16 text-orange-500" />
+                                    <h2 className="mb-4 text-3xl font-semibold">{t('section_report_title')}</h2>
+                                    <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_report_text')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Getting Started */}
+                    <section className="mt-16 w-full text-center text-[#1b1b18] dark:text-[#EDEDEC]">
+                        <h2 className="mb-4 text-2xl font-semibold">{t('getting_started_title')}</h2>
+                        <p className="mx-auto mb-6 max-w-xl text-sm text-[#706f6c] dark:text-[#A1A09A]">{t('getting_started_subtitle')}</p>
+                        <ol className="mx-auto max-w-xl list-decimal space-y-1 text-left text-sm text-[#706f6c] dark:text-[#A1A09A]">
+                            {(t('getting_started_steps') as string[]).map((s) => (
+                                <li key={s}>{s}</li>
+                            ))}
+                        </ol>
                         <Link
-                            href={route('imprint')}
-                            className="text-white underline-offset-4 hover:underline"
+                            href={route('register')}
+                            className="bg-primary hover:bg-primary/90 mt-6 inline-flex items-center rounded-md px-6 py-2 text-sm font-medium text-white shadow"
                         >
+                            {t('getting_started_cta')}
+                        </Link>
+                    </section>
+                </div>
+
+                {/* Footer-Bereich */}
+                <div className="mt-auto w-full bg-black py-8 text-white">
+                    <div className="mx-auto max-w-[335px] space-y-2 px-4 text-center text-xs lg:max-w-4xl">
+                        <Link href={route('imprint')} className="text-white underline-offset-4 hover:underline">
                             {t('imprint_link')}
                         </Link>
                         <p>© {new Date().getFullYear()} WSJF Planning Tool</p>

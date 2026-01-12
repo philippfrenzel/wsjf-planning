@@ -1,7 +1,7 @@
-import React from "react";
-import { usePage } from "@inertiajs/react";
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Table } from "@/components/ui/table";
+import { Table } from '@/components/ui/table';
+import { usePage } from '@inertiajs/react';
+import React from 'react';
 
 // Beispiel für ein einfaches UI-Komponenten-Set
 
@@ -32,27 +32,27 @@ const EstimationComponentShow: React.FC = () => {
                     <Table>
                         <tbody>
                             <tr>
-                                <th className="text-left pr-4">ID</th>
+                                <th className="pr-4 text-left">ID</th>
                                 <td>{estimationcomponent.id}</td>
                             </tr>
                             <tr>
-                                <th className="text-left pr-4">Name</th>
+                                <th className="pr-4 text-left">Name</th>
                                 <td>{estimationcomponent.name}</td>
                             </tr>
                             <tr>
-                                <th className="text-left pr-4">Description</th>
+                                <th className="pr-4 text-left">Description</th>
                                 <td>{estimationcomponent.description}</td>
                             </tr>
                             <tr>
-                                <th className="text-left pr-4">Value</th>
+                                <th className="pr-4 text-left">Value</th>
                                 <td>{estimationcomponent.value}</td>
                             </tr>
                             <tr>
-                                <th className="text-left pr-4">Created At</th>
+                                <th className="pr-4 text-left">Created At</th>
                                 <td>{estimationcomponent.created_at}</td>
                             </tr>
                             <tr>
-                                <th className="text-left pr-4">Updated At</th>
+                                <th className="pr-4 text-left">Updated At</th>
                                 <td>{estimationcomponent.updated_at}</td>
                             </tr>
                         </tbody>

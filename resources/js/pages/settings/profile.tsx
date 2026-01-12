@@ -1,6 +1,6 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 import DeleteUser from '@/components/delete-user';
@@ -22,9 +22,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 type ProfileForm = {
     name: string;
     email: string;
-}
+};
 
-export default function Profile({ mustVerifyEmail, status, imageSupport }: { mustVerifyEmail: boolean; status?: string; imageSupport?: { imagick: boolean; gd: boolean; jpeg: boolean } }) {
+export default function Profile({
+    mustVerifyEmail,
+    status,
+    imageSupport,
+}: {
+    mustVerifyEmail: boolean;
+    status?: string;
+    imageSupport?: { imagick: boolean; gd: boolean; jpeg: boolean };
+}) {
     const { auth } = usePage<SharedData>().props;
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
@@ -74,7 +82,8 @@ export default function Profile({ mustVerifyEmail, status, imageSupport }: { mus
                             <InputError className="mt-1" message={(usePage() as any).props.errors?.avatar as string} />
                             {imageSupport && imageSupport.jpeg === false && (
                                 <div className="mt-2 rounded-md border border-yellow-200 bg-yellow-50 p-3 text-xs text-yellow-800">
-                                    Hinweis: JPEG-Unterstützung ist auf dem Server aktuell nicht verfügbar. Bitte PNG oder WebP hochladen oder die Server-Erweiterung (Imagick oder GD mit JPEG) aktivieren.
+                                    Hinweis: JPEG-Unterstützung ist auf dem Server aktuell nicht verfügbar. Bitte PNG oder WebP hochladen oder die
+                                    Server-Erweiterung (Imagick oder GD mit JPEG) aktivieren.
                                 </div>
                             )}
                         </div>

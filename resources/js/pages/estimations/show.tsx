@@ -1,8 +1,7 @@
-import React from "react";
-import { Head, usePage } from "@inertiajs/react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Head, usePage } from '@inertiajs/react';
 
 interface Estimation {
     id: number;
@@ -21,7 +20,7 @@ export default function EstimationShow() {
     return (
         <>
             <Head title={`Estimation: ${estimation.title}`} />
-            <div className="max-w-xl mx-auto mt-10">
+            <div className="mx-auto mt-10 max-w-xl">
                 <Card>
                     <CardHeader>
                         <CardTitle>
@@ -54,10 +53,10 @@ export default function EstimationShow() {
                         </div>
                         <div className="mt-6 flex gap-2">
                             <Button variant="outline" asChild>
-                                <a href={route("estimations.index")}>Zurück zur Übersicht</a>
+                                <a href={route('estimations.index')}>Zurück zur Übersicht</a>
                             </Button>
                             <Button asChild>
-                                <a href={route("estimations.edit", estimation.id)}>Bearbeiten</a>
+                                <a href={route('estimations.edit', estimation.id)}>Bearbeiten</a>
                             </Button>
                         </div>
                     </CardContent>

@@ -1,17 +1,15 @@
-import { CardHeader, CardTitle } from "@/components/ui/card";
+import { CardHeader, CardTitle } from '@/components/ui/card';
 
 interface FeatureHeaderProps {
-  featureName: string;
+    featureName: string;
 }
 
-export default function FeatureHeader({
-  featureName,
-}: FeatureHeaderProps) {
-  return (
-    <CardHeader>
-      <CardTitle className="flex justify-between items-center">
-        <span>{featureName}</span>
-      </CardTitle>
-    </CardHeader>
-  );
+export default function FeatureHeader({ featureName }: FeatureHeaderProps) {
+    return (
+        <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+                <span>{featureName}</span>
+            </CardTitle>
+        </CardHeader>
+    );
 }
