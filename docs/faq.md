@@ -22,3 +22,19 @@ Leistung/Entwicklung
 - Dev‑Modus: `APP_DEBUG=true`, Vite mit `npm run dev`
 - Production‑Build: `npm run build` (je nach Deployment)
 
+
+## Feature-Import aus Jira CSV
+
+- Frage: Werden Jira-Formatierungen beim CSV-Import übernommen?
+  - Antwort: Ja! Beim Import von Features aus Jira CSV-Exporten werden Jira Wiki-Formatierungen automatisch in HTML konvertiert. Unterstützte Formatierungen:
+    - Überschriften: `h1.`, `h2.`, `h3.`, etc.
+    - Fettdruck: `*text*` oder `**text**`
+    - Kursiv: `_text_`
+    - Unterstrichen: `+text+`
+    - Durchgestrichen: `-text-`
+    - Listen: `*` für ungeordnete und `#` für nummerierte Listen
+    - Links: `[URL]` oder `[Text|URL]`
+    - Code: `{{inline code}}` und `{code}...{code}` für Codeblöcke
+    - Zitate: `bq. quote text`
+    - Tabellen: Jira-Tabellensyntax mit `||` für Header und `|` für Zeilen
+  - Die Formatierungen werden beim Import automatisch konvertiert und sind in der Feature-Beschreibung korrekt sichtbar.

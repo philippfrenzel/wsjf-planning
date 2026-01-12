@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Feature;
 use App\Models\Project;
+use App\Services\JiraMarkupConverter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -12,9 +13,12 @@ use Inertia\Response;
 
 class FeatureImportController extends Controller
 {
-    public function __construct()
+    protected JiraMarkupConverter $jiraConverter;
+
+    public function __construct(JiraMarkupConverter $jiraConverter)
     {
         $this->middleware('auth');
+        $this->jiraConverter = $jiraConverter;
     }
 
     public function create(Project $project): Response
@@ -118,6 +122,11 @@ class FeatureImportController extends Controller
             $desc = $index['description'] !== null && array_key_exists($index['description'], $row)
                 ? (string)$row[$index['description']]
                 : null;
+
+            // Convert Jira markup to HTML if description is present
+            if ($desc !== null) {
+                $desc = $this->jiraConverter->convertToHtml($desc);
+            }
 
             // Upsert pro Projekt + jira_key
             $feature = Feature::where('project_id', $project->id)
