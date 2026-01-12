@@ -47,8 +47,8 @@ class FeatureController extends Controller
             }
         }
 
-        // Daten paginiert abrufen und für das Frontend aufbereiten
-        $features = $query->paginate(25)->through(function ($feature) {
+        // Daten abrufen und für das Frontend aufbereiten
+        $features = $query->get()->map(function ($feature) {
                 // Berechne die Summe der weighted_case manuell
                 $totalWeightedCase = $feature->estimationComponents->flatMap(function ($component) {
                     return $component->estimations;
