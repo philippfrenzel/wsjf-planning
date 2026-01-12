@@ -48,6 +48,7 @@ interface BoardProps {
     project_id?: number | null;
     planning_id?: number | null;
     status?: string | null;
+    closed_status_days?: string | null;
   };
   plannings: { id: number; title: string }[];
 }
@@ -158,6 +159,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
   const [selectedStatus, setSelectedStatus] = useState<string | null>(filters.status || null);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(filters.project_id || null);
   const [selectedPlanningId, setSelectedPlanningId] = useState<number | null>(filters.planning_id || null);
+  const [selectedClosedStatusDays, setSelectedClosedStatusDays] = useState<string>(filters.closed_status_days || '90');
 
   // Verbesserte Dnd-Kit Sensoren für zuverlässigere Drag-and-Drop-Erkennung
   const sensors = useSensors(
@@ -248,12 +250,12 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
     setSelectedPlanningId(null);
     
     // Zum Board mit Projektfilter navigieren
-    // Pfad direkt erstellen, da kein spezifischer Router-Import verfügbar ist
-    const url = newProjectId 
-      ? `/features/board?project_id=${newProjectId}` 
-      : '/features/board';
+    const params = new URLSearchParams();
+    if (newProjectId) params.set('project_id', String(newProjectId));
+    if (selectedClosedStatusDays) params.set('closed_status_days', selectedClosedStatusDays);
+    const qs = params.toString();
     
-    window.location.href = url;
+    window.location.href = qs ? `/features/board?${qs}` : '/features/board';
   };
 
   const handlePlanningChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -262,8 +264,20 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
     const params = new URLSearchParams();
     if (selectedProjectId) params.set('project_id', String(selectedProjectId));
     if (newPlanningId) params.set('planning_id', String(newPlanningId));
+    if (selectedClosedStatusDays) params.set('closed_status_days', selectedClosedStatusDays);
     const qs = params.toString();
     window.location.href = qs ? `/features/board?${qs}` : '/features/board';
+  };
+
+  const handleClosedStatusDaysChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newDays = e.target.value;
+    setSelectedClosedStatusDays(newDays);
+    const params = new URLSearchParams();
+    if (selectedProjectId) params.set('project_id', String(selectedProjectId));
+    if (selectedPlanningId) params.set('planning_id', String(selectedPlanningId));
+    params.set('closed_status_days', newDays);
+    const qs = params.toString();
+    window.location.href = `/features/board?${qs}`;
   };
 
   return (
@@ -307,6 +321,24 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
                       {p.title}
                     </option>
                   ))}
+                </select>
+              </div>
+              <div className="w-64">
+                <label htmlFor="closedStatusFilter" className="block text-sm font-medium text-gray-700 mb-1">
+                  Abgeschlossene Features
+                </label>
+                <select
+                  id="closedStatusFilter"
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  value={selectedClosedStatusDays}
+                  onChange={handleClosedStatusDaysChange}
+                >
+                  <option value="10">Älter als 10 Tage ausblenden</option>
+                  <option value="30">Älter als 30 Tage ausblenden</option>
+                  <option value="90">Älter als 90 Tage ausblenden</option>
+                  <option value="180">Älter als 180 Tage ausblenden</option>
+                  <option value="360">Älter als 360 Tage ausblenden</option>
+                  <option value="all">Alle anzeigen</option>
                 </select>
               </div>
             </div>

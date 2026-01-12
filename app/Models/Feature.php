@@ -149,4 +149,37 @@ class Feature extends Model
     {
         return $this->hasMany(FeatureDependency::class, 'related_feature_id')->with('feature:id,jira_key,name,project_id');
     }
+
+    /**
+     * Scope to filter features by closed statuses and transition date.
+     * Hides features with status 'implemented', 'rejected', or 'obsolete' 
+     * that have been in that status for more than the specified number of days.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int|null $days Number of days threshold (null = show all)
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFilterClosedByDays($query, ?int $days)
+    {
+        // If days is null, show all features (no filtering)
+        if ($days === null) {
+            return $query;
+        }
+
+        // Define the statuses that should be filtered
+        $closedStatuses = ['implemented', 'rejected', 'obsolete'];
+
+        return $query->where(function ($q) use ($days, $closedStatuses) {
+            // Include features that are NOT in closed statuses
+            $q->whereNotIn('status', $closedStatuses)
+              // OR include features in closed statuses that were changed within the threshold
+              ->orWhereIn('features.id', function ($subQuery) use ($days, $closedStatuses) {
+                  $subQuery->select('feature_id')
+                      ->from('feature_state_histories')
+                      ->whereIn('to_status', $closedStatuses)
+                      ->where('changed_at', '>=', now()->subDays($days))
+                      ->groupBy('feature_id');
+              });
+        });
+    }
 }
