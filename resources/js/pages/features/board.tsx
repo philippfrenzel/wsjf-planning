@@ -15,7 +15,7 @@ import {
     useSensors,
 } from '@dnd-kit/core';
 import { Link } from '@inertiajs/react';
-import axios from 'axios';
+import axios from '@/bootstrap';
 import React, { useState } from 'react';
 
 interface Feature {
