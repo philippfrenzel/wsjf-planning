@@ -208,55 +208,55 @@ export default function TenantsIndex() {
                                                 <CardTitle>Ausstehend ({pendingSelected.length})</CardTitle>
                                             </CardHeader>
                                             <CardContent>
-                                            {pendingSelected.length === 0 ? (
-                                                <div className="text-xs text-neutral-500">Keine ausstehenden Einladungen</div>
-                                            ) : (
-                                                <ul className="space-y-1 text-sm">
-                                                    {pendingSelected.map((p) => (
-                                                        <li key={p.id} className="flex items-center justify-between gap-2">
-                                                            <span>{p.email}</span>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="destructive"
-                                                                onClick={() => revokeInvitation(selectedOwnedTenant.id, p.id)}
-                                                            >
-                                                                Zurückziehen
-                                                            </Button>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                        </CardContent>
+                                                {pendingSelected.length === 0 ? (
+                                                    <div className="text-xs text-neutral-500">Keine ausstehenden Einladungen</div>
+                                                ) : (
+                                                    <ul className="space-y-1 text-sm">
+                                                        {pendingSelected.map((p) => (
+                                                            <li key={p.id} className="flex items-center justify-between gap-2">
+                                                                <span>{p.email}</span>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="destructive"
+                                                                    onClick={() => revokeInvitation(selectedOwnedTenant.id, p.id)}
+                                                                >
+                                                                    Zurückziehen
+                                                                </Button>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </CardContent>
                                         </Card>
                                         <Card>
                                             <CardHeader>
                                                 <CardTitle>Angenommen ({acceptedSelected.length})</CardTitle>
                                             </CardHeader>
                                             <CardContent>
-                                            {acceptedSelected.length === 0 ? (
-                                                <div className="text-xs text-neutral-500">Noch keine angenommenen Einladungen</div>
-                                            ) : (
-                                                <ul className="space-y-1 text-sm">
-                                                    {acceptedSelected.map((a) => {
-                                                        const member = (selectedOwnedTenant.members ?? []).find((m) => m.email === a.email);
-                                                        return (
-                                                            <li key={a.id} className="flex items-center justify-between">
-                                                                <span>
-                                                                    {member ? (
-                                                                        <>
-                                                                            <span className="font-medium">{member.name}</span>
-                                                                            <span className="ml-2 text-xs text-neutral-500">{member.email}</span>
-                                                                        </>
-                                                                    ) : (
-                                                                        <span>{a.email}</span>
-                                                                    )}
-                                                                </span>
-                                                                <span className="text-xs text-neutral-500">{a.accepted_at?.slice(0, 10)}</span>
-                                                            </li>
-                                                        );
-                                                    })}
-                                                </ul>
-                                            )}
+                                                {acceptedSelected.length === 0 ? (
+                                                    <div className="text-xs text-neutral-500">Noch keine angenommenen Einladungen</div>
+                                                ) : (
+                                                    <ul className="space-y-1 text-sm">
+                                                        {acceptedSelected.map((a) => {
+                                                            const member = (selectedOwnedTenant.members ?? []).find((m) => m.email === a.email);
+                                                            return (
+                                                                <li key={a.id} className="flex items-center justify-between">
+                                                                    <span>
+                                                                        {member ? (
+                                                                            <>
+                                                                                <span className="font-medium">{member.name}</span>
+                                                                                <span className="ml-2 text-xs text-neutral-500">{member.email}</span>
+                                                                            </>
+                                                                        ) : (
+                                                                            <span>{a.email}</span>
+                                                                        )}
+                                                                    </span>
+                                                                    <span className="text-xs text-neutral-500">{a.accepted_at?.slice(0, 10)}</span>
+                                                                </li>
+                                                            );
+                                                        })}
+                                                    </ul>
+                                                )}
                                             </CardContent>
                                         </Card>
                                     </div>
