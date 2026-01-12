@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreFeatureRequest;
+use App\Http\Requests\UpdateFeatureRequest;
 use App\Models\Feature;
-use App\Models\Project;
 use App\Models\Planning;
+use App\Models\Project;
 use App\Models\User;
+use App\Services\FeatureService;
+use App\Support\StatusMapper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
-use App\Http\Requests\StoreFeatureRequest;
-use App\Http\Requests\UpdateFeatureRequest;
-use App\Support\StatusMapper;
-use App\Services\FeatureService;
 use Spatie\ModelStates\State;
 
 class FeatureController extends Controller
@@ -33,7 +33,7 @@ class FeatureController extends Controller
             'project:id,name,jira_base_uri',
             'requester:id,name',
             'estimationComponents',  // Lade alle Komponenten
-            'estimationComponents.estimations'  // Lade alle Schätzungen der Komponenten
+            'estimationComponents.estimations',  // Lade alle Schätzungen der Komponenten
         ])->withCount('estimationComponents as estimation_components_count');
 
         // Serverseitiger Status-Filter, falls gesetzt
@@ -49,36 +49,36 @@ class FeatureController extends Controller
 
         // Daten abrufen und für das Frontend aufbereiten
         $features = $query->get()->map(function ($feature) {
-                // Berechne die Summe der weighted_case manuell
-                $totalWeightedCase = $feature->estimationComponents->flatMap(function ($component) {
-                    return $component->estimations;
-                })->sum('weighted_case');
+            // Berechne die Summe der weighted_case manuell
+            $totalWeightedCase = $feature->estimationComponents->flatMap(function ($component) {
+                return $component->estimations;
+            })->sum('weighted_case');
 
-                // Sammle alle Einheiten der Schätzungen
-                $units = $feature->estimationComponents->flatMap(function ($component) {
-                    return $component->estimations->pluck('unit');
-                })->unique()->values()->all();
+            // Sammle alle Einheiten der Schätzungen
+            $units = $feature->estimationComponents->flatMap(function ($component) {
+                return $component->estimations->pluck('unit');
+            })->unique()->values()->all();
 
-                return [
-                    'id' => $feature->id,
-                    'jira_key' => $feature->jira_key,
-                    'name' => $feature->name,
-                    'description' => $feature->description,
-                    'requester' => $feature->requester ? [
-                        'id' => $feature->requester->id,
-                        'name' => $feature->requester->name,
-                    ] : null,
-                    'project' => $feature->project ? [
-                        'id' => $feature->project->id,
-                        'name' => $feature->project->name,
-                        'jira_base_uri' => $feature->project->jira_base_uri,
-                    ] : null,
-                    'status' => StatusMapper::details(StatusMapper::FEATURE, $feature->status, 'in-planning'),
-                    'estimation_components_count' => $feature->estimation_components_count,
-                    'total_weighted_case' => $totalWeightedCase,
-                    'estimation_units' => $units,
-                ];
-            });
+            return [
+                'id' => $feature->id,
+                'jira_key' => $feature->jira_key,
+                'name' => $feature->name,
+                'description' => $feature->description,
+                'requester' => $feature->requester ? [
+                    'id' => $feature->requester->id,
+                    'name' => $feature->requester->name,
+                ] : null,
+                'project' => $feature->project ? [
+                    'id' => $feature->project->id,
+                    'name' => $feature->project->name,
+                    'jira_base_uri' => $feature->project->jira_base_uri,
+                ] : null,
+                'status' => StatusMapper::details(StatusMapper::FEATURE, $feature->status, 'in-planning'),
+                'estimation_components_count' => $feature->estimation_components_count,
+                'total_weighted_case' => $totalWeightedCase,
+                'estimation_units' => $units,
+            ];
+        });
 
         return Inertia::render('features/index', [
             'features' => $features,
@@ -97,7 +97,7 @@ class FeatureController extends Controller
         $selectedProjectId = $request->input('project_id');
         $selectedPlanningId = $request->input('planning_id');
         $selectedStatus = $request->input('status');
-        
+
         // Get the closed status filter from request or session (default: 90 days)
         $closedStatusFilter = $request->input('closed_status_days');
         if ($closedStatusFilter !== null) {
@@ -107,7 +107,7 @@ class FeatureController extends Controller
             // Get from session or use default (90)
             $closedStatusFilter = $request->session()->get('closed_status_days', '90');
         }
-        
+
         // Convert to integer or null for "all"
         $filterDays = $closedStatusFilter === 'all' ? null : (int) $closedStatusFilter;
 
@@ -124,8 +124,8 @@ class FeatureController extends Controller
         if ($selectedPlanningId) {
             $featuresQuery->whereIn('features.id', function ($q) use ($selectedPlanningId) {
                 $q->select('feature_id')
-                  ->from('feature_planning')
-                  ->where('planning_id', $selectedPlanningId);
+                    ->from('feature_planning')
+                    ->where('planning_id', $selectedPlanningId);
             });
         }
 
@@ -133,7 +133,7 @@ class FeatureController extends Controller
 
         // Plannings-Liste für Filter (optional nach Projekt einschränken)
         $plannings = Planning::select('id', 'title')
-            ->when($selectedProjectId, fn($q) => $q->where('project_id', $selectedProjectId))
+            ->when($selectedProjectId, fn ($q) => $q->where('project_id', $selectedProjectId))
             ->orderBy('title')
             ->get();
 
@@ -149,6 +149,7 @@ class FeatureController extends Controller
         $lanes = collect($statuses)->map(function ($status) use ($features) {
             $filtered = $features->filter(function ($feature) use ($status) {
                 $value = $feature->status_details['value'] ?? 'in-planning';
+
                 return $value === $status['key'];
             })->map(function ($feature) {
                 // Berechne die Summe der weighted_case manuell
@@ -201,7 +202,7 @@ class FeatureController extends Controller
     {
         $features = Feature::with('dependencies.related')->get();
 
-        $lineages = $features->map(fn($feature) => $this->featureService->buildLineage($feature))->values();
+        $lineages = $features->map(fn ($feature) => $this->featureService->buildLineage($feature))->values();
 
         return Inertia::render('features/lineage', [
             'features' => $lineages,
@@ -216,9 +217,10 @@ class FeatureController extends Controller
     public function create()
     {
         $tenantId = Auth::user()->current_tenant_id;
+
         return Inertia::render('features/create', [
             'projects' => Project::all(['id', 'name']),
-            'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
+            'users' => User::whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
         ]);
     }
 
@@ -227,6 +229,9 @@ class FeatureController extends Controller
         $validated = $request->validated();
 
         Feature::create($validated);
+
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
 
         return redirect()->route('features.index')->with('success', 'Feature erfolgreich erstellt.');
     }
@@ -238,9 +243,10 @@ class FeatureController extends Controller
             'requester:id,name',
             // Lade standardmäßig nur aktive Komponenten, es sei denn, show_archived ist true
             'estimationComponents' => function ($query) {
-                if (!request()->has('show_archived') || !request()->show_archived) {
+                if (! request()->has('show_archived') || ! request()->show_archived) {
                     $query->active();
                 }
+
                 return $query;
             },
             'estimationComponents.creator:id,name',
@@ -248,7 +254,7 @@ class FeatureController extends Controller
             'estimationComponents.latestEstimation',
             // Abhängigkeiten
             'dependencies.related:id,jira_key,name,project_id',
-            'dependents.feature:id,jira_key,name,project_id'
+            'dependents.feature:id,jira_key,name,project_id',
         ]);
 
         return Inertia::render('features/show', [
@@ -272,7 +278,7 @@ class FeatureController extends Controller
 
         foreach ($transitionValues as $value) {
             $details = StatusMapper::details(StatusMapper::FEATURE, $value, 'in-planning');
-            if (!$details) {
+            if (! $details) {
                 continue;
             }
 
@@ -286,17 +292,17 @@ class FeatureController extends Controller
 
         $tenantId = Auth::user()->current_tenant_id;
         $featureOptions = Feature::where('id', '!=', $feature->id)
-            ->when($feature->project_id, fn($q) => $q->where('project_id', $feature->project_id))
+            ->when($feature->project_id, fn ($q) => $q->where('project_id', $feature->project_id))
             ->orderBy('jira_key')
-            ->get(['id','jira_key','name','project_id']);
+            ->get(['id', 'jira_key', 'name', 'project_id']);
 
         return Inertia::render('features/edit', [
             'feature' => $feature->load(['project', 'requester', 'dependencies.related']),
             'projects' => Project::all(['id', 'name']),
-            'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
+            'users' => User::whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'statusOptions' => $statusOptions,
             'featureOptions' => $featureOptions,
-            'dependencies' => $feature->dependencies->map(function($dep){
+            'dependencies' => $feature->dependencies->map(function ($dep) {
                 return [
                     'id' => $dep->id,
                     'type' => $dep->type,
@@ -334,11 +340,15 @@ class FeatureController extends Controller
                 try {
                     $this->featureService->updateStatus($feature, $newStatus);
                 } catch (\Exception $e) {
-                    Log::error("Fehler bei der Status-Änderung des Features: " . $e->getMessage());
-                    return redirect()->back()->withErrors(['status' => 'Status-Änderung nicht möglich: ' . $e->getMessage()]);
+                    Log::error('Fehler bei der Status-Änderung des Features: '.$e->getMessage());
+
+                    return redirect()->back()->withErrors(['status' => 'Status-Änderung nicht möglich: '.$e->getMessage()]);
                 }
             }
         }
+
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
 
         return redirect()->route('features.index')->with('success', 'Feature erfolgreich aktualisiert.');
     }
@@ -346,14 +356,16 @@ class FeatureController extends Controller
     public function destroy(Feature $feature)
     {
         $feature->delete();
+
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         return redirect()->route('features.index')->with('success', 'Feature gelöscht.');
     }
 
     /**
      * Aktualisiert den Status eines Features
-     * 
-     * @param Request $request
-     * @param Feature $feature
+     *
      * @return \Illuminate\Http\Response
      */
     public function updateStatus(Request $request, Feature $feature)
@@ -380,17 +392,20 @@ class FeatureController extends Controller
                 'new_status' => $feature->status,
             ]);
 
+            // Increment data version to trigger Inertia page reload
+            cache()->increment('app.data.version', 1);
+
             return response()->json([
                 'success' => true,
-                'message' => 'Status erfolgreich aktualisiert'
+                'message' => 'Status erfolgreich aktualisiert',
             ]);
         } catch (\Exception $e) {
-            Log::error("Fehler bei der Status-Änderung des Features: " . $e->getMessage());
+            Log::error('Fehler bei der Status-Änderung des Features: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Status-Änderung nicht möglich: ' . $e->getMessage()
+                'message' => 'Status-Änderung nicht möglich: '.$e->getMessage(),
             ], 500);
         }
     }
-
 }

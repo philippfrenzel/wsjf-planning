@@ -6,8 +6,8 @@ use App\Models\EstimationComponent;
 use App\Models\Feature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
+use Inertia\Inertia;
 
 class EstimationComponentController extends Controller
 {
@@ -21,7 +21,7 @@ class EstimationComponentController extends Controller
             ->paginate(10);
 
         return Inertia::render('estimationcomponents/index', [
-            'components' => $components
+            'components' => $components,
         ]);
     }
 
@@ -33,7 +33,7 @@ class EstimationComponentController extends Controller
         $features = Feature::all();
 
         return Inertia::render('estimationcomponents/create', [
-            'features' => $features
+            'features' => $features,
         ]);
     }
 
@@ -57,6 +57,9 @@ class EstimationComponentController extends Controller
             'status' => EstimationComponent::STATUS_ACTIVE, // Standardmäßig aktiv
         ]);
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         if ($request->has('redirect_to_feature')) {
             return redirect()->route('features.show', $request->redirect_to_feature)
                 ->with('success', 'Komponente wurde erfolgreich erstellt.');
@@ -75,11 +78,11 @@ class EstimationComponentController extends Controller
             'creator',
             'feature',
             'estimations.creator',
-            'estimations.history.changer'
+            'estimations.history.changer',
         ])->findOrFail($id);
 
         return Inertia::render('estimationcomponents/show', [
-            'component' => $component
+            'component' => $component,
         ]);
     }
 
@@ -93,7 +96,7 @@ class EstimationComponentController extends Controller
 
         return Inertia::render('estimationcomponents/edit', [
             'component' => $component,
-            'features' => $features
+            'features' => $features,
         ]);
     }
 
@@ -108,6 +111,9 @@ class EstimationComponentController extends Controller
         ]);
 
         $estimationComponent->update($validated);
+
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
 
         // Umleitung basierend auf dem Parameter
         if ($request->has('redirect_to_feature')) {
@@ -129,6 +135,9 @@ class EstimationComponentController extends Controller
         $featureId = $component->feature_id;
         $component->delete();
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         // Wenn der Request von einer Feature-Detailseite kommt
         if (request()->has('redirect_to_feature') && request()->redirect_to_feature) {
             return Redirect::route('features.show', $featureId)
@@ -147,6 +156,9 @@ class EstimationComponentController extends Controller
         $component = EstimationComponent::findOrFail($id);
         $component->archive();
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         if (request()->wantsJson()) {
             return response()->json(['success' => true]);
         }
@@ -161,6 +173,9 @@ class EstimationComponentController extends Controller
     {
         $component = EstimationComponent::findOrFail($id);
         $component->activate();
+
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
 
         if (request()->wantsJson()) {
             return response()->json(['success' => true]);
