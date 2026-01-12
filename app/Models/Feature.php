@@ -149,4 +149,51 @@ class Feature extends Model
     {
         return $this->hasMany(FeatureDependency::class, 'related_feature_id')->with('feature:id,jira_key,name,project_id');
     }
+
+    /**
+     * Scope to filter features by closed statuses and transition date.
+     * Hides features with status 'implemented', 'rejected', or 'obsolete' 
+     * that have been in that status for more than the specified number of days.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int|null $days Number of days threshold (null = show all)
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFilterClosedByDays($query, ?int $days)
+    {
+        // If days is null, show all features (no filtering)
+        if ($days === null) {
+            return $query;
+        }
+
+        // Define the statuses that should be filtered (both string and class names)
+        $closedStatuses = [
+            'implemented',
+            'rejected',
+            'obsolete',
+            'App\\States\\Feature\\Implemented',
+            'App\\States\\Feature\\Rejected',
+            'App\\States\\Feature\\Obsolete',
+        ];
+
+        return $query->where(function ($q) use ($days, $closedStatuses) {
+            // Include features that are NOT in closed statuses
+            $q->whereNotIn('status', $closedStatuses)
+              // OR include features in closed statuses that were changed within the threshold
+              // We need to check the LATEST transition to a closed status
+              ->orWhereIn('features.id', function ($subQuery) use ($days, $closedStatuses) {
+                  $subQuery->select('fsh.feature_id')
+                      ->from('feature_state_histories as fsh')
+                      ->whereIn('fsh.to_status', $closedStatuses)
+                      ->whereRaw('fsh.changed_at = (
+                          SELECT MAX(changed_at) 
+                          FROM feature_state_histories 
+                          WHERE feature_id = fsh.feature_id 
+                          AND (to_status IN (?, ?, ?, ?, ?, ?))
+                      )', $closedStatuses)
+                      ->where('fsh.changed_at', '>=', now()->subDays($days))
+                      ->groupBy('fsh.feature_id');
+              });
+        });
+    }
 }
