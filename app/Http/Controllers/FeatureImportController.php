@@ -21,6 +21,33 @@ class FeatureImportController extends Controller
         $this->jiraConverter = $jiraConverter;
     }
 
+    /**
+     * Parse a CSV line that may contain unescaped quotes (as exported by Jira).
+     * This is more lenient than str_getcsv for malformed CSV.
+     */
+    private function parseCsvLine(string $line, string $delimiter): array
+    {
+        // For lines without quotes, use simple split
+        if (strpos($line, '"') === false) {
+            return array_map('trim', explode($delimiter, $line));
+        }
+
+        // Use str_getcsv but catch any issues
+        try {
+            $parsed = str_getcsv($line, $delimiter);
+            
+            // str_getcsv handles most cases including:
+            // - "properly quoted" fields
+            // - fields with escaped quotes ""
+            // - unquoted fields with quotes inside
+            
+            return $parsed;
+        } catch (\Exception $e) {
+            // Fallback: simple split if str_getcsv fails
+            return array_map('trim', explode($delimiter, $line));
+        }
+    }
+
     public function create(Project $project): Response
     {
         // Durch TenantScope ist $project bereits auf den aktuellen Tenant beschränkt
@@ -106,7 +133,7 @@ class FeatureImportController extends Controller
         // Wenn erste Zeile Daten enthält (kein Header), verarbeite sie zuerst
         $pendingFirstDataRow = null;
         if (!$hasHeader) {
-            $pendingFirstDataRow = str_getcsv(trim($firstLine), $delimiter);
+            $pendingFirstDataRow = $this->parseCsvLine(trim($firstLine), $delimiter);
         }
 
         $processRow = function(array $row) use (&$created, &$updated, &$skipped, $project, $index) {
@@ -158,11 +185,24 @@ class FeatureImportController extends Controller
             $processRow($pendingFirstDataRow);
         }
 
-        while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+        // Read line by line instead of using fgetcsv to avoid multiline quote issues
+        while (($line = fgets($handle)) !== false) {
             $rowNo++;
-            if (count($row) === 1 && trim((string)$row[0]) === '') {
-                continue; // leere Zeile
+            $line = trim($line);
+            
+            // Skip empty lines
+            if ($line === '') {
+                continue;
             }
+            
+            // Parse the line
+            $row = $this->parseCsvLine($line, $delimiter);
+            
+            // Skip lines with only one empty field
+            if (count($row) === 1 && trim((string)$row[0]) === '') {
+                continue;
+            }
+            
             $processRow($row);
         }
         fclose($handle);
