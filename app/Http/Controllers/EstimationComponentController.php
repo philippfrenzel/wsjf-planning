@@ -6,8 +6,8 @@ use App\Models\EstimationComponent;
 use App\Models\Feature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
+use Inertia\Inertia;
 
 class EstimationComponentController extends Controller
 {
@@ -21,7 +21,7 @@ class EstimationComponentController extends Controller
             ->paginate(10);
 
         return Inertia::render('estimationcomponents/index', [
-            'components' => $components
+            'components' => $components,
         ]);
     }
 
@@ -33,7 +33,7 @@ class EstimationComponentController extends Controller
         $features = Feature::all();
 
         return Inertia::render('estimationcomponents/create', [
-            'features' => $features
+            'features' => $features,
         ]);
     }
 
@@ -78,11 +78,11 @@ class EstimationComponentController extends Controller
             'creator',
             'feature',
             'estimations.creator',
-            'estimations.history.changer'
+            'estimations.history.changer',
         ])->findOrFail($id);
 
         return Inertia::render('estimationcomponents/show', [
-            'component' => $component
+            'component' => $component,
         ]);
     }
 
@@ -96,7 +96,7 @@ class EstimationComponentController extends Controller
 
         return Inertia::render('estimationcomponents/edit', [
             'component' => $component,
-            'features' => $features
+            'features' => $features,
         ]);
     }
 

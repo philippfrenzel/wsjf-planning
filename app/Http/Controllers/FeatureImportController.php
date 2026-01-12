@@ -7,7 +7,6 @@ use App\Models\Project;
 use App\Services\JiraMarkupConverter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -35,12 +34,12 @@ class FeatureImportController extends Controller
         // Use str_getcsv but catch any issues
         try {
             $parsed = str_getcsv($line, $delimiter);
-            
+
             // str_getcsv handles most cases including:
             // - "properly quoted" fields
             // - fields with escaped quotes ""
             // - unquoted fields with quotes inside
-            
+
             return $parsed;
         } catch (\Exception $e) {
             // Fallback: simple split if str_getcsv fails
@@ -69,13 +68,14 @@ class FeatureImportController extends Controller
         $path = $file->getRealPath();
 
         $handle = fopen($path, 'r');
-        if (!$handle) {
+        if (! $handle) {
             return back()->with('error', 'Datei konnte nicht geöffnet werden.');
         }
 
         $firstLine = fgets($handle);
         if ($firstLine === false) {
             fclose($handle);
+
             return back()->with('error', 'Leere CSV-Datei.');
         }
 
@@ -94,7 +94,7 @@ class FeatureImportController extends Controller
         $mapping = $request->input('mapping');
         if (is_array($mapping)) {
             foreach ($mapping as $i => $target) {
-                if (in_array($target, ['jira_key','name','description'], true) && $index[$target] === null) {
+                if (in_array($target, ['jira_key', 'name', 'description'], true) && $index[$target] === null) {
                     $index[$target] = (int) $i;
                 }
             }
@@ -114,14 +114,21 @@ class FeatureImportController extends Controller
         }
         // Fallback auf Positionsmapping (nur wenn kein explizites Mapping gesendet wurde)
         $mappingProvided = is_array($mapping) && count($mapping) > 0;
-        if ($index['jira_key'] === null) $index['jira_key'] = 0; // Jira-Key ist Pflicht
-        if (!$mappingProvided) {
-            if ($index['name'] === null) $index['name'] = 1;
-            if ($index['description'] === null) $index['description'] = 2;
+        if ($index['jira_key'] === null) {
+            $index['jira_key'] = 0;
+        } // Jira-Key ist Pflicht
+        if (! $mappingProvided) {
+            if ($index['name'] === null) {
+                $index['name'] = 1;
+            }
+            if ($index['description'] === null) {
+                $index['description'] = 2;
+            }
         }
         // Jira-Key muss vorhanden sein
         if ($index['jira_key'] === null) {
             fclose($handle);
+
             return back()->with('error', 'Bitte ordnen Sie eine Spalte dem Jira-Key zu.');
         }
 
@@ -132,22 +139,23 @@ class FeatureImportController extends Controller
 
         // Wenn erste Zeile Daten enthält (kein Header), verarbeite sie zuerst
         $pendingFirstDataRow = null;
-        if (!$hasHeader) {
+        if (! $hasHeader) {
             $pendingFirstDataRow = $this->parseCsvLine(trim($firstLine), $delimiter);
         }
 
-        $processRow = function(array $row) use (&$created, &$updated, &$skipped, $project, $index) {
-            $jira = isset($row[$index['jira_key']]) ? trim((string)$row[$index['jira_key']]) : '';
+        $processRow = function (array $row) use (&$created, &$updated, &$skipped, $project, $index) {
+            $jira = isset($row[$index['jira_key']]) ? trim((string) $row[$index['jira_key']]) : '';
             if ($jira === '') {
                 $skipped++;
+
                 return;
             }
 
             $name = $index['name'] !== null && array_key_exists($index['name'], $row)
-                ? trim((string)$row[$index['name']])
+                ? trim((string) $row[$index['name']])
                 : null;
             $desc = $index['description'] !== null && array_key_exists($index['description'], $row)
-                ? (string)$row[$index['description']]
+                ? (string) $row[$index['description']]
                 : null;
 
             // Convert Jira markup to HTML if description is present
@@ -162,9 +170,13 @@ class FeatureImportController extends Controller
 
             if ($feature) {
                 $data = [];
-                if ($name !== null) $data['name'] = $name;
-                if ($desc !== null) $data['description'] = $desc;
-                if (!empty($data)) {
+                if ($name !== null) {
+                    $data['name'] = $name;
+                }
+                if ($desc !== null) {
+                    $data['description'] = $desc;
+                }
+                if (! empty($data)) {
                     $feature->update($data);
                     $updated++;
                 } else {
@@ -189,20 +201,20 @@ class FeatureImportController extends Controller
         while (($line = fgets($handle)) !== false) {
             $rowNo++;
             $line = trim($line);
-            
+
             // Skip empty lines
             if ($line === '') {
                 continue;
             }
-            
+
             // Parse the line
             $row = $this->parseCsvLine($line, $delimiter);
-            
+
             // Skip lines with only one empty field
-            if (count($row) === 1 && trim((string)$row[0]) === '') {
+            if (count($row) === 1 && trim((string) $row[0]) === '') {
                 continue;
             }
-            
+
             $processRow($row);
         }
         fclose($handle);

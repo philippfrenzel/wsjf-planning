@@ -22,7 +22,7 @@ class EstimationController extends Controller
             ->paginate(10);
 
         return Inertia::render('estimations/index', [
-            'estimations' => $estimations
+            'estimations' => $estimations,
         ]);
     }
 
@@ -34,7 +34,7 @@ class EstimationController extends Controller
         $components = EstimationComponent::with('feature')->get();
 
         return Inertia::render('estimations/create', [
-            'components' => $components
+            'components' => $components,
         ]);
     }
 
@@ -70,7 +70,7 @@ class EstimationController extends Controller
         // Wenn die Anfrage von einem Inertia-Request kommt (AJAX)
         if ($request->wantsJson()) {
             return response()->json([
-                'estimation' => $estimation->load('creator')
+                'estimation' => $estimation->load('creator'),
             ]);
         }
 
@@ -98,11 +98,11 @@ class EstimationController extends Controller
         $estimation = Estimation::with([
             'creator',
             'component.feature',
-            'history.changer'
+            'history.changer',
         ])->findOrFail($id);
 
         return Inertia::render('estimations/show', [
-            'estimation' => $estimation
+            'estimation' => $estimation,
         ]);
     }
 
@@ -116,7 +116,7 @@ class EstimationController extends Controller
 
         return Inertia::render('estimations/edit', [
             'estimation' => $estimation,
-            'components' => $components
+            'components' => $components,
         ]);
     }
 

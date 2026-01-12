@@ -28,8 +28,8 @@ class HandleInertiaRequests extends Middleware
         // Use a combination of parent version (for asset changes) and data version (for data changes)
         $assetVersion = parent::version($request);
         $dataVersion = cache()->get('app.data.version', '1');
-        
-        return $assetVersion . '.' . $dataVersion;
+
+        return $assetVersion.'.'.$dataVersion;
     }
 
     /**
@@ -49,8 +49,8 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
-                'tenants' => fn () => $request->user()?->tenants()->get(['tenants.id','tenants.name']) ?? [],
-                'currentTenant' => fn () => $request->user()?->currentTenant()->first(['id','name']),
+                'tenants' => fn () => $request->user()?->tenants()->get(['tenants.id', 'tenants.name']) ?? [],
+                'currentTenant' => fn () => $request->user()?->currentTenant()->first(['id', 'name']),
             ],
             'locale' => app()->getLocale(),
             'ziggy' => fn (): array => [
