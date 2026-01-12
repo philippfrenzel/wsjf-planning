@@ -45,14 +45,15 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
 
         setSubmitting(true);
         try {
-            const response = await axios.post('/comments', {
+            await axios.post('/comments', {
                 body: newComment,
                 commentable_type: entity.type,
                 commentable_id: entity.id,
             });
             
-            setComments([response.data.data, ...comments]);
             setNewComment('');
+            // Reload comments to show new comment in the correct place
+            await loadComments();
         } catch (error) {
             console.error('Error creating comment:', error);
             alert('Fehler beim Erstellen des Kommentars. Bitte versuchen Sie es erneut.');
