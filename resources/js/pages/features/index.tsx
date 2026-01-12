@@ -73,7 +73,7 @@ export default function Index({ features }: IndexProps) {
         name: '',
         project: '',
         requester: '',
-        statuses: initialFiltersProp.status ? [initialFiltersProp.status] : [] as string[],
+        statuses: initialFiltersProp.status ? [initialFiltersProp.status] : ([] as string[]),
     });
 
     // Zustände für Popover
@@ -134,9 +134,7 @@ export default function Index({ features }: IndexProps) {
     const handleStatusToggle = (status: string) => {
         setFilters((prev) => {
             const currentStatuses = prev.statuses;
-            const newStatuses = currentStatuses.includes(status)
-                ? currentStatuses.filter((s) => s !== status)
-                : [...currentStatuses, status];
+            const newStatuses = currentStatuses.includes(status) ? currentStatuses.filter((s) => s !== status) : [...currentStatuses, status];
             return { ...prev, statuses: newStatuses };
         });
         setCurrentPage(1);
@@ -345,15 +343,8 @@ export default function Index({ features }: IndexProps) {
                                                 <CommandEmpty>Kein Status gefunden.</CommandEmpty>
                                                 <CommandGroup className="max-h-64 overflow-y-auto">
                                                     {uniqueStatuses.map((status) => (
-                                                        <CommandItem
-                                                            key={status}
-                                                            onSelect={() => handleStatusToggle(status)}
-                                                            className="text-sm"
-                                                        >
-                                                            <Checkbox
-                                                                checked={filters.statuses.includes(status)}
-                                                                className="mr-2"
-                                                            />
+                                                        <CommandItem key={status} onSelect={() => handleStatusToggle(status)} className="text-sm">
+                                                            <Checkbox checked={filters.statuses.includes(status)} className="mr-2" />
                                                             {status}
                                                         </CommandItem>
                                                     ))}
@@ -590,9 +581,9 @@ export default function Index({ features }: IndexProps) {
                                         <div className="flex flex-col items-center justify-center">
                                             <Search className="mb-2 h-8 w-8 text-gray-300" />
                                             <p className="text-gray-500">Keine Features gefunden</p>
-                                            {(Object.entries(filters).some(([key, value]) => 
-                                                key === 'statuses' ? (value as string[]).length > 0 : value !== ''
-                                            )) && (
+                                            {Object.entries(filters).some(([key, value]) =>
+                                                key === 'statuses' ? (value as string[]).length > 0 : value !== '',
+                                            ) && (
                                                 <Button variant="link" onClick={resetFilters} className="mt-2">
                                                     Filter zurücksetzen
                                                 </Button>

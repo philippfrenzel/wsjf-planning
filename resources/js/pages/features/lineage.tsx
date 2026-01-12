@@ -51,14 +51,14 @@ export default function Lineage({ features }: LineageProps) {
 
         // Improved layout: position independent feature chains vertically
         let currentChainStartY = 0;
-        const chainSpacing = 200; // Vertical spacing between independent chains
+        const chainSpacing = 120; // Vertical spacing between independent chains (reduced from 200)
 
         function createNodesAndEdges(feature: LineageFeature, parentId?: number, depth: number = 0, chainOffsetY: number = 0) {
             if (processedIds.has(feature.id)) return { height: 0 };
             processedIds.add(feature.id);
 
             // Position: dependencies flow left to right (x), chains stack top to bottom (y)
-            const x = depth * 350; // Horizontal spacing for dependency depth
+            const x = depth * 280; // Horizontal spacing for dependency depth (reduced from 350)
             const y = chainOffsetY;
 
             nodes.push({
@@ -81,10 +81,10 @@ export default function Lineage({ features }: LineageProps) {
                     animated: true,
                     markerEnd: {
                         type: MarkerType.ArrowClosed,
-                        width: 20,
-                        height: 20,
+                        width: 24,
+                        height: 24,
                     },
-                    style: { stroke: '#3b82f6', strokeWidth: 2 },
+                    style: { stroke: '#2563eb', strokeWidth: 3 },
                 });
             }
 
@@ -94,7 +94,7 @@ export default function Lineage({ features }: LineageProps) {
 
             feature.dependencies.forEach((dep, index) => {
                 const result = createNodesAndEdges(dep, feature.id, depth + 1, currentDependencyY);
-                currentDependencyY += result.height + (index < feature.dependencies.length - 1 ? 150 : 0);
+                currentDependencyY += result.height + (index < feature.dependencies.length - 1 ? 100 : 0);
                 maxDependencyHeight = currentDependencyY - y;
             });
 
