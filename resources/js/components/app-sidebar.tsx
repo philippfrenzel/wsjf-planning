@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, BarChart3 as Donut, Route, Shirt, Shield, Kanban } from 'lucide-react';
+import { BookOpen, BarChart3 as Donut, Folder, Kanban, LayoutGrid, Route, Shield, Shirt } from 'lucide-react';
 import AppLogo from './app-logo';
 
 interface AppSidebarProps {

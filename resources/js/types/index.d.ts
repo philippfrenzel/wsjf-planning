@@ -1,7 +1,10 @@
 import { LucideIcon } from 'lucide-react';
 import type { Config } from 'ziggy-js';
 
-export interface TenantInfo { id: number; name: string }
+export interface TenantInfo {
+    id: number;
+    name: string;
+}
 
 export interface Auth {
     user: User;
