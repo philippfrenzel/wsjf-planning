@@ -207,6 +207,9 @@ class FeatureImportController extends Controller
         }
         fclose($handle);
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         return redirect()
             ->route('features.index')
             ->with('success', "Import abgeschlossen: {$created} erstellt, {$updated} aktualisiert, {$skipped} übersprungen.");

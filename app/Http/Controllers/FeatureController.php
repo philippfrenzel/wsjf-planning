@@ -228,6 +228,9 @@ class FeatureController extends Controller
 
         Feature::create($validated);
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         return redirect()->route('features.index')->with('success', 'Feature erfolgreich erstellt.');
     }
 
@@ -340,12 +343,19 @@ class FeatureController extends Controller
             }
         }
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         return redirect()->route('features.index')->with('success', 'Feature erfolgreich aktualisiert.');
     }
 
     public function destroy(Feature $feature)
     {
         $feature->delete();
+        
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+        
         return redirect()->route('features.index')->with('success', 'Feature gelöscht.');
     }
 
@@ -379,6 +389,9 @@ class FeatureController extends Controller
                 'feature_id' => $feature->id,
                 'new_status' => $feature->status,
             ]);
+
+            // Increment data version to trigger Inertia page reload
+            cache()->increment('app.data.version', 1);
 
             return response()->json([
                 'success' => true,

@@ -25,7 +25,11 @@ class HandleInertiaRequests extends Middleware
      */
     public function version(Request $request): ?string
     {
-        return parent::version($request);
+        // Use a combination of parent version (for asset changes) and data version (for data changes)
+        $assetVersion = parent::version($request);
+        $dataVersion = cache()->get('app.data.version', '1');
+        
+        return $assetVersion . '.' . $dataVersion;
     }
 
     /**
