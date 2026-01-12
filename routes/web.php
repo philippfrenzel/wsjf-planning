@@ -17,6 +17,7 @@ use App\Http\Controllers\PlanController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\TenantController;
+use App\Http\Controllers\CommentController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -113,6 +114,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::post('tenants/accept', [TenantController::class, 'accept'])->name('tenants.accept');
+
+// Comments - available to authenticated users
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('comments', [CommentController::class, 'index'])->name('comments.index');
+    Route::post('comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::get('comments/{comment}', [CommentController::class, 'show'])->name('comments.show');
+    Route::put('comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+    Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+});
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

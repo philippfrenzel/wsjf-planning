@@ -14,6 +14,7 @@ use App\States\Project\Closed;
 use App\Support\StatusMapper;
 use App\Models\Concerns\BelongsToTenant;
 use App\Models\Concerns\SoftDeletesWithUser;
+use App\Models\Concerns\HasComments;
 
 class Project extends Model
 {
@@ -21,6 +22,7 @@ class Project extends Model
     use HasStates;
     use BelongsToTenant;
     use SoftDeletesWithUser;
+    use HasComments;
 
     /**
      * The attributes that are mass assignable.

@@ -16,6 +16,7 @@ use App\States\Feature\Archived;
 use App\States\Feature\Deleted;
 use App\Models\Concerns\BelongsToTenant;
 use App\Models\Concerns\SoftDeletesWithUser;
+use App\Models\Concerns\HasComments;
 use App\Models\FeatureDependency;
 use App\Models\FeatureStateHistory;
 use App\Support\StatusMapper;
@@ -26,6 +27,7 @@ class Feature extends Model
     use HasStates;
     use BelongsToTenant;
     use SoftDeletesWithUser;
+    use HasComments;
 
     protected $fillable = [
         'jira_key',
