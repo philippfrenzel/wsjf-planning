@@ -166,19 +166,33 @@ class Feature extends Model
             return $query;
         }
 
-        // Define the statuses that should be filtered
-        $closedStatuses = ['implemented', 'rejected', 'obsolete'];
+        // Define the statuses that should be filtered (both string and class names)
+        $closedStatuses = [
+            'implemented',
+            'rejected',
+            'obsolete',
+            'App\\States\\Feature\\Implemented',
+            'App\\States\\Feature\\Rejected',
+            'App\\States\\Feature\\Obsolete',
+        ];
 
         return $query->where(function ($q) use ($days, $closedStatuses) {
             // Include features that are NOT in closed statuses
             $q->whereNotIn('status', $closedStatuses)
               // OR include features in closed statuses that were changed within the threshold
+              // We need to check the LATEST transition to a closed status
               ->orWhereIn('features.id', function ($subQuery) use ($days, $closedStatuses) {
-                  $subQuery->select('feature_id')
-                      ->from('feature_state_histories')
-                      ->whereIn('to_status', $closedStatuses)
-                      ->where('changed_at', '>=', now()->subDays($days))
-                      ->groupBy('feature_id');
+                  $subQuery->select('fsh.feature_id')
+                      ->from('feature_state_histories as fsh')
+                      ->whereIn('fsh.to_status', $closedStatuses)
+                      ->whereRaw('fsh.changed_at = (
+                          SELECT MAX(changed_at) 
+                          FROM feature_state_histories 
+                          WHERE feature_id = fsh.feature_id 
+                          AND (to_status IN (?, ?, ?, ?, ?, ?))
+                      )', $closedStatuses)
+                      ->where('fsh.changed_at', '>=', now()->subDays($days))
+                      ->groupBy('fsh.feature_id');
               });
         });
     }
