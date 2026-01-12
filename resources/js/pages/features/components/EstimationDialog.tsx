@@ -140,10 +140,18 @@ export default function EstimationDialog({
               rows={3}
             />
           </div>
-          
-          <Button type="submit" className="w-full">
-            {isEditing ? 'Schätzung aktualisieren' : 'Schätzung speichern'}
-          </Button>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="cancel"
+              onClick={() => onOpenChange(false)}
+            >
+              Abbrechen
+            </Button>
+            <Button type="submit" variant="success">
+              {isEditing ? 'Schätzung aktualisieren' : 'Schätzung speichern'}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

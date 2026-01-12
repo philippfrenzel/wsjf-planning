@@ -46,7 +46,11 @@ export default function ComponentForm({
               rows={3}
             />
           </div>
-          <Button type="submit">Komponente erstellen</Button>
+          <div className="flex justify-end">
+            <Button type="submit" variant="success">
+              Komponente erstellen
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

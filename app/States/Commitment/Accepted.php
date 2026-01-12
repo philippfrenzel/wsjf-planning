@@ -4,6 +4,8 @@ namespace App\States\Commitment;
 
 class Accepted extends CommitmentState
 {
+    public static $name = 'accepted';
+
     public function name(): string
     {
         return 'Angenommen';

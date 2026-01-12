@@ -208,10 +208,12 @@ export default function Import({ project }: PageProps) {
 
               {message && <div className="text-red-600 text-sm">{message}</div>}
 
-              <div className="flex items-center gap-2">
-                <Button type="submit" disabled={processing || !data.file}>Import starten</Button>
-                <Button type="button" variant="outline" asChild>
+              <div className="flex items-center justify-end gap-2">
+                <Button type="button" variant="cancel" asChild>
                   <Link href={route('projects.show', project.id)}>Zurück zum Projekt</Link>
+                </Button>
+                <Button type="submit" variant="success" disabled={processing || !data.file}>
+                  Import starten
                 </Button>
               </div>
 

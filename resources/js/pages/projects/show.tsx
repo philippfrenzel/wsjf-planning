@@ -31,11 +31,11 @@ export default function ProjectShow() {
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title={`Projekt: ${project.name}`} />
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="rounded-xl shadow-sm">
+        <CardHeader className="flex flex-col gap-2 border-b border-slate-200 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>{project.name}</CardTitle>
-            <CardDescription>Projektnummer: {project.project_number}</CardDescription>
+            <CardTitle className="text-xl font-semibold text-slate-900">{project.name}</CardTitle>
+            <CardDescription className="text-slate-600">Projektnummer: {project.project_number}</CardDescription>
           </div>
           <div className="shrink-0">
             <Button asChild variant="outline">
@@ -43,37 +43,42 @@ export default function ProjectShow() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <span className="font-semibold">Startdatum:</span>{" "}
-              {project.start_date}
-            </div>
-            <div>
-              <span className="font-semibold">Projektleiter:</span>{" "}
-              {project.project_leader?.name ?? "—"}
-            </div>
-            <div>
-              <span className="font-semibold">Stellvertretung:</span>{" "}
-              {project.deputy_leader?.name ?? "—"}
-            </div>
-            <div>
-              <span className="font-semibold">Beschreibung:</span>{" "}
-              {project.description || "—"}
-            </div>
-            <div>
-              <span className="font-semibold">JIRA Base URI:</span>{" "}
-              {project.jira_base_uri ? (
-                <a 
-                  href={project.jira_base_uri} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
-                >
-                  {project.jira_base_uri}
-                </a>
-              ) : "—"}
-            </div>
+        <CardContent className="space-y-6">
+          <div className="rounded-lg border border-slate-200 bg-slate-50/70 px-4 py-3 shadow-inner">
+            <dl className="divide-y divide-slate-200">
+              <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-2">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Startdatum</dt>
+                <dd className="text-sm text-slate-900">{project.start_date || "—"}</dd>
+              </div>
+              <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-2">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Projektleiter</dt>
+                <dd className="text-sm text-slate-900">{project.project_leader?.name ?? "—"}</dd>
+              </div>
+              <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-2">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Stellvertretung</dt>
+                <dd className="text-sm text-slate-900">{project.deputy_leader?.name ?? "—"}</dd>
+              </div>
+              <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-2">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">JIRA Base URI</dt>
+                <dd className="text-sm text-slate-900">
+                  {project.jira_base_uri ? (
+                    <a 
+                      href={project.jira_base_uri}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {project.jira_base_uri}
+                    </a>
+                  ) : "—"}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white/70 px-4 py-3 shadow-sm">
+            <h3 className="text-lg font-medium mb-3">Beschreibung</h3>
+            <p className="text-sm text-slate-800 whitespace-pre-line">{project.description || "Keine Beschreibung vorhanden."}</p>
           </div>
         </CardContent>
       </Card>

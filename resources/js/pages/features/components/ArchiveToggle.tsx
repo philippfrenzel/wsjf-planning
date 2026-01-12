@@ -12,7 +12,7 @@ export default function ArchiveToggle({
 }: ArchiveToggleProps) {
   return (
     <Button 
-      variant="outline" 
+      variant="secondary" 
       size="sm"
       onClick={toggleArchived}
       className="text-gray-600"

@@ -12,6 +12,7 @@ use App\States\Commitment\Accepted;
 use App\States\Commitment\Completed;
 use App\Models\Concerns\BelongsToTenant;
 use App\Models\Concerns\SoftDeletesWithUser;
+use App\Support\StatusMapper;
 
 class Commitment extends Model
 {
@@ -104,49 +105,6 @@ class Commitment extends Model
      */
     public function getStatusDetailsAttribute(): ?array
     {
-        if (!$this->status) {
-            return null;
-        }
-
-        // Stellen wir sicher, dass status ein State-Objekt ist
-        $status = $this->status;
-
-        // Wenn status ein String ist, konvertieren wir es in ein State-Objekt
-        if (is_string($status)) {
-            try {
-                switch ($status) {
-                    case 'suggested':
-                        $statusObj = new Suggested($this);
-                        break;
-                    case 'accepted':
-                        $statusObj = new Accepted($this);
-                        break;
-                    case 'completed':
-                        $statusObj = new Completed($this);
-                        break;
-                    default:
-                        $statusObj = new Suggested($this);
-                }
-                return [
-                    'value' => $status,
-                    'name' => $statusObj->name(),
-                    'color' => $statusObj->color(),
-                ];
-            } catch (\Exception $e) {
-                // Fallback, wenn die Konvertierung fehlschlägt
-                return [
-                    'value' => $status,
-                    'name' => ucfirst($status),
-                    'color' => 'bg-gray-100 text-gray-800',
-                ];
-            }
-        }
-
-        // Wenn es bereits ein State-Objekt ist
-        return [
-            'value' => $status->getValue(),
-            'name' => $status->name(),
-            'color' => $status->color(),
-        ];
+        return StatusMapper::details(StatusMapper::COMMITMENT, $this->status, 'suggested');
     }
 }

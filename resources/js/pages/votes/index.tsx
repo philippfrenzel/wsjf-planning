@@ -14,8 +14,18 @@ interface VoteItem {
   planning?: { id: number; title: string };
 }
 
+type Paginated<T> = {
+  data: T[];
+  meta?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+};
+
 interface PageProps {
-  votes: VoteItem[];
+  votes: VoteItem[] | Paginated<VoteItem>;
 }
 
 const typeColor: Record<string, string> = {
@@ -25,15 +35,18 @@ const typeColor: Record<string, string> = {
 };
 
 export default function Index({ votes }: PageProps) {
+  const voteData = Array.isArray(votes) ? votes : votes.data;
+  const pagination = Array.isArray(votes) ? undefined : votes.meta;
+
   return (
     <AppLayout breadcrumbs={[{ title: "Votes", href: "/votes" }]}>
       <div className="p-6">
         <Card>
           <CardHeader className="bg-gray-50">
-            <CardTitle>Alle Votes im Tenant ({votes.length})</CardTitle>
+            <CardTitle>Alle Votes im Tenant ({pagination?.total ?? voteData.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            {votes.length === 0 ? (
+            {voteData.length === 0 ? (
               <div className="text-center text-muted-foreground py-12">Keine Votes gefunden.</div>
             ) : (
               <Table>
@@ -48,7 +61,7 @@ export default function Index({ votes }: PageProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {votes.map((v) => (
+                  {voteData.map((v) => (
                     <TableRow key={v.id}>
                       <TableCell className="font-medium">{v.planning?.title ?? "-"}</TableCell>
                       <TableCell>
@@ -73,6 +86,13 @@ export default function Index({ votes }: PageProps) {
                   ))}
                 </TableBody>
               </Table>
+            )}
+            {pagination && pagination.last_page > 1 && (
+              <div className="flex justify-end gap-4 mt-4 text-sm text-muted-foreground">
+                <span>
+                  Seite {pagination.current_page} / {pagination.last_page}
+                </span>
+              </div>
             )}
           </CardContent>
         </Card>

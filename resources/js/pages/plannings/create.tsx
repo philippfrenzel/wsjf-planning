@@ -229,9 +229,14 @@ export default function Create({ projects, users }: CreateProps) {
                 <p className="text-sm text-red-600 mt-1">{errors.stakeholder_ids}</p>
               )}
             </div>
-            <Button type="submit" className="w-full">
-              Speichern
-            </Button>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                Abbrechen
+              </Button>
+              <Button type="submit" variant="success">
+                Speichern
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

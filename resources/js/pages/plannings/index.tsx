@@ -24,8 +24,19 @@ interface Planning {
   deputy_id?: number; // ID des Stellvertreters
 }
 
+type Paginated<T> = {
+  data: T[];
+  meta?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+  links?: { url: string | null; label: string; active: boolean }[];
+};
+
 interface IndexProps {
-  plannings: Planning[];
+  plannings: Planning[] | Paginated<Planning>;
   auth: {
     user: {
       id: number;
@@ -61,15 +72,18 @@ export default function Index({ plannings }: IndexProps) {
   );
 
   // Extrahiere alle eindeutigen Projekte für die Autovervollständigung
+  const planningData = Array.isArray(plannings) ? plannings : plannings.data;
+  const pagination = Array.isArray(plannings) ? undefined : plannings.meta;
+
   const uniqueProjects = useMemo(() => {
     const projectSet = new Set<string>();
-    plannings.forEach((planning) => {
+    planningData.forEach((planning) => {
       if (planning.project?.name) {
         projectSet.add(planning.project.name);
       }
     });
     return Array.from(projectSet).sort();
-  }, [plannings]);
+  }, [planningData]);
 
   // Handling für Filter-Änderungen
   const handleFilterChange = (field: keyof typeof filters, value: string) => {
@@ -102,23 +116,26 @@ export default function Index({ plannings }: IndexProps) {
 
   // Gefilterte Plannings
   const filteredPlannings = useMemo(() => {
-    return plannings.filter(planning => {
+    return planningData.filter(planning => {
       return (
         planning.title.toLowerCase().includes(filters.title.toLowerCase()) &&
         (filters.project === "" || planning.project?.name === filters.project)
       );
     });
-  }, [plannings, filters]);
+  }, [planningData, filters]);
 
   // Für Pagination: Berechne die anzuzeigenden Plannings
   const paginatedPlannings = useMemo(() => {
+    if (pagination?.last_page && pagination.last_page > 1) {
+      return filteredPlannings; // Serverseitig paginiert
+    }
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return filteredPlannings.slice(start, end);
-  }, [filteredPlannings, currentPage, itemsPerPage]);
+  }, [filteredPlannings, currentPage, itemsPerPage, pagination]);
 
   // Berechne die Gesamtzahl der Seiten
-  const totalPages = Math.ceil(filteredPlannings.length / itemsPerPage);
+  const totalPages = pagination?.last_page ?? Math.ceil(filteredPlannings.length / itemsPerPage);
 
   // Pagination-Handler wie im Projekt-Index
   const goToPreviousPage = () => {
@@ -128,8 +145,11 @@ export default function Index({ plannings }: IndexProps) {
     setCurrentPage(prev => Math.min(prev + 1, totalPages));
   };
   // Bereich für Anzeige
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(startItem + itemsPerPage - 1, filteredPlannings.length);
+  const effectivePage = pagination?.current_page ?? currentPage;
+  const perPage = pagination?.per_page ?? itemsPerPage;
+  const totalItems = pagination?.total ?? filteredPlannings.length;
+  const startItem = (effectivePage - 1) * perPage + 1;
+  const endItem = Math.min(startItem + perPage - 1, totalItems);
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>

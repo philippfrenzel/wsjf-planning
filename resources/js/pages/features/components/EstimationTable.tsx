@@ -95,10 +95,10 @@ export default function EstimationTable({
                 <TableCell className="text-right space-x-2">
                   {onEdit && (
                     <Button 
-                      variant="ghost" 
-                      size="sm" 
+                      variant="outline" 
+                      size="icon" 
                       onClick={() => onEdit(estimation)}
-                      className="h-8 w-8 p-0"
+                      className="size-8"
                     >
                       <span className="sr-only">Bearbeiten</span>
                       <PencilIcon className="h-4 w-4" />
@@ -106,10 +106,10 @@ export default function EstimationTable({
                   )}
                   {onDelete && (
                     <Button 
-                      variant="ghost" 
-                      size="sm" 
+                      variant="destructive" 
+                      size="icon" 
                       onClick={() => onDelete(estimation.id)}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                      className="size-8"
                     >
                       <span className="sr-only">Löschen</span>
                       <TrashIcon className="h-4 w-4" />

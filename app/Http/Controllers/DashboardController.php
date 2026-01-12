@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Project;
 use App\Models\Feature;
 use App\Models\Commitment;
+use App\Models\FeatureStateHistory;
 use App\Models\Planning;
 use App\Models\Vote;
 
@@ -64,22 +65,76 @@ class DashboardController extends Controller
             ->take(10)
             ->values();
 
-        // 3) Votes pro Tag (letzte 30 Tage)
-        $from = now()->subDays(30)->startOfDay();
-        $votesByDayRaw = Vote::selectRaw('DATE(voted_at) as day, COUNT(*) as count')
-            ->where('voted_at', '>=', $from)
-            ->groupBy('day')
-            ->orderBy('day')
-            ->get()
-            ->keyBy('day');
+        // 3) Feature Aging (laufender Open-Count der Features über 90 Tage)
+        $from = now()->subDays(90)->startOfDay();
+        $closedStatuses = ['obsolete', 'rejected', 'implemented'];
 
-        $votesByDay = collect();
+        // Erstes Schließ-Datum je Feature (falls vorhanden)
+        $firstClosedAt = FeatureStateHistory::whereIn('to_status', $closedStatuses)
+            ->selectRaw('feature_id, MIN(changed_at) as closed_at')
+            ->groupBy('feature_id')
+            ->pluck('closed_at', 'feature_id');
+
+        // Baseline: alle Features, die vor dem Zeitraum existierten und am Starttag noch nicht geschlossen waren
+        $baselineOpen = Feature::where('created_at', '<', $from)
+            ->get(['id', 'created_at'])
+            ->filter(function ($feature) use ($firstClosedAt, $from) {
+                $closedAt = $firstClosedAt[$feature->id] ?? null;
+                return !($closedAt && $closedAt < $from);
+            })
+            ->count();
+
+        $events = collect();
+
+        // Events: neue Features im Zeitraum (sofern nicht direkt geschlossen erstellt)
+        Feature::whereDate('created_at', '>=', $from)
+            ->get(['id', 'created_at', 'status'])
+            ->each(function ($feature) use ($closedStatuses, $events) {
+                if (!in_array($feature->status, $closedStatuses, true)) {
+                    $events->push([
+                        'day' => $feature->created_at->toDateString(),
+                        'delta' => 1,
+                    ]);
+                }
+            });
+
+        // Events: Statuswechsel
+        FeatureStateHistory::where('changed_at', '>=', $from)
+            ->get(['from_status', 'to_status', 'changed_at'])
+            ->each(function ($history) use ($closedStatuses, $events) {
+                $fromClosed = in_array($history->from_status, $closedStatuses, true);
+                $toClosed = in_array($history->to_status, $closedStatuses, true);
+
+                if (!$fromClosed && $toClosed) {
+                    $events->push([
+                        'day' => $history->changed_at->toDateString(),
+                        'delta' => -1,
+                    ]);
+                }
+
+                if ($fromClosed && !$toClosed) {
+                    $events->push([
+                        'day' => $history->changed_at->toDateString(),
+                        'delta' => 1,
+                    ]);
+                }
+            });
+
+        $eventsByDay = $events
+            ->groupBy('day')
+            ->map(fn($rows) => $rows->sum('delta'));
+
+        $featureAging = collect();
+        $openCount = $baselineOpen;
         $cursor = $from->copy();
-        while ($cursor->lte(now())) {
+        $today = now();
+
+        while ($cursor->lte($today)) {
             $day = $cursor->toDateString();
-            $votesByDay->push([
+            $openCount += (int) ($eventsByDay[$day] ?? 0);
+            $featureAging->push([
                 'day' => $day,
-                'count' => (int) ($votesByDayRaw[$day]->count ?? 0),
+                'open_count' => $openCount,
             ]);
             $cursor->addDay();
         }
@@ -121,7 +176,7 @@ class DashboardController extends Controller
             // Charts
             'featureStatus' => $featureStatus,
             'committedByPlanning' => $committedByPlanning,
-            'votesByDay' => $votesByDay,
+            'featureAging' => $featureAging,
             'wsjfCoverage' => $wsjfCoverage,
         ]);
     }

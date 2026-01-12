@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Support\StatusMapper;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Spatie\ModelStates\State;
 
 class ProjectController extends Controller
 {
@@ -80,130 +83,42 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        // Wir verwenden try-catch, um mögliche Fehler abzufangen
-        try {
-            // Importieren der Status-Klassen
-            $statusMapping = [
-                'in-planning' => \App\States\Project\InPlanning::class,
-                'in-realization' => \App\States\Project\InRealization::class,
-                'in-approval' => \App\States\Project\InApproval::class,
-                'closed' => \App\States\Project\Closed::class
+        $tenantId = Auth::user()->current_tenant_id;
+
+        $currentStatus = StatusMapper::details(StatusMapper::PROJECT, $project->status, 'in-planning');
+        $currentValue = $currentStatus['value'] ?? 'in-planning';
+        $transitionValues = StatusMapper::transitionTargets(StatusMapper::PROJECT, $currentValue);
+
+        $statusOptions = [[
+            'value' => $currentValue,
+            'label' => $currentStatus['name'] ?? 'In Planung',
+            'color' => $currentStatus['color'] ?? 'bg-blue-100 text-blue-800',
+            'current' => true,
+        ]];
+
+        foreach ($transitionValues as $value) {
+            $details = StatusMapper::details(StatusMapper::PROJECT, $value, 'in-planning');
+            if (!$details) {
+                continue;
+            }
+
+            $statusOptions[] = [
+                'value' => $details['value'],
+                'label' => $details['name'],
+                'color' => $details['color'],
+                'current' => false,
             ];
-
-            // Status-Objekt erzeugen
-            if (is_string($project->status)) {
-                $statusClass = $statusMapping[$project->status] ?? \App\States\Project\InPlanning::class;
-                try {
-                    $currentStatus = new $statusClass($project, 'status');
-                } catch (\Exception $e) {
-                    // Wenn das Erstellen mit Parametern fehlschlägt, versuchen wir die statischen Methoden direkt
-                    $currentStatusClass = new \ReflectionClass($statusClass);
-                    $currentStatus = (object)[
-                        'name' => method_exists($statusClass, 'name')
-                            ? call_user_func([$statusClass, 'name'])
-                            : ucfirst(str_replace('-', ' ', $project->status)),
-                        'color' => method_exists($statusClass, 'color')
-                            ? call_user_func([$statusClass, 'color'])
-                            : 'bg-blue-100 text-blue-800'
-                    ];
-                }
-            } else {
-                $currentStatus = $project->status;
-            }
-
-            // Mögliche Status-Übergänge basierend auf dem Workflow definieren
-            $possibleTransitions = [];
-
-            // Manuelle Definition der erlaubten Übergänge basierend auf dem aktuellen Status
-            if ($project->status === 'in-planning' || get_class($currentStatus) === \App\States\Project\InPlanning::class) {
-                $possibleTransitions[] = \App\States\Project\InRealization::class;
-            } elseif ($project->status === 'in-realization' || get_class($currentStatus) === \App\States\Project\InRealization::class) {
-                $possibleTransitions[] = \App\States\Project\InApproval::class;
-            } elseif ($project->status === 'in-approval' || get_class($currentStatus) === \App\States\Project\InApproval::class) {
-                $possibleTransitions[] = \App\States\Project\Closed::class;
-            }
-
-            // Status-Informationen für das Frontend aufbereiten
-            $statusOptions = [
-                [
-                    'value' => is_string($project->status) ? $project->status : (
-                        is_object($currentStatus) && method_exists($currentStatus, 'getValue')
-                        ? $currentStatus->getValue()
-                        : $project->status
-                    ),
-                    'label' => is_string($project->status)
-                        ? ucfirst(str_replace('-', ' ', $project->status))
-                        : (is_object($currentStatus) && method_exists($currentStatus, 'name')
-                            ? $currentStatus->name()
-                            : (isset($currentStatus->name) ? $currentStatus->name : 'Unbekannt')
-                        ),
-                    'color' => is_string($project->status)
-                        ? 'bg-blue-100 text-blue-800'
-                        : (is_object($currentStatus) && method_exists($currentStatus, 'color')
-                            ? $currentStatus->color()
-                            : (isset($currentStatus->color) ? $currentStatus->color : 'bg-blue-100 text-blue-800')
-                        ),
-                    'current' => true
-                ]
-            ];
-
-            foreach ($possibleTransitions as $transition) {
-                try {
-                    // Erstelle eine Instanz des Status mit dem Projekt-Modell und dem Feld-Namen
-                    $transitionInstance = new $transition($project, 'status');
-                    $statusOptions[] = [
-                        'value' => $transition,
-                        'label' => $transitionInstance->name(),
-                        'color' => $transitionInstance->color(),
-                        'current' => false
-                    ];
-                } catch (\Exception $e) {
-                    // Fallback, falls die Instanzierung fehlschlägt
-                    $statusName = (new \ReflectionClass($transition))->getShortName();
-                    $readableName = ucwords(str_replace(['_', '-'], ' ', $statusName));
-
-                    $statusOptions[] = [
-                        'value' => $transition,
-                        'label' => $readableName,
-                        'color' => 'bg-gray-100 text-gray-800',
-                        'current' => false
-                    ];
-                }
-            }
-
-            $tenantId = Auth::user()->current_tenant_id;
-            return Inertia::render('projects/edit', [
-                'project' => $project,
-                'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
-                'currentStatus' => [
-                    'name' => is_string($project->status)
-                        ? ucfirst(str_replace('-', ' ', $project->status))
-                        : (is_object($currentStatus) && method_exists($currentStatus, 'name')
-                            ? $currentStatus->name()
-                            : (isset($currentStatus->name) ? $currentStatus->name : 'Unbekannt')
-                        ),
-                    'color' => is_string($project->status)
-                        ? 'bg-blue-100 text-blue-800'
-                        : (is_object($currentStatus) && method_exists($currentStatus, 'color')
-                            ? $currentStatus->color()
-                            : (isset($currentStatus->color) ? $currentStatus->color : 'bg-blue-100 text-blue-800')
-                        )
-                ],
-                'statusOptions' => $statusOptions,
-            ]);
-        } catch (\Exception $e) {
-            // Bei einem Fehler einfach nur die Basis-Daten ohne Status-Informationen senden
-            $tenantId = Auth::user()->current_tenant_id;
-            return Inertia::render('projects/edit', [
-                'project' => $project,
-                'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
-                'currentStatus' => [
-                    'name' => is_string($project->status) ? ucfirst(str_replace('-', ' ', $project->status)) : 'In Planung',
-                    'color' => 'bg-blue-100 text-blue-800'
-                ],
-                'statusOptions' => [],
-            ]);
         }
+
+        return Inertia::render('projects/edit', [
+            'project' => $project,
+            'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
+            'currentStatus' => [
+                'name' => $currentStatus['name'] ?? 'In Planung',
+                'color' => $currentStatus['color'] ?? 'bg-blue-100 text-blue-800',
+            ],
+            'statusOptions' => $statusOptions,
+        ]);
     }
 
     /**
@@ -211,6 +126,10 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
+        $currentStatus = StatusMapper::details(StatusMapper::PROJECT, $project->status, 'in-planning');
+        $currentValue = $currentStatus['value'] ?? 'in-planning';
+        $allowedTransitions = StatusMapper::transitionTargets(StatusMapper::PROJECT, $currentValue);
+
         $validated = $request->validate([
             'project_number' => 'required|unique:projects,project_number,' . $project->id,
             'name' => 'required|string|max:255',
@@ -219,27 +138,25 @@ class ProjectController extends Controller
             'start_date' => 'required|date',
             'project_leader_id' => 'required|exists:users,id',
             'deputy_leader_id' => 'nullable|exists:users,id',
-            'new_status' => 'nullable|string',
+            'new_status' => ['nullable', 'string', Rule::in($allowedTransitions)],
         ]);
 
-        // Status-Übergang durchführen, wenn angegeben
-        if (!empty($validated['new_status'])) {
-            try {
-                if (class_exists($validated['new_status'])) {
-                    // Status-String direkt aus der Klasse ermitteln, ohne eine Instanz zu erstellen
-                    $statusClass = $validated['new_status'];
-                    // Zugriff auf die statische Eigenschaft $name
-                    $project->status = $statusClass::$name;
-                    $project->save();
+        $newStatus = $validated['new_status'] ?? null;
+        unset($validated['new_status']);
+
+        if ($newStatus) {
+            $targetClass = StatusMapper::classFor(StatusMapper::PROJECT, $newStatus);
+
+            if ($targetClass) {
+                if ($project->status instanceof State) {
+                    $project->status->transitionTo($targetClass);
+                } else {
+                    $project->status = $targetClass;
                 }
-            } catch (\Exception $e) {
-                // Fehler beim Status-Übergang protokollieren
-                \Illuminate\Support\Facades\Log::error('Status-Übergang fehlgeschlagen: ' . $e->getMessage());
+
+                $project->save();
             }
         }
-
-        // new_status aus den Daten entfernen, da es kein Spaltenname ist
-        unset($validated['new_status']);
 
         $project->update($validated);
 

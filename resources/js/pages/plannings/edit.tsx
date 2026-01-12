@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
 } from "@/components/ui/card";
 import {
   Table,
@@ -19,6 +19,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
 
@@ -72,6 +73,8 @@ interface EditProps {
   features: Feature[]; // Features aus dem gleichen Projekt
 }
 
+const closedFeatureStatuses = ["rejected", "implemented", "obsolete"];
+
 const formatDateForInput = (dateString?: string) => {
   if (!dateString) {
     return "";
@@ -101,21 +104,28 @@ export default function Edit({
       ? planning.stakeholders.map((u) => String(u.id))
       : [],
     feature_ids: planning.features
-      ? planning.features.map((f) => String(f.id))
+      ? planning.features
+          .filter((f) => !closedFeatureStatuses.includes(f.status_details?.value ?? ""))
+          .map((f) => String(f.id))
       : [],
   });
 
   const [featureStatusFilter, setFeatureStatusFilter] = useState<string>("");
 
+  const availableFeatures = useMemo(
+    () => features.filter((f) => !closedFeatureStatuses.includes(f.status_details?.value ?? "")),
+    [features]
+  );
+
   const featureStatusOptions = useMemo(() => {
     const map = new Map<string, string>();
-    features.forEach((f) => {
+    availableFeatures.forEach((f) => {
       if (f.status_details) {
         map.set(f.status_details.value, f.status_details.name);
       }
     });
     return Array.from(map.entries()).map(([value, name]) => ({ value, name }));
-  }, [features]);
+  }, [availableFeatures]);
 
   const planningStatusOptions = useMemo(
     () => [
@@ -128,12 +138,12 @@ export default function Edit({
 
   const filteredFeatures = useMemo(
     () =>
-      features.filter(
+      availableFeatures.filter(
         (f) =>
           featureStatusFilter === "" ||
           f.status_details?.value === featureStatusFilter
       ),
-    [features, featureStatusFilter]
+    [availableFeatures, featureStatusFilter]
   );
 
   const handleChange = (
@@ -181,255 +191,285 @@ export default function Edit({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={values.status}
-                onValueChange={(value) => handleSelectChange("status", value)}
-              >
-                <SelectTrigger id="status">
-                  <SelectValue placeholder="Status wählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  {planningStatusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.status && (
-                <p className="text-sm text-red-600 mt-1">{errors.status}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="project_id">Projekt</Label>
-              <Select
-                value={values.project_id}
-                onValueChange={(value) => handleSelectChange("project_id", value)}
-              >
-                <SelectTrigger id="project_id">
-                  <SelectValue placeholder="Projekt wählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id.toString()}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.project_id && (
-                <p className="text-sm text-red-600 mt-1">{errors.project_id}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="title">Titel</Label>
-              <Input
-                id="title"
-                name="title"
-                value={values.title}
-                onChange={handleChange}
-                required
-              />
-              {errors.title && (
-                <p className="text-sm text-red-600 mt-1">{errors.title}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="description">Beschreibung</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={values.description}
-                onChange={handleChange}
-              />
-              {errors.description && (
-                <p className="text-sm text-red-600 mt-1">{errors.description}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="owner_id">Hauptverantwortlicher</Label>
-              <Select
-                value={values.owner_id}
-                onValueChange={(value) => handleSelectChange("owner_id", value)}
-              >
-                <SelectTrigger id="owner_id">
-                  <SelectValue placeholder="Hauptverantwortlichen wählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id.toString()}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.owner_id && (
-                <p className="text-sm text-red-600 mt-1">{errors.owner_id}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="deputy_id">Stellvertreter</Label>
-              <Select
-                value={values.deputy_id}
-                onValueChange={(value) => handleSelectChange("deputy_id", value)}
-              >
-                <SelectTrigger id="deputy_id">
-                  <SelectValue placeholder="Stellvertreter wählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Keinen Stellvertreter</SelectItem>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id.toString()}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.deputy_id && (
-                <p className="text-sm text-red-600 mt-1">{errors.deputy_id}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="planned_at">Geplant am</Label>
-              <Input
-                id="planned_at"
-                name="planned_at"
-                type="date"
-                value={values.planned_at}
-                onChange={handleChange}
-              />
-              {errors.planned_at && (
-                <p className="text-sm text-red-600 mt-1">{errors.planned_at}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="executed_at">Durchgeführt am</Label>
-              <Input
-                id="executed_at"
-                name="executed_at"
-                type="date"
-                value={values.executed_at}
-                onChange={handleChange}
-              />
-              {errors.executed_at && (
-                <p className="text-sm text-red-600 mt-1">{errors.executed_at}</p>
-              )}
-            </div>
-            <div>
-              <Label>Stakeholder</Label>
-              <div className="flex flex-wrap gap-2">
-                {users.length === 0 && (
-                  <span className="text-sm text-gray-500">Keine Benutzer vorhanden.</span>
-                )}
-                {users.length > 0 && (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-24">Auswählen</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>E-Mail</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {users.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell className="text-center">
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4"
-                              checked={values.stakeholder_ids.includes(user.id.toString())}
-                              onChange={() => handleStakeholderChange(user.id.toString())}
-                            />
-                          </TableCell>
-                          <TableCell>{user.name}</TableCell>
-                          <TableCell>{user.email}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </div>
-              {errors.stakeholder_ids && (
-                <p className="text-sm text-red-600 mt-1">{errors.stakeholder_ids}</p>
-              )}
-            </div>
-            <div>
-              <Label>Features aus dem gleichen Projekt</Label>
-              {features.length > 0 && (
-                <div className="my-2">
+            <Tabs defaultValue="stammdaten" className="space-y-4">
+              <TabsList className="w-full">
+                <TabsTrigger value="stammdaten">Stammdaten</TabsTrigger>
+                <TabsTrigger value="stakeholder">Stakeholder</TabsTrigger>
+                <TabsTrigger value="features">Features</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="stammdaten" className="space-y-4">
+                <div>
+                  <Label htmlFor="status">Status</Label>
                   <Select
-                    value={featureStatusFilter}
-                    onValueChange={(value) =>
-                      setFeatureStatusFilter(value === "all" ? "" : value)
-                    }
+                    value={values.status}
+                    onValueChange={(value) => handleSelectChange("status", value)}
                   >
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Status filtern" />
+                    <SelectTrigger id="status">
+                      <SelectValue placeholder="Status wählen" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Alle Status</SelectItem>
-                      {featureStatusOptions.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.name}
+                      {planningStatusOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  </div>
-              )}
-              <div className="flex flex-wrap gap-2">
-                {features.length === 0 && (
-                  <span className="text-sm text-gray-500">Keine Features im Projekt vorhanden.</span>
-                )}
-                {features.length > 0 && (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-24">Auswählen</TableHead>
-                        <TableHead>Jira Key</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredFeatures.map((feature) => (
-                        <TableRow key={feature.id}>
-                          <TableCell className="text-center">
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4"
-                              checked={values.feature_ids.includes(feature.id.toString())}
-                              onChange={() => handleFeatureChange(feature.id.toString())}
-                            />
-                          </TableCell>
-                          <TableCell>{feature.jira_key}</TableCell>
-                          <TableCell>{feature.name}</TableCell>
-                          <TableCell>
-                            {feature.status_details ? (
-                              <span
-                                className={`inline-block px-2 py-1 rounded-md text-xs ${feature.status_details.color}`}
-                              >
-                                {feature.status_details.name}
-                              </span>
-                            ) : (
-                              "-"
-                            )}
-                          </TableCell>
-                        </TableRow>
+                  {errors.status && (
+                    <p className="text-sm text-red-600 mt-1">{errors.status}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="project_id">Projekt</Label>
+                  <Select
+                    value={values.project_id}
+                    onValueChange={(value) => handleSelectChange("project_id", value)}
+                  >
+                    <SelectTrigger id="project_id">
+                      <SelectValue placeholder="Projekt wählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id.toString()}>
+                          {project.name}
+                        </SelectItem>
                       ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </div>
-              {errors.feature_ids && (
-                <p className="text-sm text-red-600 mt-1">{errors.feature_ids}</p>
-              )}
+                    </SelectContent>
+                  </Select>
+                  {errors.project_id && (
+                    <p className="text-sm text-red-600 mt-1">{errors.project_id}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="title">Titel</Label>
+                  <Input
+                    id="title"
+                    name="title"
+                    value={values.title}
+                    onChange={handleChange}
+                    required
+                  />
+                  {errors.title && (
+                    <p className="text-sm text-red-600 mt-1">{errors.title}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Beschreibung</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    value={values.description}
+                    onChange={handleChange}
+                  />
+                  {errors.description && (
+                    <p className="text-sm text-red-600 mt-1">{errors.description}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="owner_id">Hauptverantwortlicher</Label>
+                  <Select
+                    value={values.owner_id}
+                    onValueChange={(value) => handleSelectChange("owner_id", value)}
+                  >
+                    <SelectTrigger id="owner_id">
+                      <SelectValue placeholder="Hauptverantwortlichen wählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id.toString()}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.owner_id && (
+                    <p className="text-sm text-red-600 mt-1">{errors.owner_id}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="deputy_id">Stellvertreter</Label>
+                  <Select
+                    value={values.deputy_id}
+                    onValueChange={(value) => handleSelectChange("deputy_id", value)}
+                  >
+                    <SelectTrigger id="deputy_id">
+                      <SelectValue placeholder="Stellvertreter wählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Keinen Stellvertreter</SelectItem>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id.toString()}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.deputy_id && (
+                    <p className="text-sm text-red-600 mt-1">{errors.deputy_id}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <Label htmlFor="planned_at">Geplant am</Label>
+                    <Input
+                      id="planned_at"
+                      name="planned_at"
+                      type="date"
+                      value={values.planned_at}
+                      onChange={handleChange}
+                    />
+                    {errors.planned_at && (
+                      <p className="text-sm text-red-600 mt-1">{errors.planned_at}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label htmlFor="executed_at">Durchgeführt am</Label>
+                    <Input
+                      id="executed_at"
+                      name="executed_at"
+                      type="date"
+                      value={values.executed_at}
+                      onChange={handleChange}
+                    />
+                    {errors.executed_at && (
+                      <p className="text-sm text-red-600 mt-1">{errors.executed_at}</p>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="stakeholder" className="space-y-4">
+                <div>
+                  <Label>Stakeholder</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {users.length === 0 && (
+                      <span className="text-sm text-gray-500">Keine Benutzer vorhanden.</span>
+                    )}
+                    {users.length > 0 && (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-24">Auswählen</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>E-Mail</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {users.map((user) => (
+                            <TableRow key={user.id}>
+                              <TableCell className="text-center">
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4"
+                                  checked={values.stakeholder_ids.includes(user.id.toString())}
+                                  onChange={() => handleStakeholderChange(user.id.toString())}
+                                />
+                              </TableCell>
+                              <TableCell>{user.name}</TableCell>
+                              <TableCell>{user.email}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </div>
+                  {errors.stakeholder_ids && (
+                    <p className="text-sm text-red-600 mt-1">{errors.stakeholder_ids}</p>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="features" className="space-y-4">
+                <div>
+                  <Label>Features aus dem gleichen Projekt</Label>
+                  {features.length > 0 && (
+                    <div className="my-2">
+                      <Select
+                        value={featureStatusFilter}
+                        onValueChange={(value) =>
+                          setFeatureStatusFilter(value === "all" ? "" : value)
+                        }
+                      >
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder="Status filtern" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Alle Status</SelectItem>
+                          {featureStatusOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                        {availableFeatures.length === 0 && (
+                      <span className="text-sm text-gray-500">Keine Features im Projekt vorhanden.</span>
+                    )}
+                        {availableFeatures.length > 0 && (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-24">Auswählen</TableHead>
+                            <TableHead>Jira Key</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredFeatures.map((feature) => (
+                            <TableRow key={feature.id}>
+                              <TableCell className="text-center">
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4"
+                                  checked={values.feature_ids.includes(feature.id.toString())}
+                                  onChange={() => handleFeatureChange(feature.id.toString())}
+                                />
+                              </TableCell>
+                              <TableCell>{feature.jira_key}</TableCell>
+                              <TableCell>{feature.name}</TableCell>
+                              <TableCell>
+                                {feature.status_details ? (
+                                  <span
+                                    className={`inline-block px-2 py-1 rounded-md text-xs ${feature.status_details.color}`}
+                                  >
+                                    {feature.status_details.name}
+                                  </span>
+                                ) : (
+                                  "-"
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </div>
+                  {errors.feature_ids && (
+                    <p className="text-sm text-red-600 mt-1">{errors.feature_ids}</p>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                Abbrechen
+              </Button>
+              <Button type="submit" variant="success">
+                Speichern
+              </Button>
             </div>
-            <Button type="submit" className="w-full">
-              Speichern
-            </Button>
           </form>
         </CardContent>
       </Card>

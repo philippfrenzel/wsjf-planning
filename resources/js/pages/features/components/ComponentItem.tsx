@@ -47,19 +47,17 @@ export default function ComponentItem({
             {component.status === 'active' ? (
               <>
                 <Button 
-                  variant="outline" 
+                  variant="secondary" 
                   size="sm" 
                   onClick={() => onEdit(component)}
-                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
                 >
                   <PencilIcon className="h-4 w-4 mr-1" />
                   Bearbeiten
                 </Button>
                 <Button 
-                  variant="outline" 
+                  variant="info" 
                   size="sm" 
                   onClick={() => onArchive(component.id)}
-                  className="text-yellow-600 border-yellow-600 hover:bg-yellow-50"
                 >
                   <ArchiveIcon className="h-4 w-4 mr-1" />
                   Archivieren
@@ -67,16 +65,19 @@ export default function ComponentItem({
               </>
             ) : (
               <Button 
-                variant="outline" 
+                variant="success" 
                 size="sm" 
                 onClick={() => onActivate(component.id)}
-                className="text-green-600 border-green-600 hover:bg-green-50"
               >
                 <RefreshCwIcon className="h-4 w-4 mr-1" />
                 Wiederherstellen
               </Button>
             )}
-            <Button onClick={() => onAddEstimation(component.id)}>
+            <Button
+              onClick={() => onAddEstimation(component.id)}
+              variant="success"
+              size="sm"
+            >
               Schätzung hinzufügen
             </Button>
           </div>
