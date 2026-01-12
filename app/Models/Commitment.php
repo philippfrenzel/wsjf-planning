@@ -11,6 +11,7 @@ use App\States\Commitment\Suggested;
 use App\States\Commitment\Accepted;
 use App\States\Commitment\Completed;
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\SoftDeletesWithUser;
 use App\Support\StatusMapper;
 
 class Commitment extends Model
@@ -18,6 +19,7 @@ class Commitment extends Model
     use HasFactory;
     use HasStates;
     use BelongsToTenant;
+    use SoftDeletesWithUser;
 
     /**
      * Die Attribute, die massen-zuweisbar sind.
