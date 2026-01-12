@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\SoftDeletesWithUser;
 use Spatie\ModelStates\HasStates;
 use App\States\Planning\PlanningState;
 use App\States\Planning\InPlanning as PlanningInPlanning;
@@ -17,7 +18,7 @@ use App\Support\StatusMapper;
 
 class Planning extends Model
 {
-    use HasFactory, BelongsToTenant, HasStates;
+    use HasFactory, BelongsToTenant, HasStates, SoftDeletesWithUser;
 
     protected $fillable = [
         'project_id',

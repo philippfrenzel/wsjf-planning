@@ -15,6 +15,7 @@ use App\States\Feature\Obsolete;
 use App\States\Feature\Archived;
 use App\States\Feature\Deleted;
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\SoftDeletesWithUser;
 use App\Models\FeatureDependency;
 use App\Models\FeatureStateHistory;
 use App\Support\StatusMapper;
@@ -24,6 +25,7 @@ class Feature extends Model
     use HasFactory;
     use HasStates;
     use BelongsToTenant;
+    use SoftDeletesWithUser;
 
     protected $fillable = [
         'jira_key',

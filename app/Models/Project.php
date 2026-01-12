@@ -13,12 +13,14 @@ use App\States\Project\InApproval;
 use App\States\Project\Closed;
 use App\Support\StatusMapper;
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\SoftDeletesWithUser;
 
 class Project extends Model
 {
     use HasFactory;
     use HasStates;
     use BelongsToTenant;
+    use SoftDeletesWithUser;
 
     /**
      * The attributes that are mass assignable.
