@@ -97,9 +97,23 @@ class FeatureController extends Controller
         $selectedProjectId = $request->input('project_id');
         $selectedPlanningId = $request->input('planning_id');
         $selectedStatus = $request->input('status');
+        
+        // Get the closed status filter from request or session (default: 90 days)
+        $closedStatusFilter = $request->input('closed_status_days');
+        if ($closedStatusFilter !== null) {
+            // Store the filter in session for persistence
+            $request->session()->put('closed_status_days', $closedStatusFilter);
+        } else {
+            // Get from session or use default (90)
+            $closedStatusFilter = $request->session()->get('closed_status_days', '90');
+        }
+        
+        // Convert to integer or null for "all"
+        $filterDays = $closedStatusFilter === 'all' ? null : (int) $closedStatusFilter;
 
         $featuresQuery = Feature::with(['project:id,name', 'estimationComponents'])
-            ->withCount('estimationComponents');
+            ->withCount('estimationComponents')
+            ->filterClosedByDays($filterDays);
 
         // Filter nach Projekt anwenden, wenn ausgewählt
         if ($selectedProjectId) {
@@ -178,6 +192,7 @@ class FeatureController extends Controller
                 'project_id' => $selectedProjectId,
                 'planning_id' => $selectedPlanningId,
                 'status' => $selectedStatus,
+                'closed_status_days' => $closedStatusFilter,
             ],
         ]);
     }
