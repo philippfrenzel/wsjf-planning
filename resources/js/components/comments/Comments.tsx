@@ -4,7 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Comment, CommentableEntity } from '@/types/comment';
 import axios from 'axios';
 import { MessageSquare, Send } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { CommentItem } from './CommentItem';
 
 interface CommentsProps {
@@ -18,11 +18,7 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
-    useEffect(() => {
-        loadComments();
-    }, [entity.type, entity.id]);
-
-    const loadComments = async () => {
+    const loadComments = useCallback(async () => {
         setLoading(true);
         try {
             const response = await axios.get('/comments', {
@@ -37,7 +33,11 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [entity.type, entity.id]);
+
+    useEffect(() => {
+        loadComments();
+    }, [loadComments]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
