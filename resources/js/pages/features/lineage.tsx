@@ -49,39 +49,17 @@ export default function Lineage({ features }: LineageProps) {
         const edges: Edge[] = [];
         const processedIds = new Set<number>();
 
-        // Calculate layout positions using a simple hierarchical layout
-        const levelMap = new Map<number, number>();
-        const positionMap = new Map<number, { x: number; y: number }>();
+        // Improved layout: position independent feature chains vertically
+        let currentChainStartY = 0;
+        const chainSpacing = 200; // Vertical spacing between independent chains
 
-        // First pass: determine levels (depth in tree)
-        function calculateLevel(feature: LineageFeature, level: number = 0) {
-            if (processedIds.has(feature.id)) return;
+        function createNodesAndEdges(feature: LineageFeature, parentId?: number, depth: number = 0, chainOffsetY: number = 0) {
+            if (processedIds.has(feature.id)) return { height: 0 };
             processedIds.add(feature.id);
 
-            levelMap.set(feature.id, level);
-
-            feature.dependencies.forEach((dep) => {
-                calculateLevel(dep, level + 1);
-            });
-        }
-
-        features.forEach((feature) => calculateLevel(feature, 0));
-
-        // Second pass: calculate positions
-        const levelCounts = new Map<number, number>();
-        processedIds.clear();
-
-        function createNodesAndEdges(feature: LineageFeature, parentId?: number) {
-            if (processedIds.has(feature.id)) return;
-            processedIds.add(feature.id);
-
-            const level = levelMap.get(feature.id) || 0;
-            const countAtLevel = levelCounts.get(level) || 0;
-            levelCounts.set(level, countAtLevel + 1);
-
-            // Position nodes with spacing
-            const x = countAtLevel * 300;
-            const y = level * 150;
+            // Position: dependencies flow left to right (x), chains stack top to bottom (y)
+            const x = depth * 350; // Horizontal spacing for dependency depth
+            const y = chainOffsetY;
 
             nodes.push({
                 id: feature.id.toString(),
@@ -110,12 +88,28 @@ export default function Lineage({ features }: LineageProps) {
                 });
             }
 
-            feature.dependencies.forEach((dep) => {
-                createNodesAndEdges(dep, feature.id);
+            // Process dependencies and calculate total height needed
+            let maxDependencyHeight = 0;
+            let currentDependencyY = y;
+
+            feature.dependencies.forEach((dep, index) => {
+                const result = createNodesAndEdges(dep, feature.id, depth + 1, currentDependencyY);
+                currentDependencyY += result.height + (index < feature.dependencies.length - 1 ? 150 : 0);
+                maxDependencyHeight = currentDependencyY - y;
             });
+
+            // Return the height this chain occupies
+            const nodeHeight = 100; // Approximate height of a node
+            return {
+                height: Math.max(nodeHeight, maxDependencyHeight > 0 ? maxDependencyHeight : nodeHeight),
+            };
         }
 
-        features.forEach((feature) => createNodesAndEdges(feature));
+        // Process each root feature as an independent chain
+        features.forEach((feature) => {
+            const result = createNodesAndEdges(feature, undefined, 0, currentChainStartY);
+            currentChainStartY += result.height + chainSpacing;
+        });
 
         return { nodes, edges };
     }, [features]);
@@ -140,7 +134,7 @@ export default function Lineage({ features }: LineageProps) {
                     >
                         <Background />
                         <Controls />
-                        <MiniMap nodeColor={(node) => '#3b82f6'} maskColor="rgba(0, 0, 0, 0.1)" position="top-right" />
+                        <MiniMap nodeColor={() => '#3b82f6'} maskColor="rgba(0, 0, 0, 0.1)" position="top-right" />
                     </ReactFlow>
                 </div>
             </div>
