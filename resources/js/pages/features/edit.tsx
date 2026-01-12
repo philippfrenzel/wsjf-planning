@@ -317,45 +317,56 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
                             {/* Right Column - Workflow and Dependencies */}
                             <div className="space-y-6">
                                 {/* Status-Auswahl (Workflow) */}
-                                <div>
-                                    <Label htmlFor="status">Status</Label>
-                                    <Select value={values.status} onValueChange={(value) => handleSelectChange('status', value)}>
-                                        <SelectTrigger id="status" className="w-full">
-                                            <SelectValue placeholder="Status wählen" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {statusOptions.map((option) => (
-                                                <SelectItem key={option.value} value={option.value}>
-                                                    <div className="flex items-center">
-                                                        <span
-                                                            className={`mr-2 inline-block h-3 w-3 rounded-full ${option.color.replace('bg-', 'bg-').replace('text-', '')}`}
-                                                        ></span>
-                                                        {option.label}
-                                                        {option.current && <span className="ml-2 text-xs text-gray-500">(aktuell)</span>}
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status}</p>}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Status</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div>
+                                            <Label htmlFor="status">Status</Label>
+                                            <Select value={values.status} onValueChange={(value) => handleSelectChange('status', value)}>
+                                                <SelectTrigger id="status" className="w-full">
+                                                    <SelectValue placeholder="Status wählen" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {statusOptions.map((option) => (
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            <div className="flex items-center">
+                                                                <span
+                                                                    className={`mr-2 inline-block h-3 w-3 rounded-full ${option.color.replace('bg-', 'bg-').replace('text-', '')}`}
+                                                                ></span>
+                                                                {option.label}
+                                                                {option.current && <span className="ml-2 text-xs text-gray-500">(aktuell)</span>}
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status}</p>}
 
-                                    {values.status && statusOptions.find((option) => option.value === values.status) && (
-                                        <div className="mt-2 flex items-center">
-                                            <span className="mr-2 text-sm">Neuer Status:</span>
-                                            <span
-                                                className={`inline-block rounded-md px-2 py-1 text-xs ${statusOptions.find((option) => option.value === values.status)?.color}`}
-                                            >
-                                                {statusOptions.find((option) => option.value === values.status)?.label}
-                                            </span>
+                                            {values.status && statusOptions.find((option) => option.value === values.status) && (
+                                                <div className="mt-2 flex items-center">
+                                                    <span className="mr-2 text-sm">Neuer Status:</span>
+                                                    <span
+                                                        className={`inline-block rounded-md px-2 py-1 text-xs ${statusOptions.find((option) => option.value === values.status)?.color}`}
+                                                    >
+                                                        {statusOptions.find((option) => option.value === values.status)?.label}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
+                                    </CardContent>
+                                </Card>
 
                                 {/* Abhängigkeiten */}
-                                <div>
-                                    <h3 className="mb-2 text-base font-semibold">Abhängigkeiten</h3>
-                                    <DependencyManager featureId={feature.id} options={featureOptions} initialItems={dependencies} />
-                                </div>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Abhängigkeiten</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <DependencyManager featureId={feature.id} options={featureOptions} initialItems={dependencies} />
+                                    </CardContent>
+                                </Card>
                             </div>
                         </div>
 
