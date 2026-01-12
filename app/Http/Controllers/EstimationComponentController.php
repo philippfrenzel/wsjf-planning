@@ -57,6 +57,9 @@ class EstimationComponentController extends Controller
             'status' => EstimationComponent::STATUS_ACTIVE, // Standardmäßig aktiv
         ]);
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         if ($request->has('redirect_to_feature')) {
             return redirect()->route('features.show', $request->redirect_to_feature)
                 ->with('success', 'Komponente wurde erfolgreich erstellt.');
@@ -109,6 +112,9 @@ class EstimationComponentController extends Controller
 
         $estimationComponent->update($validated);
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         // Umleitung basierend auf dem Parameter
         if ($request->has('redirect_to_feature')) {
             return redirect()->route('features.show', $request->redirect_to_feature)
@@ -129,6 +135,9 @@ class EstimationComponentController extends Controller
         $featureId = $component->feature_id;
         $component->delete();
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         // Wenn der Request von einer Feature-Detailseite kommt
         if (request()->has('redirect_to_feature') && request()->redirect_to_feature) {
             return Redirect::route('features.show', $featureId)
@@ -147,6 +156,9 @@ class EstimationComponentController extends Controller
         $component = EstimationComponent::findOrFail($id);
         $component->archive();
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         if (request()->wantsJson()) {
             return response()->json(['success' => true]);
         }
@@ -161,6 +173,9 @@ class EstimationComponentController extends Controller
     {
         $component = EstimationComponent::findOrFail($id);
         $component->activate();
+
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
 
         if (request()->wantsJson()) {
             return response()->json(['success' => true]);

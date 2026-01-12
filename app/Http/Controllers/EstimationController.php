@@ -64,6 +64,9 @@ class EstimationController extends Controller
 
         $component = EstimationComponent::with('feature')->find($validated['component_id']);
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         // Wenn die Anfrage von einem Inertia-Request kommt (AJAX)
         if ($request->wantsJson()) {
             return response()->json([
@@ -157,6 +160,9 @@ class EstimationController extends Controller
 
         $component = $estimation->component;
 
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
+
         // Wenn der Request von einer Feature-Detailseite kommt
         if ($request->has('redirect_to_feature') && $request->redirect_to_feature) {
             return Redirect::route('features.show', $component->feature_id)
@@ -183,6 +189,9 @@ class EstimationController extends Controller
         $featureId = $estimation->component->feature_id;
 
         $estimation->delete();
+
+        // Increment data version to trigger Inertia page reload
+        cache()->increment('app.data.version', 1);
 
         // Wenn der Request von einer Feature-Detailseite kommt
         if (request()->has('redirect_to_feature') && request()->redirect_to_feature) {
