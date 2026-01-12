@@ -4,6 +4,8 @@ namespace App\States\Commitment;
 
 class Suggested extends CommitmentState
 {
+    public static $name = 'suggested';
+
     public function name(): string
     {
         return 'Vorschlag';

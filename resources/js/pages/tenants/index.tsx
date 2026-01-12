@@ -1,7 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useForm, usePage, router } from '@inertiajs/react';
 import { type SharedData } from '@/types';
 
@@ -29,6 +30,34 @@ export default function TenantsIndex() {
         { email: '', tenant_id: ownedTenants[0]?.id ?? '' }
     );
 
+    const currentTenant = tenants.find((t) => t.id === currentTenantId);
+    const selectedOwnedTenant = ownedTenants.find((t) => t.id === data.tenant_id);
+    const pendingSelected = (selectedOwnedTenant?.invitations ?? []).filter((i) => !i.accepted_at);
+    const acceptedSelected = (selectedOwnedTenant?.invitations ?? []).filter((i) => !!i.accepted_at);
+
+    const kpiCards = [
+        {
+            label: 'Tenants gesamt',
+            value: tenants.length.toString(),
+            hint: 'inkl. eigener und zugeteilter Tenants',
+        },
+        {
+            label: 'Mitglieder aktueller Tenant',
+            value: (currentTenant?.members?.length ?? 0).toString(),
+            hint: currentTenant?.name ?? 'Kein Tenant aktiv',
+        },
+        {
+            label: 'Ausstehende Einladungen',
+            value: pendingSelected.length.toString(),
+            hint: selectedOwnedTenant ? selectedOwnedTenant.name : 'Keine Auswahl',
+        },
+        {
+            label: 'Angenommene Einladungen',
+            value: acceptedSelected.length.toString(),
+            hint: selectedOwnedTenant ? selectedOwnedTenant.name : 'Keine Auswahl',
+        },
+    ];
+
     const revokeInvitation = (tenantId: number, invitationId: number) => {
         router.delete(route('tenants.invitations.destroy', { tenant: tenantId, invitation: invitationId }), {
             preserveScroll: true,
@@ -47,165 +76,165 @@ export default function TenantsIndex() {
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Home', href: '/' }, { title: 'Tenants', href: route('tenants.index') }]}>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Deine Tenants</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="space-y-2">
-                            {tenants.map((t) => (
-                                <li key={t.id} className="flex items-center justify-between">
-                                    <span>
-                                        {t.name} {currentTenantId === t.id && <span className="text-xs text-neutral-500">(aktuell)</span>}
-                                    </span>
-                                    {currentTenantId !== t.id && (
-                                        <Button
-                                            size="sm"
-                                            variant="secondary"
-                                            onClick={() => router.post(route('tenants.switch', t.id), {}, { preserveScroll: true })}
-                                        >
-                                            Wechseln
-                                        </Button>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Einladung senden</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={invite} className="space-y-3">
-                            <label className="block text-sm">
-                                <span className="mb-1 block">Tenant</span>
-                                <select
-                                    className="w-full rounded-md border px-3 py-2"
-                                    value={data.tenant_id}
-                                    onChange={(e) => setData('tenant_id', Number(e.target.value))}
-                                >
-                                    {ownedTenants.map((t) => (
-                                        <option key={t.id} value={t.id}>
-                                            {t.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-                            <label className="block text-sm">
-                                <span className="mb-1 block">E-Mail</span>
-                                <Input type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} required />
-                            </label>
-                            <Button type="submit" disabled={processing}>
-                                Einladung erstellen
-                            </Button>
-                        </form>
-                        {/* Eigene, an dich gerichtete Einladungen */}
-                        {invitations.length > 0 && (
-                            <div className="mt-6 text-sm text-neutral-600">
-                                <div className="mb-2 font-medium">Ausstehende Einladungen für deine E-Mail:</div>
-                                <ul className="space-y-2">
-                                    {invitations.map((inv) => (
-                                        <li key={inv.id} className="flex items-center justify-between">
-                                            <span>
-                                                {inv.tenant.name} – Token: <code>{inv.token}</code>
-                                            </span>
-                                            <Button
-                                                size="sm"
-                                                onClick={() => router.post(route('tenants.accept'), { token: inv.token }, { preserveScroll: true })}
-                                            >
-                                                Annehmen
-                                            </Button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
+            <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {kpiCards.map((kpi) => (
+                        <Card key={kpi.label} className="border-slate-200 bg-slate-50/70 shadow-sm">
+                            <CardHeader className="pb-2">
+                                <CardDescription className="text-xs uppercase tracking-wide text-slate-500">{kpi.label}</CardDescription>
+                                <CardTitle className="text-2xl font-semibold text-slate-900">{kpi.value}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0 text-xs text-slate-500">{kpi.hint}</CardContent>
+                        </Card>
+                    ))}
+                </div>
 
-                        {/* Einladungen für den ausgewählten (eigenen) Tenant */}
-                        {(() => {
-                            const selected = ownedTenants.find((t) => t.id === data.tenant_id);
-                            if (!selected) return null;
-                            const pend = (selected.invitations ?? []).filter((i) => !i.accepted_at);
-                            const accepted = (selected.invitations ?? []).filter((i) => !!i.accepted_at);
-                            return (
-                                <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <div>
-                                        <div className="mb-2 text-sm font-medium">Ausstehend ({pend.length})</div>
-                                        {pend.length === 0 ? (
-                                            <div className="text-xs text-neutral-500">Keine ausstehenden Einladungen</div>
-                                        ) : (
-                                            <ul className="space-y-1 text-sm">
-                                                {pend.map((p) => (
-                                                    <li key={p.id} className="flex items-center justify-between gap-2">
-                                                        <span>{p.email}</span>
+                <Card className="rounded-xl shadow-sm">
+                    <CardHeader className="border-b border-slate-200">
+                        <CardTitle>Tenant-Verwaltung</CardTitle>
+                        <CardDescription>Tenants wechseln, Einladungen versenden und verwalten.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                        <Tabs defaultValue="overview" className="space-y-4">
+                            <TabsList className="w-full justify-start overflow-x-auto">
+                                <TabsTrigger value="overview">Übersicht</TabsTrigger>
+                                <TabsTrigger value="invitations">Einladungen</TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="overview" className="space-y-4">
+                                <div className="rounded-lg border border-slate-200 bg-white/70 p-4 shadow-sm">
+                                    <div className="flex flex-col gap-3">
+                                        <div className="text-sm font-medium text-slate-700">Deine Tenants</div>
+                                        <ul className="space-y-2">
+                                            {tenants.map((t) => (
+                                                <li key={t.id} className="flex items-center justify-between rounded border border-slate-200 bg-slate-50 px-3 py-2">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium text-slate-900">{t.name}</span>
+                                                        {currentTenantId === t.id && (
+                                                            <span className="text-xs text-emerald-600">Aktueller Tenant</span>
+                                                        )}
+                                                    </div>
+                                                    {currentTenantId !== t.id && (
                                                         <Button
                                                             size="sm"
-                                                            variant="destructive"
-                                                            onClick={() => revokeInvitation(selected.id, p.id)}
+                                                            variant="secondary"
+                                                            onClick={() => router.post(route('tenants.switch', t.id), {}, { preserveScroll: true })}
                                                         >
-                                                            Zurückziehen
+                                                            Wechseln
                                                         </Button>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <div className="mb-2 text-sm font-medium">Angenommen ({accepted.length})</div>
-                                        {accepted.length === 0 ? (
-                                            <div className="text-xs text-neutral-500">Noch keine angenommenen Einladungen</div>
-                                        ) : (
-                                            <ul className="space-y-1 text-sm">
-                                                {accepted.map((a) => {
-                                                    const member = (selected.members ?? []).find((m) => m.email === a.email);
-                                                    return (
-                                                        <li key={a.id} className="flex items-center justify-between">
-                                                            <span>
-                                                                {member ? (
-                                                                    <>
-                                                                        <span className="font-medium">{member.name}</span>
-                                                                        <span className="ml-2 text-xs text-neutral-500">{member.email}</span>
-                                                                    </>
-                                                                ) : (
-                                                                    <span>{a.email}</span>
-                                                                )}
-                                                            </span>
-                                                            <span className="text-xs text-neutral-500">{a.accepted_at?.slice(0, 10)}</span>
-                                                        </li>
-                                                    );
-                                                })}
-                                            </ul>
-                                        )}
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
                                 </div>
-                            );
-                        })()}
-                    </CardContent>
-                </Card>
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Mitglieder (aktueller Tenant)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {(() => {
-                            const current = tenants.find((t) => t.id === currentTenantId);
-                            const members = current?.members ?? [];
-                            if (!current) return <div className="text-sm text-neutral-600">Kein aktueller Tenant ausgewählt.</div>;
-                            if (members.length === 0)
-                                return <div className="text-sm text-neutral-600">Noch keine Mitglieder vorhanden.</div>;
-                            return (
-                                <ul className="space-y-2">
-                                    {members.map((m) => (
-                                        <li key={m.id} className="py-1">
-                                            <div className="font-medium leading-tight">{m.name}</div>
-                                            <div className="text-xs text-neutral-500 leading-tight">{m.email}</div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            );
-                        })()}
+                            </TabsContent>
+
+                            <TabsContent value="invitations" className="space-y-4">
+                                <div className="rounded-lg border border-slate-200 bg-white/70 p-4 shadow-sm">
+                                    <div className="flex flex-col gap-3">
+                                        <div className="text-sm font-medium text-slate-700">Einladung senden</div>
+                                        <form onSubmit={invite} className="space-y-3">
+                                            <label className="block text-sm">
+                                                <span className="mb-1 block">Tenant</span>
+                                                <select
+                                                    className="w-full rounded-md border px-3 py-2"
+                                                    value={data.tenant_id}
+                                                    onChange={(e) => setData('tenant_id', Number(e.target.value))}
+                                                >
+                                                    {ownedTenants.map((t) => (
+                                                        <option key={t.id} value={t.id}>
+                                                            {t.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </label>
+                                            <label className="block text-sm">
+                                                <span className="mb-1 block">E-Mail</span>
+                                                <Input type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} required />
+                                            </label>
+                                            <Button type="submit" disabled={processing}>
+                                                Einladung erstellen
+                                            </Button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                {invitations.length > 0 && (
+                                    <div className="rounded-lg border border-slate-200 bg-white/70 p-4 shadow-sm">
+                                        <div className="mb-2 text-sm font-medium text-slate-700">Ausstehende Einladungen für deine E-Mail</div>
+                                        <ul className="space-y-2 text-sm text-neutral-700">
+                                            {invitations.map((inv) => (
+                                                <li key={inv.id} className="flex items-center justify-between rounded border px-3 py-2">
+                                                    <span>
+                                                        {inv.tenant.name} – Token: <code>{inv.token}</code>
+                                                    </span>
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => router.post(route('tenants.accept'), { token: inv.token }, { preserveScroll: true })}
+                                                    >
+                                                        Annehmen
+                                                    </Button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {selectedOwnedTenant && (
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <div className="rounded-lg border border-slate-200 bg-white/70 p-4 shadow-sm">
+                                            <div className="mb-2 text-sm font-medium text-slate-700">Ausstehend ({pendingSelected.length})</div>
+                                            {pendingSelected.length === 0 ? (
+                                                <div className="text-xs text-neutral-500">Keine ausstehenden Einladungen</div>
+                                            ) : (
+                                                <ul className="space-y-1 text-sm">
+                                                    {pendingSelected.map((p) => (
+                                                        <li key={p.id} className="flex items-center justify-between gap-2">
+                                                            <span>{p.email}</span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="destructive"
+                                                                onClick={() => revokeInvitation(selectedOwnedTenant.id, p.id)}
+                                                            >
+                                                                Zurückziehen
+                                                            </Button>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
+                                        <div className="rounded-lg border border-slate-200 bg-white/70 p-4 shadow-sm">
+                                            <div className="mb-2 text-sm font-medium text-slate-700">Angenommen ({acceptedSelected.length})</div>
+                                            {acceptedSelected.length === 0 ? (
+                                                <div className="text-xs text-neutral-500">Noch keine angenommenen Einladungen</div>
+                                            ) : (
+                                                <ul className="space-y-1 text-sm">
+                                                    {acceptedSelected.map((a) => {
+                                                        const member = (selectedOwnedTenant.members ?? []).find((m) => m.email === a.email);
+                                                        return (
+                                                            <li key={a.id} className="flex items-center justify-between">
+                                                                <span>
+                                                                    {member ? (
+                                                                        <>
+                                                                            <span className="font-medium">{member.name}</span>
+                                                                            <span className="ml-2 text-xs text-neutral-500">{member.email}</span>
+                                                                        </>
+                                                                    ) : (
+                                                                        <span>{a.email}</span>
+                                                                    )}
+                                                                </span>
+                                                                <span className="text-xs text-neutral-500">{a.accepted_at?.slice(0, 10)}</span>
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </TabsContent>
+                        </Tabs>
                     </CardContent>
                 </Card>
             </div>

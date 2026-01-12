@@ -387,10 +387,10 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
             </div>
             
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => window.history.back()}>
+              <Button type="button" variant="cancel" onClick={() => window.history.back()}>
                 Abbrechen
               </Button>
-              <Button type="submit">
+              <Button type="submit" variant="success">
                 Änderungen speichern
               </Button>
             </div>

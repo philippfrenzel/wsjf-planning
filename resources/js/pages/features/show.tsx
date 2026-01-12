@@ -4,6 +4,7 @@ import AppLayout from "@/layouts/app-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import FeatureHeader from "./components/FeatureHeader";
 import FeatureDetails from "./components/FeatureDetails";
@@ -16,6 +17,7 @@ import FeatureDescription from "./components/FeatureDescription";
 
 import { useComponentManagement } from "@/hooks/useComponentManagement";
 import { useEstimationManagement } from "@/hooks/useEstimationManagement";
+import { Edit2 } from "lucide-react";
 
 interface EstimationHistory {
   id: number;
@@ -119,135 +121,150 @@ export default function Show({ feature, auth }: ShowProps) {
     <AppLayout breadcrumbs={breadcrumbs}>
       <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
       <Card className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
-        <FeatureHeader
-          featureName={feature.name}
-        />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <FeatureHeader featureName={feature.name} />
+          </div>
+          <Link href={route("features.edit", feature.id)} className="shrink-0">
+            <Button size="sm" variant="outline" className="inline-flex items-center gap-2 whitespace-nowrap">
+              <Edit2 className="h-4 w-4" />
+              Bearbeiten
+            </Button>
+          </Link>
+        </div>
 
         <CardContent>
-          {/* Feature-Details anzeigen */}
-          <FeatureDetails
-            jiraKey={feature.jira_key}
-            projectName={feature.project?.name}
-            requesterName={feature.requester?.name}
-          />
+          <Tabs defaultValue="stammdaten" className="space-y-6">
+            <TabsList className="w-full">
+              <TabsTrigger value="stammdaten">Stammdaten</TabsTrigger>
+              <TabsTrigger value="schaetzungen">Schätzungskomponenten</TabsTrigger>
+            </TabsList>
 
-          {/* Abhängigkeiten anzeigen */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <h3 className="text-lg font-medium mb-3">Abhängigkeiten</h3>
-            {feature.dependencies && feature.dependencies.length > 0 ? (
-              <ul className="space-y-2">
-                {feature.dependencies.map((dep) => (
-                  <li key={dep.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge className={typeBadgeClass(dep.type)}>{translateDepType(dep.type)}</Badge>
-                      {dep.related ? (
-                        <Link href={route('features.show', { feature: dep.related.id })} className="text-blue-600 hover:underline">
-                          {dep.related.jira_key} – {dep.related.name}
-                        </Link>
-                      ) : (
-                        <span>-</span>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500">Keine Abhängigkeiten erfasst.</p>
-            )}
+            <TabsContent value="stammdaten" className="space-y-6">
+              {/* Feature-Details anzeigen */}
+              <FeatureDetails
+                jiraKey={feature.jira_key}
+                projectName={feature.project?.name}
+                requesterName={feature.requester?.name}
+              />
 
-            {feature.dependents && feature.dependents.length > 0 && (
-              <div className="mt-4">
-                <h4 className="text-sm font-medium mb-2">Wird referenziert von</h4>
-                <ul className="space-y-2">
-                  {feature.dependents.map((dep) => (
-                    <li key={`dep-${dep.id}`} className="flex items-center gap-2">
-                      <Badge variant="outline">{translateDepType(dep.type)}</Badge>
-                      {dep.feature ? (
-                        <Link href={route('features.show', { feature: dep.feature.id })} className="text-blue-600 hover:underline">
-                          {dep.feature.jira_key} – {dep.feature.name}
-                        </Link>
-                      ) : (
-                        <span>-</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+              {/* Abhängigkeiten anzeigen */}
+              <div className="rounded-lg border border-slate-200 bg-white/70 px-4 py-3 shadow-sm">
+                <h3 className="text-lg font-medium mb-3">Abhängigkeiten</h3>
+                {feature.dependencies && feature.dependencies.length > 0 ? (
+                  <ul className="space-y-2">
+                    {feature.dependencies.map((dep) => (
+                      <li key={dep.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge className={typeBadgeClass(dep.type)}>{translateDepType(dep.type)}</Badge>
+                          {dep.related ? (
+                            <Link href={route('features.show', { feature: dep.related.id })} className="text-blue-600 hover:underline">
+                              {dep.related.jira_key} – {dep.related.name}
+                            </Link>
+                          ) : (
+                            <span>-</span>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500">Keine Abhängigkeiten erfasst.</p>
+                )}
+
+                {feature.dependents && feature.dependents.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium mb-2">Wird referenziert von</h4>
+                    <ul className="space-y-2">
+                      {feature.dependents.map((dep) => (
+                        <li key={`dep-${dep.id}`} className="flex items-center gap-2">
+                          <Badge variant="outline">{translateDepType(dep.type)}</Badge>
+                          {dep.feature ? (
+                            <Link href={route('features.show', { feature: dep.feature.id })} className="text-blue-600 hover:underline">
+                              {dep.feature.jira_key} – {dep.feature.name}
+                            </Link>
+                          ) : (
+                            <span>-</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Formular zum Erstellen einer neuen Komponente */}
-          {showComponentForm && (
-            <ComponentForm
-              componentData={componentData}
-              onNameChange={(name) =>
-                setComponentData({ ...componentData, name })
-              }
-              onDescriptionChange={(description) =>
-                setComponentData({ ...componentData, description })
-              }
-              onSubmit={handleComponentSubmit}
-            />
-          )}
+              {/* Feature Beschreibung */}
+              <div className="rounded-lg border border-slate-200 bg-white/70 px-4 py-3 shadow-sm">
+                <h3 className="text-lg font-medium my-4">Beschreibung</h3>
+                {feature.description ? (
+                  <div className="prose prose-sm max-w-none">
+                    <FeatureDescription content={feature.description} />
+                  </div>
+                ) : (
+                  <p className="text-gray-500">Keine Beschreibung vorhanden.</p>
+                )}
+              </div>
+            </TabsContent>
 
-          {/* Schätzungskomponenten Bereich */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">Schätzungskomponenten</h3>
-              
-              <div className="flex items-center gap-3">
-                {/* Button zum Hinzufügen einer Komponente */}
-                <Button 
-                  onClick={toggleComponentForm}
-                  variant="default"
-                  size="sm"
-                  className="whitespace-nowrap"
-                >
-                  {showComponentForm ? "Abbrechen" : "Komponente hinzufügen"}
-                </Button>
-
-                {/* Toggle für archivierte Komponenten */}
-                <ArchiveToggle
-                  showArchived={showArchived}
-                  toggleArchived={toggleArchivedVisibility}
+            <TabsContent value="schaetzungen" className="space-y-6">
+              {/* Formular zum Erstellen einer neuen Komponente */}
+              {showComponentForm && (
+                <ComponentForm
+                  componentData={componentData}
+                  onNameChange={(name) =>
+                    setComponentData({ ...componentData, name })
+                  }
+                  onDescriptionChange={(description) =>
+                    setComponentData({ ...componentData, description })
+                  }
+                  onSubmit={handleComponentSubmit}
                 />
+              )}
+
+              <div className="pt-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium">Schätzungskomponenten</h3>
+                  
+                  <div className="flex items-center gap-3">
+                    <Button 
+                      onClick={toggleComponentForm}
+                      variant={showComponentForm ? "cancel" : "success"}
+                      size="sm"
+                      className="whitespace-nowrap"
+                    >
+                      {showComponentForm ? "Abbrechen" : "Komponente hinzufügen"}
+                    </Button>
+
+                    <ArchiveToggle
+                      showArchived={showArchived}
+                      toggleArchived={toggleArchivedVisibility}
+                    />
+                  </div>
+                </div>
+              
+                {feature.estimation_components && feature.estimation_components.length > 0 ? (
+                  <div className="space-y-4">
+                    {feature.estimation_components
+                      .filter(component => showArchived || component.status === 'active')
+                      .map((component) => (
+                        <ComponentItem
+                          key={component.id}
+                          component={component}
+                          onEdit={openEditComponentDialog}
+                          onArchive={archiveComponent}
+                          onActivate={activateComponent}
+                          onAddEstimation={openEstimationDialog}
+                          onEditEstimation={openEditEstimationDialog}
+                          onDeleteEstimation={handleDeleteEstimation}
+                        />
+                      ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500">Noch keine Komponenten vorhanden.</p>
+                )}
               </div>
-            </div>
-          
-          {/* Liste der Komponenten */}
-          {feature.estimation_components && feature.estimation_components.length > 0 ? (
-            <div className="space-y-4">
-              {feature.estimation_components
-                .filter(component => showArchived || component.status === 'active')
-                .map((component) => (
-                  <ComponentItem
-                    key={component.id}
-                    component={component}
-                    onEdit={openEditComponentDialog}
-                    onArchive={archiveComponent}
-                    onActivate={activateComponent}
-                    onAddEstimation={openEstimationDialog}
-                    onEditEstimation={openEditEstimationDialog}
-                    onDeleteEstimation={handleDeleteEstimation}
-                  />
-                ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">Noch keine Komponenten vorhanden.</p>
-          )}
-          </div>
-          
-          {/* Feature Beschreibung nach Schätzungskomponenten anzeigen */}
-          <div className="mt-8">
-            <h3 className="text-lg font-medium my-4">Beschreibung</h3>
-            {feature.description ? (
-              <div className="prose prose-sm max-w-none">
-                <FeatureDescription content={feature.description} />
-              </div>
-            ) : (
-              <p className="text-gray-500">Keine Beschreibung vorhanden.</p>
-            )}
-          </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

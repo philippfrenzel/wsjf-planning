@@ -36,8 +36,18 @@ interface Commitment {
   };
 }
 
+type Paginated<T> = {
+  data: T[];
+  meta?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+};
+
 interface CommitmentsIndexProps {
-  commitments: Commitment[];
+  commitments: Commitment[] | Paginated<Commitment>;
   plannings: Planning[];
   selectedPlanning?: number;
 }
@@ -59,7 +69,7 @@ function getCommitmentTypeBadge(type: string) {
   return <Badge className={classes[type as keyof typeof classes]}>{labels[type as keyof typeof labels]}</Badge>;
 }
 
-function getStatusBadge(statusDetails: Commitment['status_details']) {
+function getStatusBadge(statusDetails: Commitment["status_details"]) {
   if (!statusDetails) {
     return <Badge variant="outline">Nicht gesetzt</Badge>;
   }
@@ -67,15 +77,16 @@ function getStatusBadge(statusDetails: Commitment['status_details']) {
 }
 
 export default function CommitmentsIndex({ commitments, plannings, selectedPlanning }: CommitmentsIndexProps) {
+  const commitmentData = Array.isArray(commitments) ? commitments : commitments.data;
+  const pagination = Array.isArray(commitments) ? undefined : commitments.meta;
   const [planningFilter, setPlanningFilter] = useState<string>(selectedPlanning ? String(selectedPlanning) : "all");
 
   const handlePlanningChange = (value: string) => {
     setPlanningFilter(value);
-    // Bei Änderung des Filters auf die entsprechende URL umleiten
     if (value === "all") {
       window.location.href = route("commitments.index");
     } else {
-      window.location.href = route("commitments.index") + "?planning_id=" + value;
+      window.location.href = `${route("commitments.index")}?planning_id=${value}`;
     }
   };
 
@@ -111,57 +122,66 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
           <CardTitle>Alle Commitments</CardTitle>
         </CardHeader>
         <CardContent>
-          {commitments.length === 0 ? (
+          {commitmentData.length === 0 ? (
             <div className="text-center py-4 text-gray-500">Keine Commitments gefunden.</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Planning</TableHead>
-                  <TableHead>Feature</TableHead>
-                  <TableHead>Commitment-Typ</TableHead>
-                  <TableHead>Benutzer</TableHead>
-                  <TableHead>Status</TableHead>
-
-                  <TableHead>Aktionen</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {commitments.map((commitment) => (
-                  <TableRow key={commitment.id}>
-                    <TableCell>{commitment.planning.title}</TableCell>
-                    <TableCell>
-                      {commitment.feature.jira_key}: {commitment.feature.name}
-                    </TableCell>
-                    <TableCell>{getCommitmentTypeBadge(commitment.commitment_type)}</TableCell>
-                    <TableCell>{commitment.user.name}</TableCell>
-                    <TableCell>{getStatusBadge(commitment.status_details)}</TableCell>
-                    <TableCell className="space-x-2">
-                      <Link href={route("commitments.show", commitment.id)}>
-                        <Button size="sm" variant="outline">
-                          Anzeigen
-                        </Button>
-                      </Link>
-                      <Link href={route("commitments.edit", commitment.id)}>
-                        <Button size="sm" variant="outline">
-                          Bearbeiten
-                        </Button>
-                      </Link>
-                      <Link
-                        href={route("commitments.destroy", commitment.id)}
-                        method="delete"
-                        as="button"
-                        className="btn-sm btn-outline-danger"
-                      >
-                        <Button size="sm" variant="destructive">
-                          Löschen
-                        </Button>
-                      </Link>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Planning</TableHead>
+                    <TableHead>Feature</TableHead>
+                    <TableHead>Commitment-Typ</TableHead>
+                    <TableHead>Benutzer</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Aktionen</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {commitmentData.map((commitment) => (
+                    <TableRow key={commitment.id}>
+                      <TableCell>{commitment.planning.title}</TableCell>
+                      <TableCell>
+                        {commitment.feature.jira_key}: {commitment.feature.name}
+                      </TableCell>
+                      <TableCell>{getCommitmentTypeBadge(commitment.commitment_type)}</TableCell>
+                      <TableCell>{commitment.user.name}</TableCell>
+                      <TableCell>{getStatusBadge(commitment.status_details)}</TableCell>
+                      <TableCell className="space-x-2">
+                        <Link href={route("commitments.show", commitment.id)}>
+                          <Button size="sm" variant="outline">
+                            Anzeigen
+                          </Button>
+                        </Link>
+                        <Link href={route("commitments.edit", commitment.id)}>
+                          <Button size="sm" variant="outline">
+                            Bearbeiten
+                          </Button>
+                        </Link>
+                        <Link
+                          href={route("commitments.destroy", commitment.id)}
+                          method="delete"
+                          as="button"
+                          className="btn-sm btn-outline-danger"
+                        >
+                          <Button size="sm" variant="destructive">
+                            Löschen
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {pagination && pagination.last_page > 1 && (
+                <div className="flex justify-end gap-4 mt-4 text-sm text-muted-foreground">
+                  <span>
+                    Seite {pagination.current_page} / {pagination.last_page}
+                  </span>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

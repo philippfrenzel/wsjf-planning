@@ -196,9 +196,14 @@ export default function Create({ users }: CreateProps) {
                 </div>
               </div>
             </div>
-            <Button type="submit" className="w-full">
-              Speichern
-            </Button>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                Abbrechen
+              </Button>
+              <Button type="submit" variant="success">
+                Speichern
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

@@ -231,8 +231,11 @@ export default function CreateCommitment({
                 </div>
               )}
 
-              <div className="flex justify-end">
-                <Button type="submit" disabled={processing}>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                  Abbrechen
+                </Button>
+                <Button type="submit" variant="success" disabled={processing}>
                   {processing ? "Wird gespeichert..." : "Commitment erstellen"}
                 </Button>
               </div>

@@ -31,9 +31,18 @@ interface Project {
 }
 
 interface IndexProps {
-  projects: Project[];
+  projects: Project[] | Paginated<Project>;
   currentUserId: number;
 }
+type Paginated<T> = {
+  data: T[];
+  meta?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+};
 
 export default function Index({ projects, currentUserId }: IndexProps) {
   // Breadcrumbs definieren
@@ -50,7 +59,9 @@ export default function Index({ projects, currentUserId }: IndexProps) {
   });
   
   // Gefilterte Projekte
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>(projects);
+  const projectData = Array.isArray(projects) ? projects : projects.data;
+  const pagination = Array.isArray(projects) ? undefined : projects.meta;
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>(projectData);
   
   // Paginierung (mit persistenter Seitengröße pro Nutzer/Ansicht)
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,10 +71,16 @@ export default function Index({ projects, currentUserId }: IndexProps) {
     10
   );
   const [paginatedProjects, setPaginatedProjects] = useState<Project[]>([]);
+  const hasActiveFilters = Boolean(
+    filters.projectNumber.trim() ||
+    filters.name.trim() ||
+    filters.leader.trim()
+  );
+  const usesServerPagination = Boolean(!hasActiveFilters && pagination?.last_page && pagination.last_page > 1);
   
   // Filter anwenden
   useEffect(() => {
-    const filtered = projects.filter(project => {
+    const filtered = projectData.filter(project => {
       // Filter für Projektnummer
       const matchesProjectNumber = project.project_number
         .toLowerCase()
@@ -87,14 +104,25 @@ export default function Index({ projects, currentUserId }: IndexProps) {
     setFilteredProjects(filtered);
     // Bei Filteränderung zur ersten Seite zurückkehren
     setCurrentPage(1);
-  }, [projects, filters]);
+  }, [projectData, filters]);
   
   // Paginierung anwenden
   useEffect(() => {
+    if (usesServerPagination) {
+      setPaginatedProjects(filteredProjects);
+      return;
+    }
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     setPaginatedProjects(filteredProjects.slice(startIndex, endIndex));
-  }, [filteredProjects, currentPage, itemsPerPage]);
+  }, [filteredProjects, currentPage, itemsPerPage, usesServerPagination]);
+
+  const effectivePage = usesServerPagination ? (pagination?.current_page ?? 1) : currentPage;
+  const perPage = usesServerPagination ? (pagination?.per_page ?? itemsPerPage) : itemsPerPage;
+  const totalItems = usesServerPagination ? (pagination?.total ?? filteredProjects.length) : filteredProjects.length;
+  const totalPages = usesServerPagination ? (pagination?.last_page ?? 1) : Math.ceil(filteredProjects.length / perPage);
+  const startItem = totalItems === 0 ? 0 : (effectivePage - 1) * perPage + 1;
+  const endItem = Math.min(startItem + perPage - 1, totalItems);
 
   // Filter zurücksetzen
   const resetFilters = () => {
@@ -114,22 +142,15 @@ export default function Index({ projects, currentUserId }: IndexProps) {
     }));
   };
   
-  // Wechsel zur vorherigen Seite
-  const goToPreviousPage = () => {
-    setCurrentPage(prev => Math.max(prev - 1, 1));
+  const goToPage = (page: number) => {
+    if (usesServerPagination && pagination?.current_page) {
+      Inertia.get(route("projects.index"), { page }, { preserveScroll: true, preserveState: true });
+      return;
+    }
+    setCurrentPage(page);
   };
-  
-  // Wechsel zur nächsten Seite
-  const goToNextPage = () => {
-    setCurrentPage(prev => Math.min(prev + 1, totalPages));
-  };
-  
-  // Berechnung der Gesamtseitenzahl
-  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
-  
-  // Berechnung des aktuellen Bereichs für die Anzeige
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(startItem + itemsPerPage - 1, filteredProjects.length);
+  const goToPreviousPage = () => goToPage(Math.max(effectivePage - 1, 1));
+  const goToNextPage = () => goToPage(Math.min(effectivePage + 1, totalPages));
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -207,8 +228,8 @@ export default function Index({ projects, currentUserId }: IndexProps) {
         {/* Ergebnisanzeige mit Paginierung */}
         <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
           <div>
-            {filteredProjects.length > 0 
-              ? `Zeige ${startItem} bis ${endItem} von ${filteredProjects.length} Projekten` 
+            {totalItems > 0 
+              ? `Zeige ${startItem} bis ${endItem} von ${totalItems} Projekten`
               : "Keine Projekte gefunden"}
           </div>
           
@@ -216,11 +237,12 @@ export default function Index({ projects, currentUserId }: IndexProps) {
           <div className="flex items-center gap-2">
             <select 
               className="border rounded px-2 py-1"
-              value={itemsPerPage}
+              value={perPage}
               onChange={(e) => {
                 setItemsPerPage(Number(e.target.value));
                 setCurrentPage(1); // Zurück zur ersten Seite
               }}
+              disabled={usesServerPagination}
             >
               <option value={5}>5 pro Seite</option>
               <option value={10}>10 pro Seite</option>
@@ -309,7 +331,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
             {/* Anzeigen, wenn keine Ergebnisse gefunden wurden */}
             {filteredProjects.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                   Keine Projekte gefunden, die den Filterkriterien entsprechen.
                 </TableCell>
               </TableRow>
@@ -321,9 +343,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
         {filteredProjects.length > 0 && (
           <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-gray-500">
-              Zeige {Math.min(filteredProjects.length, (currentPage - 1) * itemsPerPage + 1)} bis{" "}
-              {Math.min(filteredProjects.length, currentPage * itemsPerPage)} von{" "}
-              {filteredProjects.length} Einträgen
+              Zeige {totalItems === 0 ? 0 : startItem} bis {totalItems === 0 ? 0 : endItem} von {totalItems} Einträgen
             </div>
             
             <div className="flex items-center space-x-2">
@@ -331,7 +351,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                 variant="outline"
                 size="sm"
                 onClick={goToPreviousPage}
-                disabled={currentPage === 1}
+                disabled={effectivePage === 1}
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Zurück
@@ -341,25 +361,21 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                 let pageNumber: number;
                 
                 if (totalPages <= 5) {
-                  // Wenn wir 5 oder weniger Seiten haben, zeige alle
                   pageNumber = i + 1;
-                } else if (currentPage <= 3) {
-                  // Wenn wir auf den ersten 3 Seiten sind
+                } else if (effectivePage <= 3) {
                   pageNumber = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  // Wenn wir auf den letzten 3 Seiten sind
+                } else if (effectivePage >= totalPages - 2) {
                   pageNumber = totalPages - 4 + i;
                 } else {
-                  // Sonst zeige die aktuelle Seite in der Mitte an
-                  pageNumber = currentPage - 2 + i;
+                  pageNumber = effectivePage - 2 + i;
                 }
                 
                 return (
                   <Button
                     key={pageNumber}
-                    variant={currentPage === pageNumber ? "default" : "outline"}
+                    variant={effectivePage === pageNumber ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setCurrentPage(pageNumber)}
+                    onClick={() => goToPage(pageNumber)}
                   >
                     {pageNumber}
                   </Button>
@@ -370,7 +386,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                 variant="outline"
                 size="sm"
                 onClick={goToNextPage}
-                disabled={currentPage === totalPages || totalPages === 0}
+                disabled={effectivePage === totalPages || totalPages === 0}
               >
                 Weiter
                 <ChevronRight className="w-4 h-4 ml-1" />

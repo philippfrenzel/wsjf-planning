@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\SoftDeletesWithUser;
 use Spatie\ModelStates\HasStates;
 use App\States\Planning\PlanningState;
 use App\States\Planning\InPlanning as PlanningInPlanning;
 use App\States\Planning\InExecution;
 use App\States\Planning\Completed;
-use App\Models\Concerns\SoftDeletesWithUser;
+use App\Support\StatusMapper;
 
 class Planning extends Model
 {
@@ -48,19 +49,7 @@ class Planning extends Model
         $this->addState('status', PlanningState::class)
             ->default(PlanningInPlanning::class)
             ->allowTransition(PlanningInPlanning::class, InExecution::class)
-            ->allowTransition(InExecution::class, Completed::class)
-            ->castUsing(static function ($value) {
-                if (is_string($value)) {
-                    $map = [
-                        'in-planning' => PlanningInPlanning::class,
-                        'in-execution' => InExecution::class,
-                        'completed' => Completed::class,
-                    ];
-                    $cls = $map[$value] ?? PlanningInPlanning::class;
-                    return new $cls();
-                }
-                return $value;
-            });
+            ->allowTransition(InExecution::class, Completed::class);
     }
 
     /**
@@ -126,43 +115,6 @@ class Planning extends Model
      */
     public function getStatusDetailsAttribute(): array
     {
-        $status = $this->status;
-
-        if ($status === null) {
-            return [
-                'value' => 'in-planning',
-                'name' => 'In Planung',
-                'color' => 'bg-blue-100 text-blue-800',
-            ];
-        }
-
-        if (is_string($status)) {
-            try {
-                $map = [
-                    'in-planning' => PlanningInPlanning::class,
-                    'in-execution' => InExecution::class,
-                    'completed' => Completed::class,
-                ];
-                $cls = $map[$status] ?? PlanningInPlanning::class;
-                $obj = new $cls($this);
-                return [
-                    'value' => $status,
-                    'name' => $obj->name(),
-                    'color' => $obj->color(),
-                ];
-            } catch (\Throwable $e) {
-                return [
-                    'value' => $status,
-                    'name' => ucfirst(str_replace('-', ' ', $status)),
-                    'color' => 'bg-gray-100 text-gray-800',
-                ];
-            }
-        }
-
-        return [
-            'value' => $status->getValue(),
-            'name' => $status->name(),
-            'color' => $status->color(),
-        ];
+        return StatusMapper::details(StatusMapper::PLANNING, $this->status, 'in-planning') ?? [];
     }
 }
