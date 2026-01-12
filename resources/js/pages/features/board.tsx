@@ -130,11 +130,13 @@ function FeatureCard({ feature }: { feature: Feature }) {
             </div>
           )}
 
-          <div className="mt-3 flex justify-end">
+          <div 
+            className="mt-3 flex justify-end"
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <Link
               href={route("features.show", feature.id)}
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
             >
               <Button size="sm" variant="outline">
                 Details
