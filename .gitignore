@@ -26,3 +26,4 @@ yarn-error.log
 # Cypress artifacts
 /cypress/screenshots
 /cypress/videos
+database/migrations/2025_08_26_181433_create_reactions_table.php.skip
