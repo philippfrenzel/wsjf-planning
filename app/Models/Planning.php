@@ -8,10 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Concerns\BelongsToTenant;
+use Spatie\ModelStates\HasStates;
+use App\States\Planning\PlanningState;
+use App\States\Planning\InPlanning as PlanningInPlanning;
+use App\States\Planning\InExecution;
+use App\States\Planning\Completed;
+use App\Support\StatusMapper;
 
 class Planning extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use HasFactory, BelongsToTenant, HasStates;
 
     protected $fillable = [
         'project_id',
@@ -24,7 +30,26 @@ class Planning extends Model
         'deputy_id',     // ID des Stellvertreters
         // weitere Felder nach Bedarf
         'tenant_id',
+        'status',
     ];
+
+    /**
+     * Die Attribute, die an das Array-Format angehängt werden sollen.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = ['status_details'];
+
+    /**
+     * Status-StateMachine registrieren
+     */
+    protected function registerStates(): void
+    {
+        $this->addState('status', PlanningState::class)
+            ->default(PlanningInPlanning::class)
+            ->allowTransition(PlanningInPlanning::class, InExecution::class)
+            ->allowTransition(InExecution::class, Completed::class);
+    }
 
     /**
      * Ein Planning gehört zu genau einem Project.
@@ -82,5 +107,13 @@ class Planning extends Model
     public function commitments(): HasMany
     {
         return $this->hasMany(Commitment::class);
+    }
+
+    /**
+     * Status-Details für Frontend
+     */
+    public function getStatusDetailsAttribute(): array
+    {
+        return StatusMapper::details(StatusMapper::PLANNING, $this->status, 'in-planning') ?? [];
     }
 }

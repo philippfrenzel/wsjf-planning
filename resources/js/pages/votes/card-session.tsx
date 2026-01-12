@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     DndContext,
     closestCenter,
@@ -29,6 +29,9 @@ interface Feature {
     jira_key: string;
     name: string;
     description?: string;
+    project?: {
+        jira_base_uri?: string | null;
+    } | null;
 }
 
 interface Planning {
@@ -117,8 +120,22 @@ const FeatureCard: React.FC<{
             <Dialog open={showDetails} onOpenChange={setShowDetails}>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader>
-                        <DialogTitle>
-                            {feature.jira_key}: {feature.name}
+                        <DialogTitle className="space-y-1">
+                            <span>
+                                {feature.project?.jira_base_uri ? (
+                                    <a
+                                        href={`${feature.project.jira_base_uri}${feature.jira_key}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                        {feature.jira_key}
+                                    </a>
+                                ) : (
+                                    feature.jira_key
+                                )}
+                                {feature.name ? `: ${feature.name}` : ""}
+                            </span>
                         </DialogTitle>
                     </DialogHeader>
 
@@ -216,8 +233,22 @@ const SortableFeatureCard: React.FC<{
             <Dialog open={showDetails} onOpenChange={setShowDetails}>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader>
-                        <DialogTitle>
-                            {feature.jira_key}: {feature.name}
+                        <DialogTitle className="space-y-1">
+                            <span>
+                                {feature.project?.jira_base_uri ? (
+                                    <a
+                                        href={`${feature.project.jira_base_uri}${feature.jira_key}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                        {feature.jira_key}
+                                    </a>
+                                ) : (
+                                    feature.jira_key
+                                )}
+                                {feature.name ? `: ${feature.name}` : ""}
+                            </span>
                         </DialogTitle>
                     </DialogHeader>
 
@@ -257,6 +288,10 @@ const CategoryTabContent: React.FC<{
 
     // Zustand für die Detailanzeige
     const [showDetails, setShowDetails] = useState<number | null>(null);
+
+    const detailFeature = showDetails !== null
+        ? categorizedFeatures[type]?.unsorted.find(f => f.id === showDetails) ?? null
+        : null;
 
     // State nicht nötig, da wir direkt die onDragEnd-Funktion aufrufen
     const handleMoveToSorted = (featureId: number) => {
@@ -411,18 +446,32 @@ const CategoryTabContent: React.FC<{
                 </DndContext>
                 
                 {/* Details-Dialog für unbewertete Features */}
-                {showDetails && (
+                {showDetails && detailFeature && (
                     <Dialog open={showDetails !== null} onOpenChange={() => setShowDetails(null)}>
                         <DialogContent className="max-w-3xl">
                             <DialogHeader>
-                                <DialogTitle>
-                                    {categorizedFeatures[type]?.unsorted.find(f => f.id === showDetails)?.jira_key}: {categorizedFeatures[type]?.unsorted.find(f => f.id === showDetails)?.name}
+                                <DialogTitle className="space-y-1">
+                                    <span>
+                                        {detailFeature.project?.jira_base_uri ? (
+                                            <a
+                                                href={`${detailFeature.project.jira_base_uri}${detailFeature.jira_key}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:text-blue-800 hover:underline"
+                                            >
+                                                {detailFeature.jira_key}
+                                            </a>
+                                        ) : (
+                                            detailFeature.jira_key
+                                        )}
+                                        {detailFeature.name ? `: ${detailFeature.name}` : ""}
+                                    </span>
                                 </DialogTitle>
                             </DialogHeader>
-                            
+
                             <div className="prose prose-sm max-w-none overflow-auto">
-                                {categorizedFeatures[type]?.unsorted.find(f => f.id === showDetails)?.description ? (
-                                    <div dangerouslySetInnerHTML={{ __html: categorizedFeatures[type]?.unsorted.find(f => f.id === showDetails)?.description || "" }} />
+                                {detailFeature.description ? (
+                                    <div dangerouslySetInnerHTML={{ __html: detailFeature.description }} />
                                 ) : (
                                     <p>Keine Beschreibung vorhanden.</p>
                                 )}
@@ -459,6 +508,11 @@ export default function CardVoteSession({ planning, features, types, existingVot
         });
         return initial;
     });
+
+    const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const initialLoad = useRef(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     // Zustand für die aktuelle Kategorie
     const [activeCategory, setActiveCategory] = useState<string>(types[0]);
@@ -729,16 +783,32 @@ export default function CardVoteSession({ planning, features, types, existingVot
     };
 
     // Form-Submission
+    const saveVotes = (next?: () => void) => {
+        setIsSaving(true);
+        setSaveError(null);
+
+        Inertia.post(route("votes.session.store", planning.id), { votes }, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+            onFinish: () => {
+                setIsSaving(false);
+                next?.();
+            },
+            onError: () => {
+                setIsSaving(false);
+                setSaveError("Speichern fehlgeschlagen – bitte erneut versuchen.");
+            },
+        });
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Votes in ein Format konvertieren, das von FormData verstanden wird
-        const formData = new FormData();
-
-        // Votes als JSON-String hinzufügen
-        formData.append('votes', JSON.stringify(votes));
-
-        Inertia.post(route("votes.session.store", planning.id), formData);
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+            saveTimer.current = null;
+        }
+        saveVotes();
     };
 
     // Modal schließen
@@ -751,8 +821,31 @@ export default function CardVoteSession({ planning, features, types, existingVot
 
     // Wechsel zur Standard-Tabellen-Ansicht
     const switchToStandardView = () => {
-        Inertia.get(route("votes.session", planning.id));
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+            saveTimer.current = null;
+        }
+        saveVotes(() => Inertia.get(route("votes.session", planning.id)));
     };
+
+    useEffect(() => {
+        if (initialLoad.current) {
+            initialLoad.current = false;
+            return;
+        }
+
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+        }
+
+        saveTimer.current = setTimeout(() => saveVotes(), 1000);
+
+        return () => {
+            if (saveTimer.current) {
+                clearTimeout(saveTimer.current);
+            }
+        };
+    }, [votes]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -782,6 +875,9 @@ export default function CardVoteSession({ planning, features, types, existingVot
                                 </CardDescription>
                             </div>
                             <div className="flex space-x-2">
+                                    <div className="text-xs text-muted-foreground flex items-center px-2">
+                                        {isSaving ? "Speichern..." : saveError || "Autosave aktiv"}
+                                    </div>
                                 <Button variant="outline" onClick={switchToStandardView}>
                                     <MoveHorizontal className="h-4 w-4 mr-2" />
                                     Zur Tabellen-Ansicht

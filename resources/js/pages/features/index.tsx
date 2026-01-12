@@ -41,8 +41,19 @@ interface Feature {
   estimation_units?: string[]; // <--- NEU
 }
 
+type Paginated<T> = {
+  data: T[];
+  meta?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+  links?: { url: string | null; label: string; active: boolean }[];
+};
+
 interface IndexProps {
-  features: Feature[];
+  features: Feature[] | Paginated<Feature>;
 }
 
 type SortField = "jira_key" | "name" | "project" | "requester";
@@ -91,35 +102,38 @@ export default function Index({ features }: IndexProps) {
   );
 
   // Extrahiere alle eindeutigen Projekte, Anforderer und Status für die Autovervollständigung
+  const featureData = Array.isArray(features) ? features : features.data;
+  const pagination = Array.isArray(features) ? undefined : features.meta;
+
   const uniqueProjects = useMemo(() => {
     const projectSet = new Set<string>();
-    features.forEach((feature) => {
+    featureData.forEach((feature) => {
       if (feature.project?.name) {
         projectSet.add(feature.project.name);
       }
     });
     return Array.from(projectSet).sort();
-  }, [features]);
+  }, [featureData]);
 
   const uniqueRequesters = useMemo(() => {
     const requesterSet = new Set<string>();
-    features.forEach((feature) => {
+    featureData.forEach((feature) => {
       if (feature.requester?.name) {
         requesterSet.add(feature.requester.name);
       }
     });
     return Array.from(requesterSet).sort();
-  }, [features]);
+  }, [featureData]);
 
   const uniqueStatuses = useMemo(() => {
     const statusSet = new Set<string>();
-    features.forEach((feature) => {
+    featureData.forEach((feature) => {
       if (feature.status?.name) {
         statusSet.add(feature.status.name);
       }
     });
     return Array.from(statusSet).sort();
-  }, [features]);
+  }, [featureData]);
 
   // Handling für Filter-Änderungen
   const handleFilterChange = (field: keyof typeof filters, value: string) => {
@@ -171,7 +185,7 @@ export default function Index({ features }: IndexProps) {
   // Gefilterte und sortierte Features
   const filteredAndSortedFeatures = useMemo(() => {
     // Filtern
-    const result = features.filter(feature => {
+    const result = featureData.filter(feature => {
       return (
         feature.jira_key.toLowerCase().includes(filters.jira_key.toLowerCase()) &&
         feature.name.toLowerCase().includes(filters.name.toLowerCase()) &&
@@ -212,17 +226,20 @@ export default function Index({ features }: IndexProps) {
         return bValue.localeCompare(aValue);
       }
     });
-  }, [features, filters, sortField, sortDirection]);
+  }, [featureData, filters, sortField, sortDirection]);
 
   // Für Pagination: Berechne die anzuzeigenden Features
   const paginatedFeatures = useMemo(() => {
+    if (pagination?.last_page && pagination.last_page > 1) {
+      return filteredAndSortedFeatures; // Serverseitig paginiert
+    }
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return filteredAndSortedFeatures.slice(start, end);
-  }, [filteredAndSortedFeatures, currentPage, itemsPerPage]);
+  }, [filteredAndSortedFeatures, currentPage, itemsPerPage, pagination]);
 
   // Berechne die Gesamtzahl der Seiten
-  const totalPages = Math.ceil(filteredAndSortedFeatures.length / itemsPerPage);
+  const totalPages = pagination?.last_page ?? Math.ceil(filteredAndSortedFeatures.length / itemsPerPage);
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -230,13 +247,13 @@ export default function Index({ features }: IndexProps) {
       <div className="p-5 flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Features</h1>
         <div className="flex gap-2">
-          <Button asChild>
+          <Button asChild variant="success">
             <Link href={route("features.create")}>
               <Plus className="w-4 h-4 mr-2" />
               Neues Feature
             </Link>
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="secondary" asChild>
             <Link href={route("features.lineage")}>Lineage</Link>
           </Button>
         </div>
@@ -626,12 +643,12 @@ export default function Index({ features }: IndexProps) {
                     </TableCell>
                     {/* Aktionen */}
                     <TableCell className="flex gap-2 justify-end">
-                      <Button asChild size="icon" variant="outline">
+                      <Button asChild size="icon" variant="secondary">
                         <Link href={route("features.show", { feature: feature.id })}>
                           <Eye className="w-4 h-4" />
                         </Link>
                       </Button>
-                      <Button asChild size="icon" variant="outline">
+                      <Button asChild size="icon" variant="cancel">
                         <Link href={route("features.edit", { feature: feature.id })}>
                           <Pencil className="w-4 h-4" />
                         </Link>

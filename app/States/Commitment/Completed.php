@@ -4,6 +4,8 @@ namespace App\States\Commitment;
 
 class Completed extends CommitmentState
 {
+    public static $name = 'completed';
+
     public function name(): string
     {
         return 'Erledigt';

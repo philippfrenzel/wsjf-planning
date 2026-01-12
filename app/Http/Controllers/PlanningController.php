@@ -6,17 +6,28 @@ use App\Models\Planning;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Feature; // Feature Model importieren
-use App\Models\Stakeholder; // Stakeholder Model importieren
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\VoteController;
+use App\Services\PlanningService;
+use App\Services\VoteService;
+use App\Http\Requests\StorePlanningRequest;
+use App\Http\Requests\UpdatePlanningRequest;
 
 class PlanningController extends Controller
 {
+    public function __construct(
+        private readonly PlanningService $planningService,
+        private readonly VoteService $voteService,
+    ) {
+        $this->authorizeResource(Planning::class, 'planning');
+    }
+
     public function index()
     {
-        $plannings = Planning::with(['project:id,name', 'stakeholders:id,name'])->get();
+        $plannings = Planning::with(['project:id,name', 'stakeholders:id,name'])
+            ->latest('created_at')
+            ->paginate(20);
 
         return Inertia::render('plannings/index', [
             'plannings' => $plannings,
@@ -31,38 +42,24 @@ class PlanningController extends Controller
 
         return Inertia::render('plannings/create', [
             'users' => $users,
-            'projects' => Project::all(['id', 'name']),
+            'projects' => Project::where('tenant_id', $tenantId)->get(['id', 'name']),
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StorePlanningRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'project_id' => 'required|exists:projects,id',
-            'planned_at' => 'nullable|date',
-            'executed_at' => 'nullable|date',
-            'owner_id' => 'nullable|exists:users,id',    // Hinzugefügt
-            'deputy_id' => 'nullable|exists:users,id',   // Hinzugefügt
-            'stakeholder_ids' => 'array',
-            'stakeholder_ids.*' => 'exists:users,id',
-            'feature_ids' => 'array',
-            'feature_ids.*' => 'exists:features,id',
-        ]);
+        $validated = $request->validated();
 
-        // Aktuellen User als Planning-Ersteller setzen
-        $validated['created_by'] = Auth::id();
+        $stakeholderIds = $validated['stakeholder_ids'] ?? [];
+        $featureIds = $validated['feature_ids'] ?? [];
 
-        $planning = Planning::create($validated);
-        if (!empty($validated['stakeholder_ids'])) {
-            $planning->stakeholders()->sync($validated['stakeholder_ids']);
-        }
+        unset($validated['stakeholder_ids'], $validated['feature_ids']);
 
-        // Features synchronisieren, wenn vorhanden
-        if (!empty($validated['feature_ids'])) {
-            $planning->features()->sync($validated['feature_ids']);
-        }
+        $planning = $this->planningService->create(
+            $validated + ['created_by' => Auth::id()],
+            $stakeholderIds,
+            $featureIds
+        );
 
         return redirect()->route('plannings.index')->with('success', 'Planning erfolgreich erstellt.');
     }
@@ -75,6 +72,9 @@ class PlanningController extends Controller
             'user_id' => $planning->created_by,
         ]);
 
+        // IDs der dem Planning zugeordneten Stakeholder (Stammdaten)
+        $stakeholderIds = $planning->stakeholders()->pluck('users.id');
+
         $planning->load([
             'project:id,name,jira_base_uri',
             'stakeholders:id,name,email',
@@ -84,8 +84,11 @@ class PlanningController extends Controller
                     ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
             },
             'features.project:id,name,jira_base_uri',
-            'features.votes' => function ($query) use ($planning) {
+            'features.votes' => function ($query) use ($planning, $stakeholderIds) {
                 $query->where('planning_id', $planning->id)
+                    // Nur Stimmen von als Stakeholder (Stammdaten) zugeordneten Nutzern berücksichtigen
+                    ->whereIn('user_id', $stakeholderIds)
+                    // Den Planning-Ersteller (Creator) aus der Individual-Übersicht ausblenden
                     ->whereHas('user', function ($subQuery) use ($planning) {
                         $subQuery->where('id', '!=', $planning->created_by);
                     });
@@ -140,30 +143,21 @@ class PlanningController extends Controller
                 'features:id,name,jira_key,project_id'
             ]),
             'users' => $users,
-            'projects' => Project::all(['id', 'name']),
+            'projects' => Project::where('tenant_id', $tenantId)->get(['id', 'name']),
             'features' => $features, // Features an die Komponente übergeben
         ]);
     }
 
-    public function update(Request $request, Planning $planning)
+    public function update(UpdatePlanningRequest $request, Planning $planning)
     {
-        $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'planned_at' => 'nullable|date',
-            'executed_at' => 'nullable|date',
-            'owner_id' => 'nullable|exists:users,id',
-            'deputy_id' => 'nullable|exists:users,id',
-            'stakeholder_ids' => 'array',
-            'stakeholder_ids.*' => 'exists:users,id',
-            'feature_ids' => 'array',
-            'feature_ids.*' => 'exists:features,id',
-        ]);
+        $validated = $request->validated();
 
-        $planning->update($validated);
-        $planning->stakeholders()->sync($validated['stakeholder_ids'] ?? []);
-        $planning->features()->sync($validated['feature_ids'] ?? []);
+        $stakeholderIds = $validated['stakeholder_ids'] ?? [];
+        $featureIds = $validated['feature_ids'] ?? [];
+
+        unset($validated['stakeholder_ids'], $validated['feature_ids']);
+
+        $this->planningService->update($planning, $validated, $stakeholderIds, $featureIds);
 
         return redirect()->route('plannings.index')->with('success', 'Planning erfolgreich aktualisiert.');
     }
@@ -180,9 +174,9 @@ class PlanningController extends Controller
     public function recalculateCommonVotes(string $planningId)
     {
         $planning = Planning::findOrFail($planningId);
-        // VoteController-Logik aufrufen
-        $voteController = app(VoteController::class);
-        $voteController->calculateAverageVotesForCreator($planning);
+        $this->authorize('update', $planning);
+        // Vote-Logik über Service aufrufen
+        $this->voteService->calculateAverageVotesForCreator($planning);
 
         return redirect()->route('plannings.show', $planning->id)
             ->with('success', 'Common Votes wurden neu berechnet.');
@@ -193,6 +187,7 @@ class PlanningController extends Controller
      */
     public function adminPlannings()
     {
+        $this->authorize('viewAny', Planning::class);
         // Nur Admins erlauben
         if (!Auth::check()) { //  || !auth()->user()->roles()->where('name', 'admin')->exists()
             abort(403);
@@ -211,6 +206,7 @@ class PlanningController extends Controller
      */
     public function setCreator(Request $request, Planning $planning)
     {
+        $this->authorize('update', $planning);
         if (!Auth::check()) { // || !auth()->user()->roles()->where('name', 'admin')->exists()
             abort(403);
         }

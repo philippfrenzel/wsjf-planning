@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import AppLayout from "@/layouts/app-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,9 @@ interface Feature {
   jira_key: string;
   name: string;
   description?: string;
+  project?: {
+    jira_base_uri?: string | null;
+  } | null;
 }
 
 interface Planning {
@@ -51,6 +54,11 @@ export default function VoteSession({ planning, features, types, existingVotes, 
     });
     return initial;
   });
+
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLoad = useRef(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Modal-Status, wenn success-Message vorhanden
   const [open, setOpen] = useState(!!props.success);
@@ -109,12 +117,60 @@ export default function VoteSession({ planning, features, types, existingVotes, 
 
 
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    Inertia.post(route("votes.session.store", planning.id), {
-      votes,
+  const saveVotes = (next?: () => void) => {
+    setIsSaving(true);
+    setSaveError(null);
+
+    Inertia.post(route("votes.session.store", planning.id), { votes }, {
+      preserveScroll: true,
+      preserveState: true,
+      replace: true,
+      onFinish: () => {
+        setIsSaving(false);
+        next?.();
+      },
+      onError: () => {
+        setIsSaving(false);
+        setSaveError("Speichern fehlgeschlagen – bitte erneut versuchen.");
+      },
     });
   };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    saveVotes();
+  };
+
+  const handleSwitchToCards = () => {
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    saveVotes(() => Inertia.get(route("votes.card-session", planning.id)));
+  };
+
+  useEffect(() => {
+    if (initialLoad.current) {
+      initialLoad.current = false;
+      return;
+    }
+
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+    }
+
+    saveTimer.current = setTimeout(() => saveVotes(), 1000);
+
+    return () => {
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current);
+      }
+    };
+  }, [votes]);
 
   // Modal schließen
   const handleCloseModal = () => setOpen(false);
@@ -136,8 +192,22 @@ export default function VoteSession({ planning, features, types, existingVotes, 
       <Dialog open={!!selectedFeature} onOpenChange={() => setSelectedFeature(null)}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>
-              {selectedFeature?.jira_key}: {selectedFeature?.name}
+            <DialogTitle className="space-y-1">
+              <span>
+                {selectedFeature?.project?.jira_base_uri && selectedFeature?.jira_key ? (
+                  <a
+                    href={`${selectedFeature.project.jira_base_uri}${selectedFeature.jira_key}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {selectedFeature.jira_key}
+                  </a>
+                ) : (
+                  selectedFeature?.jira_key
+                )}
+                {selectedFeature?.name ? `: ${selectedFeature.name}` : ""}
+              </span>
             </DialogTitle>
           </DialogHeader>
           
@@ -167,9 +237,17 @@ export default function VoteSession({ planning, features, types, existingVotes, 
                   Angemeldet als: {user.name}
                 </div>
               </div>
-              <Button variant="outline" onClick={() => Inertia.get(route("votes.card-session", planning.id))}>
-                Zur Karten-Ansicht wechseln
-              </Button>
+              <div className="flex flex-col items-end gap-2">
+                <div className="text-xs text-muted-foreground h-4">
+                  {isSaving ? "Speichern..." : saveError || ""}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={handleSwitchToCards}>
+                    Zur Karten-Ansicht wechseln
+                  </Button>
+                  <Button type="submit">Abstimmung speichern</Button>
+                </div>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -221,7 +299,12 @@ export default function VoteSession({ planning, features, types, existingVotes, 
                 </TableBody>
               </Table>
               <div className="mt-6 flex justify-end">
-                <Button type="submit">Abstimmung speichern</Button>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground">
+                    {isSaving ? "Speichern..." : saveError || "Autosave aktiv"}
+                  </span>
+                  <Button type="submit">Abstimmung speichern</Button>
+                </div>
               </div>
             </form>
           </CardContent>

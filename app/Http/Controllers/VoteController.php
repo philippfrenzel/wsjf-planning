@@ -6,19 +6,46 @@ use App\Models\Planning;
 use App\Models\Vote;
 use App\Models\User;
 use App\Models\Feature;
+use App\States\Planning\Completed as PlanningCompleted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\VoteService;
+use App\Http\Requests\StoreVoteRequest;
+use App\Http\Requests\UpdateVoteRequest;
 
 class VoteController extends Controller
 {
+    public function __construct(private readonly VoteService $voteService)
+    {
+        $this->authorizeResource(Vote::class, 'vote');
+    }
+    /**
+     * Prüft, ob ein Planning abgeschlossen ist.
+     */
+    private function isPlanningCompleted(Planning $planning): bool
+    {
+        $status = $planning->status;
+        if ($status === null) {
+            return false;
+        }
+        if (is_string($status)) {
+            return $status === 'completed';
+        }
+        // State-Objekt
+        try {
+            return $status instanceof PlanningCompleted || (method_exists($status, 'getValue') && $status->getValue() === 'completed');
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
     public function index()
     {
         $votes = Vote::with(['user:id,name', 'feature:id,jira_key,name', 'planning:id,title'])
             ->orderByDesc('voted_at')
-            ->get();
+            ->paginate(50);
 
         return Inertia::render('votes/index', [
             'votes' => $votes,
@@ -30,22 +57,15 @@ class VoteController extends Controller
         $tenantId = Auth::user()->current_tenant_id;
         return Inertia::render('votes/create', [
             'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
-            'features' => Feature::all(['id', 'jira_key', 'name']),
-            'plannings' => Planning::all(['id', 'title']),
+            'features' => Feature::where('tenant_id', $tenantId)->get(['id', 'jira_key', 'name']),
+            'plannings' => Planning::where('tenant_id', $tenantId)->get(['id', 'title']),
             'types' => ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'],
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreVoteRequest $request)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'feature_id' => 'required|exists:features,id',
-            'planning_id' => 'required|exists:plannings,id',
-            'type' => 'required|in:BusinessValue,TimeCriticality,RiskOpportunity',
-            'value' => 'required|numeric',
-            'voted_at' => 'required|date',
-        ]);
+        $validated = $request->validated();
 
         Vote::create($validated);
 
@@ -67,22 +87,15 @@ class VoteController extends Controller
         return Inertia::render('votes/edit', [
             'vote' => $vote->load(['user', 'feature', 'planning']),
             'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
-            'features' => Feature::all(['id', 'jira_key', 'name']),
-            'plannings' => Planning::all(['id', 'title']),
+            'features' => Feature::where('tenant_id', $tenantId)->get(['id', 'jira_key', 'name']),
+            'plannings' => Planning::where('tenant_id', $tenantId)->get(['id', 'title']),
             'types' => ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'],
         ]);
     }
 
-    public function update(Request $request, Vote $vote)
+    public function update(UpdateVoteRequest $request, Vote $vote)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'feature_id' => 'required|exists:features,id',
-            'planning_id' => 'required|exists:plannings,id',
-            'type' => 'required|in:BusinessValue,TimeCriticality,RiskOpportunity',
-            'value' => 'required|numeric',
-            'voted_at' => 'required|date',
-        ]);
+        $validated = $request->validated();
 
         $vote->update($validated);
 
@@ -101,6 +114,11 @@ class VoteController extends Controller
      */
     public function voteSession(Request $request, Planning $planning)
     {
+        $this->authorize('view', $planning);
+        if ($this->isPlanningCompleted($planning)) {
+            return redirect()->route('plannings.show', $planning->id)
+                ->with('error', 'Dieses Planning ist abgeschlossen. Abstimmungen sind nicht mehr möglich.');
+        }
         $user = Auth::user();
 
         // Aktuell: alle Features aus dem Projekt
@@ -108,7 +126,8 @@ class VoteController extends Controller
 
         // Korrekt: nur die Features, die mit dem Planning verknüpft sind
         $features = $planning->features()
-            ->select('features.id', 'features.jira_key', 'features.name', 'features.description')
+            ->select('features.id', 'features.jira_key', 'features.name', 'features.description', 'features.project_id')
+            ->with('project:id,jira_base_uri')
             ->get();
 
         // Bereits abgegebene Votes des Users für dieses Planning laden
@@ -134,6 +153,11 @@ class VoteController extends Controller
 
     public function voteSessionStore(Request $request, Planning $planning)
     {
+        $this->authorize('view', $planning);
+        if ($this->isPlanningCompleted($planning)) {
+            return redirect()->route('plannings.show', $planning->id)
+                ->with('error', 'Dieses Planning ist abgeschlossen. Abstimmungen sind nicht mehr möglich.');
+        }
         $user = Auth::user();
 
         // Erwartet: votes = [ "featureId_type" => value, ... ]
@@ -171,7 +195,7 @@ class VoteController extends Controller
         }
 
         // Automatisch Durchschnitts-Votes für den Planning-Ersteller berechnen
-        $this->calculateAverageVotesForCreator($planning);
+        $this->voteService->calculateAverageVotesForCreator($planning);
 
         return redirect()->route('votes.session', $planning->id)
             ->with('success', 'Deine Stimmen wurden gespeichert.');
@@ -182,74 +206,7 @@ class VoteController extends Controller
      */
     public function calculateAverageVotesForCreator(Planning $planning)
     {
-        // Planning-Ersteller identifizieren
-        $creatorId = $planning->created_by;
-        if (!$creatorId) {
-            Log::warning('Planning ohne Ersteller gefunden (ID: ' . $planning->id . ')');
-            return; // Kein Ersteller definiert, abbrechen
-        }
-
-        // Features dieses Plannings abrufen - Tabellennamen qualifizieren
-        $features = $planning->features()->pluck('features.id');
-
-        if ($features->isEmpty()) {
-            Log::info('Keine Features für Planning (ID: ' . $planning->id . ') gefunden');
-            return; // Keine Features vorhanden
-        }
-
-        Log::info('Berechne Durchschnittsvotes für Planning ' . $planning->id .
-            ', Ersteller ' . $creatorId . ', Features: ' . $features->implode(', '));
-
-        // Für jeden Feature-Typ-Kombination Durchschnitt berechnen
-        foreach ($features as $featureId) {
-            foreach (['BusinessValue', 'TimeCriticality', 'RiskOpportunity'] as $type) {
-                // Durchschnitt aller User-Votes berechnen (außer vom Creator selbst)
-                $votes = Vote::where('planning_id', $planning->id)
-                    ->where('feature_id', $featureId)
-                    ->where('type', $type)
-                    ->where('user_id', '!=', $creatorId); // Creator-Votes ausschließen
-
-                // Anzahl der Votes für dieses Feature/Typ protokollieren
-                $voteCount = $votes->count();
-                $averageVote = $votes->avg('value');
-
-                Log::debug("Feature $featureId, Typ $type: $voteCount Votes, Durchschnitt: $averageVote");
-
-                // Wenn es Votes gibt, den Durchschnitt aufrunden und für den Creator speichern
-                if ($averageVote !== null) {
-                    $roundedAverage = ceil($averageVote);
-
-                    // Bestehenden Vote des Creators aktualisieren oder erstellen
-                    $existingVote = Vote::where([
-                        'user_id' => $creatorId,
-                        'feature_id' => $featureId,
-                        'planning_id' => $planning->id,
-                        'type' => $type
-                    ])->first();
-
-                    if ($existingVote) {
-                        // Existierenden Vote aktualisieren
-                        Log::info("Aktualisiere Vote ID {$existingVote->id} für Ersteller $creatorId, Feature $featureId, Typ $type: $roundedAverage");
-                        $existingVote->value = $roundedAverage;
-                        $existingVote->voted_at = now();
-                        $existingVote->save();
-                    } else {
-                        // Neuen Vote erstellen
-                        Log::info("Erstelle neuen Vote für Ersteller $creatorId, Feature $featureId, Typ $type: $roundedAverage");
-                        Vote::create([
-                            'user_id' => $creatorId,
-                            'feature_id' => $featureId,
-                            'planning_id' => $planning->id,
-                            'type' => $type,
-                            'value' => $roundedAverage,
-                            'voted_at' => now()
-                        ]);
-                    }
-                } else {
-                    Log::info("Keine Votes für Feature $featureId, Typ $type gefunden");
-                }
-            }
-        }
+        $this->voteService->calculateAverageVotesForCreator($planning);
     }
 
     /**
@@ -258,11 +215,17 @@ class VoteController extends Controller
      */
     public function cardVoteSession(Request $request, Planning $planning)
     {
+        $this->authorize('view', $planning);
+        if ($this->isPlanningCompleted($planning)) {
+            return redirect()->route('plannings.show', $planning->id)
+                ->with('error', 'Dieses Planning ist abgeschlossen. Abstimmungen sind nicht mehr möglich.');
+        }
         $user = Auth::user();
 
         // Features laden, die mit dem Planning verknüpft sind
         $features = $planning->features()
-            ->select('features.id', 'features.jira_key', 'features.name', 'features.description')
+            ->select('features.id', 'features.jira_key', 'features.name', 'features.description', 'features.project_id')
+            ->with('project:id,jira_base_uri')
             ->get();
 
         // Bereits abgegebene Votes des Users für dieses Planning laden

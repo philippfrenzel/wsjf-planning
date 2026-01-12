@@ -182,10 +182,10 @@ export default function EditCommitment({ commitment, features, users, commitment
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => window.history.back()}>
+                <Button type="button" variant="cancel" onClick={() => window.history.back()}>
                   Abbrechen
                 </Button>
-                <Button type="submit" disabled={processing}>
+                <Button type="submit" variant="success" disabled={processing}>
                   {processing ? "Wird gespeichert..." : "Änderungen speichern"}
                 </Button>
               </div>
