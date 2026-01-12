@@ -109,9 +109,11 @@ export default function TenantsIndex() {
                             </TabsList>
 
                             <TabsContent value="overview" className="space-y-4">
-                                <div className="rounded-lg border border-slate-200 bg-white/70 p-4 shadow-sm">
-                                    <div className="flex flex-col gap-3">
-                                        <div className="text-sm font-medium text-slate-700">Deine Tenants</div>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Deine Tenants</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
                                         <ul className="space-y-2">
                                             {tenants.map((t) => (
                                                 <li
@@ -136,14 +138,16 @@ export default function TenantsIndex() {
                                                 </li>
                                             ))}
                                         </ul>
-                                    </div>
-                                </div>
+                                    </CardContent>
+                                </Card>
                             </TabsContent>
 
                             <TabsContent value="invitations" className="space-y-4">
-                                <div className="rounded-lg border border-slate-200 bg-white/70 p-4 shadow-sm">
-                                    <div className="flex flex-col gap-3">
-                                        <div className="text-sm font-medium text-slate-700">Einladung senden</div>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Einladung senden</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
                                         <form onSubmit={invite} className="space-y-3">
                                             <label className="block text-sm">
                                                 <span className="mb-1 block">Tenant</span>
@@ -167,36 +171,43 @@ export default function TenantsIndex() {
                                                 Einladung erstellen
                                             </Button>
                                         </form>
-                                    </div>
-                                </div>
+                                    </CardContent>
+                                </Card>
 
                                 {invitations.length > 0 && (
-                                    <div className="rounded-lg border border-slate-200 bg-white/70 p-4 shadow-sm">
-                                        <div className="mb-2 text-sm font-medium text-slate-700">Ausstehende Einladungen für deine E-Mail</div>
-                                        <ul className="space-y-2 text-sm text-neutral-700">
-                                            {invitations.map((inv) => (
-                                                <li key={inv.id} className="flex items-center justify-between rounded border px-3 py-2">
-                                                    <span>
-                                                        {inv.tenant.name} – Token: <code>{inv.token}</code>
-                                                    </span>
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            router.post(route('tenants.accept'), { token: inv.token }, { preserveScroll: true })
-                                                        }
-                                                    >
-                                                        Annehmen
-                                                    </Button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Ausstehende Einladungen für deine E-Mail</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <ul className="space-y-2 text-sm text-neutral-700">
+                                                {invitations.map((inv) => (
+                                                    <li key={inv.id} className="flex items-center justify-between rounded border px-3 py-2">
+                                                        <span>
+                                                            {inv.tenant.name} – Token: <code>{inv.token}</code>
+                                                        </span>
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() =>
+                                                                router.post(route('tenants.accept'), { token: inv.token }, { preserveScroll: true })
+                                                            }
+                                                        >
+                                                            Annehmen
+                                                        </Button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </CardContent>
+                                    </Card>
                                 )}
 
                                 {selectedOwnedTenant && (
                                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                        <div className="rounded-lg border border-slate-200 bg-white/70 p-4 shadow-sm">
-                                            <div className="mb-2 text-sm font-medium text-slate-700">Ausstehend ({pendingSelected.length})</div>
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Ausstehend ({pendingSelected.length})</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
                                             {pendingSelected.length === 0 ? (
                                                 <div className="text-xs text-neutral-500">Keine ausstehenden Einladungen</div>
                                             ) : (
@@ -215,9 +226,13 @@ export default function TenantsIndex() {
                                                     ))}
                                                 </ul>
                                             )}
-                                        </div>
-                                        <div className="rounded-lg border border-slate-200 bg-white/70 p-4 shadow-sm">
-                                            <div className="mb-2 text-sm font-medium text-slate-700">Angenommen ({acceptedSelected.length})</div>
+                                        </CardContent>
+                                        </Card>
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Angenommen ({acceptedSelected.length})</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
                                             {acceptedSelected.length === 0 ? (
                                                 <div className="text-xs text-neutral-500">Noch keine angenommenen Einladungen</div>
                                             ) : (
@@ -242,7 +257,8 @@ export default function TenantsIndex() {
                                                     })}
                                                 </ul>
                                             )}
-                                        </div>
+                                            </CardContent>
+                                        </Card>
                                     </div>
                                 )}
                             </TabsContent>
