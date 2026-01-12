@@ -29,6 +29,14 @@ interface CreateProps {
 
 export default function Create({ projects, users }: CreateProps) {
     const { errors } = usePage().props as { errors: Record<string, string> };
+    
+    // Breadcrumbs definieren
+    const breadcrumbs = [
+        { title: 'Startseite', href: '/' },
+        { title: 'Plannings', href: route('plannings.index') },
+        { title: 'Neues Planning', href: '#' },
+    ];
+    
     const [values, setValues] = useState({
         project_id: '',
         title: '',
@@ -66,7 +74,7 @@ export default function Create({ projects, users }: CreateProps) {
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Card className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <CardHeader>
                     <CardTitle>Neues Planning erstellen</CardTitle>
