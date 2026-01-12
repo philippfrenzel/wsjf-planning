@@ -1,19 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
 import { router } from '@inertiajs/react';
-import { useCallback, useMemo } from 'react';
-import {
-    ReactFlow,
-    Node,
-    Edge,
-    Background,
-    Controls,
-    MiniMap,
-    useNodesState,
-    useEdgesState,
-    MarkerType,
-    ConnectionMode,
-} from '@xyflow/react';
+import { Background, ConnectionMode, Controls, Edge, MarkerType, MiniMap, Node, ReactFlow, useEdgesState, useNodesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { useMemo } from 'react';
 
 interface LineageFeature {
     id: number;
@@ -35,11 +24,11 @@ function FeatureNode({ data }: { data: { label: string; jiraKey: string; feature
     return (
         <div
             onClick={handleClick}
-            className="cursor-pointer rounded-lg border-2 border-blue-500 bg-white p-4 shadow-md hover:shadow-lg transition-shadow"
+            className="cursor-pointer rounded-lg border-2 border-blue-500 bg-white p-4 shadow-md transition-shadow hover:shadow-lg"
             style={{ minWidth: '200px' }}
         >
-            <div className="font-bold text-blue-600 text-sm mb-1">{data.jiraKey}</div>
-            <div className="text-gray-800 text-xs">{data.label}</div>
+            <div className="mb-1 text-sm font-bold text-blue-600">{data.jiraKey}</div>
+            <div className="text-xs text-gray-800">{data.label}</div>
         </div>
     );
 }
@@ -138,7 +127,7 @@ export default function Lineage({ features }: LineageProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
                 <h1 className="mb-4 text-2xl font-bold">Feature Abhängigkeits-Übersicht</h1>
-                <div className="flex-1 border rounded-lg bg-gray-50" style={{ height: '700px' }}>
+                <div className="flex-1 rounded-lg border bg-gray-50" style={{ height: '700px' }}>
                     <ReactFlow
                         nodes={nodes}
                         edges={edges}
@@ -151,11 +140,7 @@ export default function Lineage({ features }: LineageProps) {
                     >
                         <Background />
                         <Controls />
-                        <MiniMap
-                            nodeColor={(node) => '#3b82f6'}
-                            maskColor="rgba(0, 0, 0, 0.1)"
-                            position="top-right"
-                        />
+                        <MiniMap nodeColor={(node) => '#3b82f6'} maskColor="rgba(0, 0, 0, 0.1)" position="top-right" />
                     </ReactFlow>
                 </div>
             </div>

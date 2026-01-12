@@ -1,468 +1,440 @@
-import React, { useEffect, useRef, useState } from "react";
-import AppLayout from "@/layouts/app-layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import AppLayout from '@/layouts/app-layout';
+import React, { useEffect, useRef, useState } from 'react';
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Inertia } from "@inertiajs/inertia";
-import { usePage } from "@inertiajs/react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Inertia } from '@inertiajs/inertia';
+import { usePage } from '@inertiajs/react';
 
 interface Feature {
-  id: number;
-  jira_key: string;
-  name: string;
-  description?: string;
-  project?: {
-    jira_base_uri?: string | null;
-  } | null;
+    id: number;
+    jira_key: string;
+    name: string;
+    description?: string;
+    project?: {
+        jira_base_uri?: string | null;
+    } | null;
 }
 
 interface Planning {
-  id: number;
-  title: string;
-  project_id: number;
+    id: number;
+    title: string;
+    project_id: number;
 }
 
 interface VoteValue {
-  [key: string]: string; // key: featureId_type, value: string (number)
+    [key: string]: string; // key: featureId_type, value: string (number)
 }
 
 interface SessionProps {
-  planning: Planning;
-  features: Feature[];
-  types: string[];
-  existingVotes: Record<string, { value: number }>;
-  user: { id: number; name: string };
+    planning: Planning;
+    features: Feature[];
+    types: string[];
+    existingVotes: Record<string, { value: number }>;
+    user: { id: number; name: string };
 }
 
 export default function VoteSession({ planning, features, types, existingVotes, user }: SessionProps) {
-  const { props } = usePage();
+    const { props } = usePage();
 
-  // Breadcrumbs definieren
-  const breadcrumbs = [
-    { title: "Startseite", href: "/" },
-    { title: "Plannings", href: "/plannings" },
-    { title: planning?.title || "Abstimmung", href: null },
-  ];
+    // Breadcrumbs definieren
+    const breadcrumbs = [
+        { title: 'Startseite', href: '/' },
+        { title: 'Plannings', href: '/plannings' },
+        { title: planning?.title || 'Abstimmung', href: null },
+    ];
 
-  const [votes, setVotes] = useState<VoteValue>(() => {
-    const initial: VoteValue = {};
-    Object.entries(existingVotes).forEach(([key, vote]) => {
-      initial[key] = vote.value.toString();
+    const [votes, setVotes] = useState<VoteValue>(() => {
+        const initial: VoteValue = {};
+        Object.entries(existingVotes).forEach(([key, vote]) => {
+            initial[key] = vote.value.toString();
+        });
+        return initial;
     });
-    return initial;
-  });
 
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const initialLoad = useRef(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
+    const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const initialLoad = useRef(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
-  // Modal-Status, wenn success-Message vorhanden
-  const [open, setOpen] = useState(!!props.success);
+    // Modal-Status, wenn success-Message vorhanden
+    const [open, setOpen] = useState(!!props.success);
 
-  // State für das aktuell ausgewählte Feature im Dialog
-  const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
+    // State für das aktuell ausgewählte Feature im Dialog
+    const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
 
-  // Erweiterte Logik zum Behandeln von Duplikaten und Lücken in den Voting-Werten
-  const handleChange = (featureId: number, type: string, value: string) => {
-    setVotes((prevVotes) => {
-      // Neuen Wert eintragen
-      const newVotes = { ...prevVotes };
-      
-      // Wenn der Wert leer ist, einfach entfernen und zurückgeben
-      const featureKey = `${featureId}_${type}`;
-      if (value === "") {
-        delete newVotes[featureKey];
-        return ensureUniqueValues(newVotes, type, features.length);
-      }
+    // Erweiterte Logik zum Behandeln von Duplikaten und Lücken in den Voting-Werten
+    const handleChange = (featureId: number, type: string, value: string) => {
+        setVotes((prevVotes) => {
+            // Neuen Wert eintragen
+            const newVotes = { ...prevVotes };
 
-      // Numerischer Wert für den Vergleich
-      let numValue = parseFloat(value);
-      const featureCount = features.length;
-      
-      // Ungültigen Wert korrigieren (max = Anzahl der Features)
-      if (numValue > featureCount) {
-        numValue = featureCount;
-        value = featureCount.toString();
-      }
-      
-      // Alten Wert des aktuellen Features finden (falls vorhanden)
-      const oldValue = parseFloat(prevVotes[featureKey]);
-      const hasOldValue = !isNaN(oldValue);
-      
-      // Neuen Wert eintragen
-      newVotes[featureKey] = value;
-      
-      // Maximalwert-Szenario: Wenn der neue Wert dem Maximum entspricht
-      if (numValue === featureCount && hasOldValue) {
-        // Verringere alle Werte zwischen dem alten Wert und dem Maximum um 1
-        const currentTypeVotes = getTypeVotes(prevVotes, type, featureKey);
-        
-        currentTypeVotes
-          .filter(vote => vote.value > oldValue && vote.value <= featureCount)
-          .sort((a, b) => a.value - b.value) // Aufsteigend sortieren
-          .forEach(vote => {
-            newVotes[vote.key] = (vote.value - 1).toString();
-          });
-      }
-      
-      // Nach allen Anpassungen die Eindeutigkeit aller Werte sicherstellen
-      // und dabei den aktuellen Vote als festen Ankerpunkt behandeln
-      return ensureUniqueValues(newVotes, type, featureCount, featureKey, numValue);
-    });
-  };
+            // Wenn der Wert leer ist, einfach entfernen und zurückgeben
+            const featureKey = `${featureId}_${type}`;
+            if (value === '') {
+                delete newVotes[featureKey];
+                return ensureUniqueValues(newVotes, type, features.length);
+            }
 
+            // Numerischer Wert für den Vergleich
+            let numValue = parseFloat(value);
+            const featureCount = features.length;
 
+            // Ungültigen Wert korrigieren (max = Anzahl der Features)
+            if (numValue > featureCount) {
+                numValue = featureCount;
+                value = featureCount.toString();
+            }
 
-  const saveVotes = (next?: () => void) => {
-    setIsSaving(true);
-    setSaveError(null);
+            // Alten Wert des aktuellen Features finden (falls vorhanden)
+            const oldValue = parseFloat(prevVotes[featureKey]);
+            const hasOldValue = !isNaN(oldValue);
 
-    Inertia.post(route("votes.session.store", planning.id), { votes }, {
-      preserveScroll: true,
-      preserveState: true,
-      replace: true,
-      onFinish: () => {
-        setIsSaving(false);
-        next?.();
-      },
-      onError: () => {
-        setIsSaving(false);
-        setSaveError("Speichern fehlgeschlagen – bitte erneut versuchen.");
-      },
-    });
-  };
+            // Neuen Wert eintragen
+            newVotes[featureKey] = value;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (saveTimer.current) {
-      clearTimeout(saveTimer.current);
-      saveTimer.current = null;
-    }
-    saveVotes();
-  };
+            // Maximalwert-Szenario: Wenn der neue Wert dem Maximum entspricht
+            if (numValue === featureCount && hasOldValue) {
+                // Verringere alle Werte zwischen dem alten Wert und dem Maximum um 1
+                const currentTypeVotes = getTypeVotes(prevVotes, type, featureKey);
 
-  const handleSwitchToCards = () => {
-    if (saveTimer.current) {
-      clearTimeout(saveTimer.current);
-      saveTimer.current = null;
-    }
-    saveVotes(() => Inertia.get(route("votes.card-session", planning.id)));
-  };
+                currentTypeVotes
+                    .filter((vote) => vote.value > oldValue && vote.value <= featureCount)
+                    .sort((a, b) => a.value - b.value) // Aufsteigend sortieren
+                    .forEach((vote) => {
+                        newVotes[vote.key] = (vote.value - 1).toString();
+                    });
+            }
 
-  useEffect(() => {
-    if (initialLoad.current) {
-      initialLoad.current = false;
-      return;
-    }
-
-    if (saveTimer.current) {
-      clearTimeout(saveTimer.current);
-    }
-
-    saveTimer.current = setTimeout(() => saveVotes(), 1000);
-
-    return () => {
-      if (saveTimer.current) {
-        clearTimeout(saveTimer.current);
-      }
+            // Nach allen Anpassungen die Eindeutigkeit aller Werte sicherstellen
+            // und dabei den aktuellen Vote als festen Ankerpunkt behandeln
+            return ensureUniqueValues(newVotes, type, featureCount, featureKey, numValue);
+        });
     };
-  }, [votes]);
 
-  // Modal schließen
-  const handleCloseModal = () => setOpen(false);
+    const saveVotes = (next?: () => void) => {
+        setIsSaving(true);
+        setSaveError(null);
 
-  return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Erfolg</DialogTitle>
-          </DialogHeader>
-          <div>{props.success}</div>
-          <DialogFooter>
-            <Button onClick={handleCloseModal}>OK</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      {/* Feature-Beschreibung-Dialog */}
-      <Dialog open={!!selectedFeature} onOpenChange={() => setSelectedFeature(null)}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle className="space-y-1">
-              <span>
-                {selectedFeature?.project?.jira_base_uri && selectedFeature?.jira_key ? (
-                  <a
-                    href={`${selectedFeature.project.jira_base_uri}${selectedFeature.jira_key}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 hover:underline"
-                  >
-                    {selectedFeature.jira_key}
-                  </a>
-                ) : (
-                  selectedFeature?.jira_key
-                )}
-                {selectedFeature?.name ? `: ${selectedFeature.name}` : ""}
-              </span>
-            </DialogTitle>
-          </DialogHeader>
-          
-          {/* Hier die Änderung: Verwenden von dangerouslySetInnerHTML */}
-          <div className="prose prose-sm max-w-none overflow-auto">
-            {selectedFeature?.description ? (
-              <div dangerouslySetInnerHTML={{ __html: selectedFeature.description }} />
-            ) : (
-              <p>Keine Beschreibung vorhanden.</p>
-            )}
-          </div>
-          
-          <DialogFooter>
-            <Button onClick={() => setSelectedFeature(null)}>Schließen</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <div className="w-full mx-auto mt-8 px-10">
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-              <div className="mb-4 md:mb-0">
-                <CardTitle>
-                  Abstimmung für Planning: {planning.title}
-                </CardTitle>
-                <div className="text-sm text-muted-foreground">
-                  Angemeldet als: {user.name}
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <div className="text-xs text-muted-foreground h-4">
-                  {isSaving ? "Speichern..." : saveError || ""}
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleSwitchToCards}>
-                    Zur Karten-Ansicht wechseln
-                  </Button>
-                  <Button type="submit">Abstimmung speichern</Button>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit}>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Feature</TableHead>
-                    {types.map((type) => (
-                      <TableHead key={type}>{type}</TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {features.map((feature) => (
-                    <TableRow key={feature.id}>
-                      <TableCell>
-                        <div>
-                          <span
-                            className="font-medium cursor-pointer underline decoration-dotted"
-                            onClick={() =>
-                              setSelectedFeature(
-                                selectedFeature?.id === feature.id ? null : feature
-                              )
-                            }
-                          >
-                            {feature.jira_key}
-                          </span>
-                          <div className="text-xs text-muted-foreground">{feature.name}</div>
+        Inertia.post(
+            route('votes.session.store', planning.id),
+            { votes },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+                onFinish: () => {
+                    setIsSaving(false);
+                    next?.();
+                },
+                onError: () => {
+                    setIsSaving(false);
+                    setSaveError('Speichern fehlgeschlagen – bitte erneut versuchen.');
+                },
+            },
+        );
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+            saveTimer.current = null;
+        }
+        saveVotes();
+    };
+
+    const handleSwitchToCards = () => {
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+            saveTimer.current = null;
+        }
+        saveVotes(() => Inertia.get(route('votes.card-session', planning.id)));
+    };
+
+    useEffect(() => {
+        if (initialLoad.current) {
+            initialLoad.current = false;
+            return;
+        }
+
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+        }
+
+        saveTimer.current = setTimeout(() => saveVotes(), 1000);
+
+        return () => {
+            if (saveTimer.current) {
+                clearTimeout(saveTimer.current);
+            }
+        };
+    }, [votes]);
+
+    // Modal schließen
+    const handleCloseModal = () => setOpen(false);
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Erfolg</DialogTitle>
+                    </DialogHeader>
+                    <div>{props.success}</div>
+                    <DialogFooter>
+                        <Button onClick={handleCloseModal}>OK</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            {/* Feature-Beschreibung-Dialog */}
+            <Dialog open={!!selectedFeature} onOpenChange={() => setSelectedFeature(null)}>
+                <DialogContent className="max-w-3xl">
+                    <DialogHeader>
+                        <DialogTitle className="space-y-1">
+                            <span>
+                                {selectedFeature?.project?.jira_base_uri && selectedFeature?.jira_key ? (
+                                    <a
+                                        href={`${selectedFeature.project.jira_base_uri}${selectedFeature.jira_key}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                        {selectedFeature.jira_key}
+                                    </a>
+                                ) : (
+                                    selectedFeature?.jira_key
+                                )}
+                                {selectedFeature?.name ? `: ${selectedFeature.name}` : ''}
+                            </span>
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    {/* Hier die Änderung: Verwenden von dangerouslySetInnerHTML */}
+                    <div className="prose prose-sm max-w-none overflow-auto">
+                        {selectedFeature?.description ? (
+                            <div dangerouslySetInnerHTML={{ __html: selectedFeature.description }} />
+                        ) : (
+                            <p>Keine Beschreibung vorhanden.</p>
+                        )}
+                    </div>
+
+                    <DialogFooter>
+                        <Button onClick={() => setSelectedFeature(null)}>Schließen</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <div className="mx-auto mt-8 w-full px-10">
+                <Card>
+                    <CardHeader>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                            <div className="mb-4 md:mb-0">
+                                <CardTitle>Abstimmung für Planning: {planning.title}</CardTitle>
+                                <div className="text-muted-foreground text-sm">Angemeldet als: {user.name}</div>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                                <div className="text-muted-foreground h-4 text-xs">{isSaving ? 'Speichern...' : saveError || ''}</div>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" onClick={handleSwitchToCards}>
+                                        Zur Karten-Ansicht wechseln
+                                    </Button>
+                                    <Button type="submit">Abstimmung speichern</Button>
+                                </div>
+                            </div>
                         </div>
-                      </TableCell>
-                      {types.map((type) => (
-                        <TableCell key={type}>
-                          <Input
-                            type="number"
-                            step="any"
-                            min="0"
-                            name={`vote_${feature.id}_${type}`}
-                            value={votes[`${feature.id}_${type}`] || ""}
-                            onChange={(e) =>
-                              handleChange(feature.id, type, e.target.value)
-                            }
-                            placeholder="Wert"
-                          />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <div className="mt-6 flex justify-end">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground">
-                    {isSaving ? "Speichern..." : saveError || "Autosave aktiv"}
-                  </span>
-                  <Button type="submit">Abstimmung speichern</Button>
-                </div>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </AppLayout>
-  );
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit}>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Feature</TableHead>
+                                        {types.map((type) => (
+                                            <TableHead key={type}>{type}</TableHead>
+                                        ))}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {features.map((feature) => (
+                                        <TableRow key={feature.id}>
+                                            <TableCell>
+                                                <div>
+                                                    <span
+                                                        className="cursor-pointer font-medium underline decoration-dotted"
+                                                        onClick={() => setSelectedFeature(selectedFeature?.id === feature.id ? null : feature)}
+                                                    >
+                                                        {feature.jira_key}
+                                                    </span>
+                                                    <div className="text-muted-foreground text-xs">{feature.name}</div>
+                                                </div>
+                                            </TableCell>
+                                            {types.map((type) => (
+                                                <TableCell key={type}>
+                                                    <Input
+                                                        type="number"
+                                                        step="any"
+                                                        min="0"
+                                                        name={`vote_${feature.id}_${type}`}
+                                                        value={votes[`${feature.id}_${type}`] || ''}
+                                                        onChange={(e) => handleChange(feature.id, type, e.target.value)}
+                                                        placeholder="Wert"
+                                                    />
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                            <div className="mt-6 flex justify-end">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-muted-foreground text-xs">{isSaving ? 'Speichern...' : saveError || 'Autosave aktiv'}</span>
+                                    <Button type="submit">Abstimmung speichern</Button>
+                                </div>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
+        </AppLayout>
+    );
 }
 
 // Hilfsfunktion zum Extrahieren aller Werte für einen bestimmten Typ
 const getTypeVotes = (votes: VoteValue, type: string, excludeKey?: string) => {
-  return Object.entries(votes)
-    .filter(([key]) => key.endsWith(`_${type}`))
-    .filter(([key]) => !excludeKey || key !== excludeKey)
-    .map(([key, val]) => ({
-      key,
-      value: parseFloat(val)
-    }))
-    .filter(vote => !isNaN(vote.value));
+    return Object.entries(votes)
+        .filter(([key]) => key.endsWith(`_${type}`))
+        .filter(([key]) => !excludeKey || key !== excludeKey)
+        .map(([key, val]) => ({
+            key,
+            value: parseFloat(val),
+        }))
+        .filter((vote) => !isNaN(vote.value));
 };
 
 // Ursprüngliche Funktion beibehalten für den Fall, dass kein fester Wert gesetzt ist
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ensureUniqueValuesStandard = (votes: VoteValue, _unusedType: string, _unusedMaxValue: number) => {
-  return { ...votes };
+    return { ...votes };
 };
 
 // Erweiterte Hilfsfunktion zur Sicherstellung eindeutiger, fortlaufender Werte
 // mit Berücksichtigung eines festen Ankerpunkts
-const ensureUniqueValues = (
-  votes: VoteValue, 
-  type: string, 
-  maxValue: number, 
-  fixedKey?: string, 
-  fixedValue?: number
-) => {
-  const result = { ...votes };
-  
-  // Wenn kein fester Wert definiert ist, Standard-Verhalten beibehalten
-  if (!fixedKey || fixedValue === undefined) {
-    return ensureUniqueValuesStandard(result, type, maxValue);
-  }
+const ensureUniqueValues = (votes: VoteValue, type: string, maxValue: number, fixedKey?: string, fixedValue?: number) => {
+    const result = { ...votes };
 
-  // Sammle alle Werte für diesen Typ
-  const typeVotes = getTypeVotes(result, type)
-    .filter(vote => vote.key !== fixedKey) // Festen Vote ausschließen
-    .sort((a, b) => a.value - b.value); // Sortiere aufsteigend nach Wert
-  
-  if (typeVotes.length === 0) return result; // Nur der feste Vote existiert
-
-  // Duplikat des festen Werts behandeln
-  const fixedValueDuplicates = typeVotes.filter(vote => vote.value === fixedValue);
-  
-  if (fixedValueDuplicates.length > 0) {
-    // Wenn der feste Wert bereits verwendet wird, müssen andere Votes angepasst werden
-    // Erhöhe alle Werte >= dem fixedValue (außer dem fixedKey selbst)
-    typeVotes
-      .filter(vote => vote.value >= fixedValue)
-      .sort((a, b) => b.value - a.value) // Absteigend sortieren für Konfliktfreiheit
-      .forEach(vote => {
-        // Erhöhe den Wert, aber begrenzt auf das Maximum
-        const newValue = Math.min(vote.value + 1, maxValue);
-        result[vote.key] = newValue.toString();
-      });
-  }
-  
-  // Teile die Votes in "vor dem festen Wert" und "nach dem festen Wert" auf
-  let lowerVotes = typeVotes.filter(vote => 
-    parseFloat(result[vote.key]) < fixedValue
-  );
-  
-  let higherVotes = typeVotes.filter(vote => 
-    parseFloat(result[vote.key]) > fixedValue
-  );
-  
-  // Prüfen, ob genügend Platz im höheren Bereich vorhanden ist
-  const higherSlotsAvailable = maxValue - fixedValue;
-  
-  // Wenn nicht genügend Platz im höheren Bereich vorhanden ist,
-  // verschiebe die niedrigsten Werte in den unteren Bereich
-  if (higherVotes.length > higherSlotsAvailable) {
-    // Sortiere higherVotes nach Wert (aufsteigend)
-    higherVotes.sort((a, b) => parseFloat(result[a.key]) - parseFloat(result[b.key]));
-    
-    // Bestimme, wie viele Werte verschoben werden müssen
-    const valuesToMove = Math.min(
-      higherVotes.length - higherSlotsAvailable,
-      fixedValue - 1 - lowerVotes.length // Verfügbare Plätze im unteren Bereich
-    );
-    
-    if (valuesToMove > 0) {
-      // Verschiebe die niedrigsten Werte in den unteren Bereich
-      const movingVotes = higherVotes.slice(0, valuesToMove);
-      higherVotes = higherVotes.slice(valuesToMove);
-      
-      // Weise diesen Werten vorübergehend Werte zu, die unter dem fixedValue liegen
-      movingVotes.forEach((vote, index) => {
-        // Beginne mit dem höchsten verfügbaren Wert unter fixedValue und arbeite rückwärts
-        const newValue = fixedValue - 1 - index;
-        if (newValue > 0) { // Stell sicher, dass wir nicht unter 1 fallen
-          result[vote.key] = newValue.toString();
-        } else {
-          // Falls kein Platz mehr, setze auf den kleinsten möglichen Wert (1)
-          result[vote.key] = "1";
-        }
-      });
-      
-      // Aktualisiere lowerVotes mit den verschobenen Votes
-      lowerVotes = typeVotes.filter(vote => 
-        parseFloat(result[vote.key]) < fixedValue
-      );
+    // Wenn kein fester Wert definiert ist, Standard-Verhalten beibehalten
+    if (!fixedKey || fixedValue === undefined) {
+        return ensureUniqueValuesStandard(result, type, maxValue);
     }
-  }
-  
-  // Reorganisiere niedrigere Werte (1 bis fixedValue-1)
-  reorganizeVotes(result, lowerVotes, 1, fixedValue - 1);
-  
-  // Reorganisiere höhere Werte (fixedValue+1 bis maxValue)
-  reorganizeVotes(result, higherVotes, fixedValue + 1, maxValue);
-  
-  return result;
+
+    // Sammle alle Werte für diesen Typ
+    const typeVotes = getTypeVotes(result, type)
+        .filter((vote) => vote.key !== fixedKey) // Festen Vote ausschließen
+        .sort((a, b) => a.value - b.value); // Sortiere aufsteigend nach Wert
+
+    if (typeVotes.length === 0) return result; // Nur der feste Vote existiert
+
+    // Duplikat des festen Werts behandeln
+    const fixedValueDuplicates = typeVotes.filter((vote) => vote.value === fixedValue);
+
+    if (fixedValueDuplicates.length > 0) {
+        // Wenn der feste Wert bereits verwendet wird, müssen andere Votes angepasst werden
+        // Erhöhe alle Werte >= dem fixedValue (außer dem fixedKey selbst)
+        typeVotes
+            .filter((vote) => vote.value >= fixedValue)
+            .sort((a, b) => b.value - a.value) // Absteigend sortieren für Konfliktfreiheit
+            .forEach((vote) => {
+                // Erhöhe den Wert, aber begrenzt auf das Maximum
+                const newValue = Math.min(vote.value + 1, maxValue);
+                result[vote.key] = newValue.toString();
+            });
+    }
+
+    // Teile die Votes in "vor dem festen Wert" und "nach dem festen Wert" auf
+    let lowerVotes = typeVotes.filter((vote) => parseFloat(result[vote.key]) < fixedValue);
+
+    let higherVotes = typeVotes.filter((vote) => parseFloat(result[vote.key]) > fixedValue);
+
+    // Prüfen, ob genügend Platz im höheren Bereich vorhanden ist
+    const higherSlotsAvailable = maxValue - fixedValue;
+
+    // Wenn nicht genügend Platz im höheren Bereich vorhanden ist,
+    // verschiebe die niedrigsten Werte in den unteren Bereich
+    if (higherVotes.length > higherSlotsAvailable) {
+        // Sortiere higherVotes nach Wert (aufsteigend)
+        higherVotes.sort((a, b) => parseFloat(result[a.key]) - parseFloat(result[b.key]));
+
+        // Bestimme, wie viele Werte verschoben werden müssen
+        const valuesToMove = Math.min(
+            higherVotes.length - higherSlotsAvailable,
+            fixedValue - 1 - lowerVotes.length, // Verfügbare Plätze im unteren Bereich
+        );
+
+        if (valuesToMove > 0) {
+            // Verschiebe die niedrigsten Werte in den unteren Bereich
+            const movingVotes = higherVotes.slice(0, valuesToMove);
+            higherVotes = higherVotes.slice(valuesToMove);
+
+            // Weise diesen Werten vorübergehend Werte zu, die unter dem fixedValue liegen
+            movingVotes.forEach((vote, index) => {
+                // Beginne mit dem höchsten verfügbaren Wert unter fixedValue und arbeite rückwärts
+                const newValue = fixedValue - 1 - index;
+                if (newValue > 0) {
+                    // Stell sicher, dass wir nicht unter 1 fallen
+                    result[vote.key] = newValue.toString();
+                } else {
+                    // Falls kein Platz mehr, setze auf den kleinsten möglichen Wert (1)
+                    result[vote.key] = '1';
+                }
+            });
+
+            // Aktualisiere lowerVotes mit den verschobenen Votes
+            lowerVotes = typeVotes.filter((vote) => parseFloat(result[vote.key]) < fixedValue);
+        }
+    }
+
+    // Reorganisiere niedrigere Werte (1 bis fixedValue-1)
+    reorganizeVotes(result, lowerVotes, 1, fixedValue - 1);
+
+    // Reorganisiere höhere Werte (fixedValue+1 bis maxValue)
+    reorganizeVotes(result, higherVotes, fixedValue + 1, maxValue);
+
+    return result;
 };
 
 // Hilfsfunktion zur Reorganisation einer Gruppe von Votes in einem bestimmten Bereich
-const reorganizeVotes = (
-  result: VoteValue, 
-  votes: Array<{key: string, value: number}>,
-  minValue: number,
-  maxValue: number
-) => {
-  if (votes.length === 0 || minValue > maxValue) return;
-  
-  // Sortiere Votes nach aktuellem Wert
-  const sortedVotes = [...votes].sort((a, b) => {
-    // Aktuelle Werte aus dem result-Objekt nehmen (könnten sich geändert haben)
-    const aValue = parseFloat(result[a.key]);
-    const bValue = parseFloat(result[b.key]);
-    return aValue - bValue;
-  });
-  
-  // Verteile die Votes gleichmäßig im verfügbaren Bereich
-  const availableSlots = maxValue - minValue + 1;
-  
-  if (sortedVotes.length <= availableSlots) {
-    // Es gibt genug Platz für alle Votes
-    sortedVotes.forEach((vote, index) => {
-      result[vote.key] = (minValue + index).toString();
+const reorganizeVotes = (result: VoteValue, votes: Array<{ key: string; value: number }>, minValue: number, maxValue: number) => {
+    if (votes.length === 0 || minValue > maxValue) return;
+
+    // Sortiere Votes nach aktuellem Wert
+    const sortedVotes = [...votes].sort((a, b) => {
+        // Aktuelle Werte aus dem result-Objekt nehmen (könnten sich geändert haben)
+        const aValue = parseFloat(result[a.key]);
+        const bValue = parseFloat(result[b.key]);
+        return aValue - bValue;
     });
-  } else {
-    // Es gibt mehr Votes als verfügbare Slots
-    // In diesem Fall packen wir überschüssige Votes auf den maxValue
-    sortedVotes.forEach((vote, index) => {
-      if (index < availableSlots - 1) {
-        result[vote.key] = (minValue + index).toString();
-      } else {
-        // Überschüssige Votes bekommen den Maximalwert
-        result[vote.key] = maxValue.toString();
-      }
-    });
-  }
+
+    // Verteile die Votes gleichmäßig im verfügbaren Bereich
+    const availableSlots = maxValue - minValue + 1;
+
+    if (sortedVotes.length <= availableSlots) {
+        // Es gibt genug Platz für alle Votes
+        sortedVotes.forEach((vote, index) => {
+            result[vote.key] = (minValue + index).toString();
+        });
+    } else {
+        // Es gibt mehr Votes als verfügbare Slots
+        // In diesem Fall packen wir überschüssige Votes auf den maxValue
+        sortedVotes.forEach((vote, index) => {
+            if (index < availableSlots - 1) {
+                result[vote.key] = (minValue + index).toString();
+            } else {
+                // Überschüssige Votes bekommen den Maximalwert
+                result[vote.key] = maxValue.toString();
+            }
+        });
+    }
 };

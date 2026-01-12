@@ -53,8 +53,8 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                                 onClick={() => {
                                     if (currentTenant && t.id === currentTenant.id) return;
                                     const url = hasRoute('tenants.switch')
-                                        // @ts-ignore
-                                        ? route('tenants.switch', t.id)
+                                        ? // @ts-ignore
+                                          route('tenants.switch', t.id)
                                         : `/tenants/${t.id}/switch`;
                                     router.post(url, {}, { preserveScroll: true });
                                     cleanup();

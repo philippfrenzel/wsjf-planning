@@ -3,20 +3,20 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
-    Legend,
-    Tooltip as ReTooltip,
-    BarChart,
+    Area,
+    AreaChart,
     Bar,
+    BarChart,
+    Cell,
+    LabelList,
+    Legend,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
+    Tooltip as ReTooltip,
     XAxis,
     YAxis,
-    AreaChart,
-    Area,
 } from 'recharts';
-import { LabelList } from 'recharts';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -67,29 +67,29 @@ export default function Dashboard() {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     {/* KPI: Meine Projekte */}
-                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border flex flex-col items-center justify-center bg-white dark:bg-neutral-900">
+                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative flex aspect-video flex-col items-center justify-center overflow-hidden rounded-xl border bg-white dark:bg-neutral-900">
                         <div className="text-4xl font-bold">{myProjectsCount}</div>
-                        <div className="text-lg text-muted-foreground">Meine Projekte</div>
+                        <div className="text-muted-foreground text-lg">Meine Projekte</div>
                     </div>
                     {/* KPI: Aktive Plannings */}
-                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border flex flex-col items-center justify-center bg-white dark:bg-neutral-900">
+                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative flex aspect-video flex-col items-center justify-center overflow-hidden rounded-xl border bg-white dark:bg-neutral-900">
                         <div className="text-4xl font-bold">{activePlanningsCount}</div>
-                        <div className="text-lg text-muted-foreground">Aktive Plannings</div>
+                        <div className="text-muted-foreground text-lg">Aktive Plannings</div>
                     </div>
                     {/* KPI: Sichtbare Features */}
-                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border flex flex-col items-center justify-center bg-white dark:bg-neutral-900">
+                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative flex aspect-video flex-col items-center justify-center overflow-hidden rounded-xl border bg-white dark:bg-neutral-900">
                         <div className="text-4xl font-bold">{visibleFeatureCount}</div>
-                        <div className="text-lg text-muted-foreground">Sichtbare Features</div>
+                        <div className="text-muted-foreground text-lg">Sichtbare Features</div>
                     </div>
                 </div>
                 {/* Charts */}
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     {/* Features nach Status */}
                     <div className="border-sidebar-border/70 dark:border-sidebar-border relative overflow-hidden rounded-xl border bg-white dark:bg-neutral-900">
-                        <div className="p-4 border-b dark:border-neutral-800 font-semibold">Features nach Status</div>
-                        <div className="p-4 h-[260px]">
+                        <div className="border-b p-4 font-semibold dark:border-neutral-800">Features nach Status</div>
+                        <div className="h-[260px] p-4">
                             {featureStatus.length === 0 ? (
-                                <div className="text-sm text-muted-foreground">Keine Daten</div>
+                                <div className="text-muted-foreground text-sm">Keine Daten</div>
                             ) : (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
@@ -136,10 +136,10 @@ export default function Dashboard() {
 
                     {/* Commitments je Planning */}
                     <div className="border-sidebar-border/70 dark:border-sidebar-border relative overflow-hidden rounded-xl border bg-white dark:bg-neutral-900">
-                        <div className="p-4 border-b dark:border-neutral-800 font-semibold">Commitments je Planning</div>
-                        <div className="p-4 h-[260px]">
+                        <div className="border-b p-4 font-semibold dark:border-neutral-800">Commitments je Planning</div>
+                        <div className="h-[260px] p-4">
                             {committedByPlanning.length === 0 ? (
-                                <div className="text-sm text-muted-foreground">Keine Daten</div>
+                                <div className="text-muted-foreground text-sm">Keine Daten</div>
                             ) : (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={committedByPlanning}>
@@ -166,10 +166,10 @@ export default function Dashboard() {
 
                     {/* Feature Aging: laufender Open-Count */}
                     <div className="border-sidebar-border/70 dark:border-sidebar-border relative overflow-hidden rounded-xl border bg-white dark:bg-neutral-900">
-                        <div className="p-4 border-b dark:border-neutral-800 font-semibold">Feature Aging (offene Features)</div>
-                        <div className="p-4 h-[260px]">
+                        <div className="border-b p-4 font-semibold dark:border-neutral-800">Feature Aging (offene Features)</div>
+                        <div className="h-[260px] p-4">
                             {featureAging.length === 0 ? (
-                                <div className="text-sm text-muted-foreground">Keine Daten</div>
+                                <div className="text-muted-foreground text-sm">Keine Daten</div>
                             ) : (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={featureAging}>
@@ -187,25 +187,37 @@ export default function Dashboard() {
                 {/* WSJF-Abdeckung pro Planning (Stacked Bar) */}
                 <div className="grid auto-rows-min gap-4 md:grid-cols-1">
                     <div className="border-sidebar-border/70 dark:border-sidebar-border relative overflow-hidden rounded-xl border bg-white dark:bg-neutral-900">
-                        <div className="p-4 border-b dark:border-neutral-800 font-semibold">WSJF‑Abdeckung pro Planning</div>
-                        <div className="p-4 h-[280px]">
+                        <div className="border-b p-4 font-semibold dark:border-neutral-800">WSJF‑Abdeckung pro Planning</div>
+                        <div className="h-[280px] p-4">
                             {((usePage().props as any).wsjfCoverage ?? []).length === 0 ? (
-                                <div className="text-sm text-muted-foreground">Keine Daten</div>
+                                <div className="text-muted-foreground text-sm">Keine Daten</div>
                             ) : (
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={(usePage().props as any).wsjfCoverage as { planning: string; planning_id: number; rated: number; open: number; total: number }[]}>
+                                    <BarChart
+                                        data={
+                                            (usePage().props as any).wsjfCoverage as {
+                                                planning: string;
+                                                planning_id: number;
+                                                rated: number;
+                                                open: number;
+                                                total: number;
+                                            }[]
+                                        }
+                                    >
                                         <XAxis dataKey="planning" hide />
                                         <YAxis allowDecimals={false} />
-                                        <ReTooltip formatter={(value: any, name: any, props: any) => {
-                                            const p = props?.payload;
-                                            if (!p) return [value, name];
-                                            const total = Number(p.total || 0);
-                                            if (name === 'Bewertet' && total > 0) {
-                                                const pct = Math.round((Number(p.rated || 0) / total) * 100);
-                                                return [`${value} (${pct}%)`, name];
-                                            }
-                                            return [value, name];
-                                        }} />
+                                        <ReTooltip
+                                            formatter={(value: any, name: any, props: any) => {
+                                                const p = props?.payload;
+                                                if (!p) return [value, name];
+                                                const total = Number(p.total || 0);
+                                                if (name === 'Bewertet' && total > 0) {
+                                                    const pct = Math.round((Number(p.rated || 0) / total) * 100);
+                                                    return [`${value} (${pct}%)`, name];
+                                                }
+                                                return [value, name];
+                                            }}
+                                        />
                                         <Bar dataKey="rated" stackId="a" fill="#3b82f6" name="Bewertet">
                                             {((usePage().props as any).wsjfCoverage as any[]).map((d, i) => (
                                                 <Cell
@@ -217,12 +229,16 @@ export default function Dashboard() {
                                                     style={{ cursor: 'pointer' }}
                                                 />
                                             ))}
-                                            <LabelList dataKey="rated" position="top" formatter={(value: any, entry: any) => {
-                                                const total = Number(entry?.total || 0);
-                                                if (!total) return '';
-                                                const pct = Math.round((Number(value || 0) / total) * 100);
-                                                return `${pct}%`;
-                                            }} />
+                                            <LabelList
+                                                dataKey="rated"
+                                                position="top"
+                                                formatter={(value: any, entry: any) => {
+                                                    const total = Number(entry?.total || 0);
+                                                    if (!total) return '';
+                                                    const pct = Math.round((Number(value || 0) / total) * 100);
+                                                    return `${pct}%`;
+                                                }}
+                                            />
                                         </Bar>
                                         <Bar dataKey="open" stackId="a" fill="#e5e7eb" name="Offen" />
                                     </BarChart>
@@ -232,8 +248,8 @@ export default function Dashboard() {
                     </div>
                 </div>
                 {/* Liste gültiger Plannings */}
-                <div className="border-sidebar-border/70 dark:border-sidebar-border relative overflow-hidden rounded-xl border flex flex-col bg-white dark:bg-neutral-900 p-4 mt-4">
-                    <div className="text-lg font-semibold mb-4">Meine gültigen Plannings</div>
+                <div className="border-sidebar-border/70 dark:border-sidebar-border relative mt-4 flex flex-col overflow-hidden rounded-xl border bg-white p-4 dark:bg-neutral-900">
+                    <div className="mb-4 text-lg font-semibold">Meine gültigen Plannings</div>
                     {validPlannings.length === 0 ? (
                         <div className="text-muted-foreground text-sm">Keine gültigen Plannings</div>
                     ) : (
@@ -241,18 +257,18 @@ export default function Dashboard() {
                             <table className="w-full border-collapse">
                                 <thead>
                                     <tr className="border-b dark:border-gray-700">
-                                        <th className="py-2 px-4 text-left">Titel</th>
-                                        <th className="py-2 px-4 text-right">Aktion</th>
+                                        <th className="px-4 py-2 text-left">Titel</th>
+                                        <th className="px-4 py-2 text-right">Aktion</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {validPlannings.map((planning) => (
-                                        <tr key={planning.id} className="border-b dark:border-gray-700 last:border-0">
-                                            <td className="py-3 px-4">{planning.title}</td>
-                                            <td className="py-3 px-4 text-right">
+                                        <tr key={planning.id} className="border-b last:border-0 dark:border-gray-700">
+                                            <td className="px-4 py-3">{planning.title}</td>
+                                            <td className="px-4 py-3 text-right">
                                                 <Link
                                                     href={route('votes.session', { planning: planning.id })}
-                                                    className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                                                    className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium shadow-sm"
                                                 >
                                                     Zur Session
                                                 </Link>
