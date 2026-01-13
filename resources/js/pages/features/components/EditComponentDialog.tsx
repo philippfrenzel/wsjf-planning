@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Save, X } from 'lucide-react';
 import { FormEvent } from 'react';
 
 interface ComponentData {
@@ -50,9 +51,11 @@ export default function EditComponentDialog({
                     </div>
                     <div className="flex justify-end gap-2">
                         <Button type="button" variant="cancel" onClick={() => onOpenChange(false)}>
+                            <X />
                             Abbrechen
                         </Button>
                         <Button type="submit" variant="success">
+                            <Save />
                             Änderungen speichern
                         </Button>
                     </div>

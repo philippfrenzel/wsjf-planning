@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Inertia } from '@inertiajs/inertia';
 import { usePage } from '@inertiajs/react';
+import { Save, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 interface Project {
@@ -161,6 +162,18 @@ export default function Edit({
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Action buttons at top */}
+                        <div className="flex justify-end gap-2 border-b pb-4">
+                            <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                <X />
+                                Abbrechen
+                            </Button>
+                            <Button type="submit" variant="success">
+                                <Save />
+                                Speichern
+                            </Button>
+                        </div>
+
                         <Tabs defaultValue="stammdaten" className="space-y-4">
                             <TabsList className="w-full">
                                 <TabsTrigger value="stammdaten">Stammdaten</TabsTrigger>
@@ -375,9 +388,11 @@ export default function Edit({
 
                         <div className="flex justify-end gap-2">
                             <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                <X />
                                 Abbrechen
                             </Button>
                             <Button type="submit" variant="success">
+                                <Save />
                                 Speichern
                             </Button>
                         </div>

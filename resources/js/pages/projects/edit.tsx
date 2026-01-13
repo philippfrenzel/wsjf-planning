@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Inertia } from '@inertiajs/inertia';
 import { usePage } from '@inertiajs/react';
+import { Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 
 interface User {
@@ -90,6 +91,18 @@ export default function Edit({ project, users, currentStatus, statusOptions }: E
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Action buttons at top */}
+                        <div className="flex justify-end gap-2 border-b pb-4">
+                            <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                <X />
+                                Abbrechen
+                            </Button>
+                            <Button type="submit" variant="success">
+                                <Save />
+                                Speichern
+                            </Button>
+                        </div>
+
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div className="space-y-4">
                                 <div>
@@ -202,9 +215,11 @@ export default function Edit({ project, users, currentStatus, statusOptions }: E
                         </div>
                         <div className="flex justify-end gap-2 pt-2">
                             <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                <X />
                                 Abbrechen
                             </Button>
                             <Button type="submit" variant="success">
+                                <Save />
                                 Speichern
                             </Button>
                         </div>

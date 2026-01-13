@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArchiveIcon, PencilIcon, RefreshCwIcon } from 'lucide-react';
+import { ArchiveIcon, PencilIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import EstimationTable from './EstimationTable';
 
 interface EstimationComponent {
@@ -62,6 +62,7 @@ export default function ComponentItem({
                             </Button>
                         )}
                         <Button onClick={() => onAddEstimation(component.id)} variant="success" size="sm">
+                            <PlusIcon className="mr-1 h-4 w-4" />
                             Schätzung hinzufügen
                         </Button>
                     </div>

@@ -1,3 +1,4 @@
+import axios from '@/bootstrap';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -15,7 +16,6 @@ import {
     useSensors,
 } from '@dnd-kit/core';
 import { Link } from '@inertiajs/react';
-import axios from '@/bootstrap';
 import React, { useState } from 'react';
 
 interface Feature {
