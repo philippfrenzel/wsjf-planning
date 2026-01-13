@@ -58,6 +58,76 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'appVersion' => $this->getAppVersion(),
         ];
     }
-}
+
+    /**
+     * Get application version information.
+     */
+    protected function getAppVersion(): array
+    {
+        $version = config('app.version', '1.0.0');
+        $commit = $this->getGitCommit();
+        $commitDate = $this->getGitCommitDate();
+
+        return [
+            'version' => $version,
+            'commit' => $commit,
+            'commitShort' => $commit ? substr($commit, 0, 7) : null,
+            'commitDate' => $commitDate,
+        ];
+    }
+
+    /**
+     * Get the current git commit hash.
+     */
+    protected function getGitCommit(): ?string
+    {
+        try {
+            $gitPath = base_path('.git/HEAD');
+            if (! file_exists($gitPath)) {
+                return null;
+            }
+
+            $head = file_get_contents($gitPath);
+            if (str_starts_with($head, 'ref:')) {
+                $ref = trim(substr($head, 5));
+                $refPath = base_path('.git/'.$ref);
+                if (file_exists($refPath)) {
+                    return trim(file_get_contents($refPath));
+                }
+            } else {
+                return trim($head);
+            }
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the git commit date.
+     */
+    protected function getGitCommitDate(): ?string
+    {
+        try {
+            $commit = $this->getGitCommit();
+            if (! $commit) {
+                return null;
+            }
+
+            if (function_exists('exec')) {
+                $output = [];
+                exec("git show -s --format=%ci {$commit} 2>/dev/null", $output);
+                if (! empty($output[0])) {
+                    return $output[0];
+                }
+            }
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        return null;
+    }
