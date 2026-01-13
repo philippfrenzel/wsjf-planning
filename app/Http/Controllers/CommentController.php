@@ -38,8 +38,12 @@ class CommentController extends Controller
      */
     public function store(StoreCommentRequest $request): JsonResponse
     {
+        $user = auth()->user();
+        $tenantId = $user->current_tenant_id ?? $user->tenant_id;
+
         $comment = Comment::create([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
+            'tenant_id' => $tenantId,
             'body' => $request->body,
             'commentable_type' => $request->commentable_type,
             'commentable_id' => $request->commentable_id,
