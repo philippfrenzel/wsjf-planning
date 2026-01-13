@@ -21,6 +21,8 @@ interface Planning {
     created_by: number; // ID des Erstellers
     owner_id?: number; // ID des Hauptverantwortlichen
     deputy_id?: number; // ID des Stellvertreters
+    features_count?: number; // Number of features
+    stakeholders_count?: number; // Number of users/stakeholders
 }
 
 type Paginated<T> = {
@@ -298,6 +300,8 @@ export default function Index({ plannings }: IndexProps) {
                                 <TableHead>ID</TableHead>
                                 <TableHead>Titel</TableHead>
                                 <TableHead>Projekt</TableHead>
+                                <TableHead>Features</TableHead>
+                                <TableHead>Benutzer</TableHead>
                                 <TableHead>Geplant am</TableHead>
                                 <TableHead>Durchgeführt am</TableHead>
                                 <TableHead className="text-right">Aktionen</TableHead>
@@ -306,7 +310,7 @@ export default function Index({ plannings }: IndexProps) {
                         <TableBody>
                             {paginatedPlannings.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="py-8 text-center">
+                                    <TableCell colSpan={8} className="py-8 text-center">
                                         <div className="flex flex-col items-center justify-center">
                                             <Search className="mb-2 h-8 w-8 text-gray-300" />
                                             <p className="text-gray-500">Keine Plannings gefunden</p>
@@ -324,6 +328,8 @@ export default function Index({ plannings }: IndexProps) {
                                         <TableCell>{planning.id}</TableCell>
                                         <TableCell>{planning.title}</TableCell>
                                         <TableCell>{planning.project?.name ?? '-'}</TableCell>
+                                        <TableCell>{planning.features_count ?? 0}</TableCell>
+                                        <TableCell>{planning.stakeholders_count ?? 0}</TableCell>
                                         <TableCell>{formatDate(planning.planned_at)}</TableCell>
                                         <TableCell>{formatDate(planning.executed_at)}</TableCell>
                                         <TableCell className="flex justify-end gap-2">

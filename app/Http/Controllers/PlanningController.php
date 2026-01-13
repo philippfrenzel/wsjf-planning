@@ -26,6 +26,7 @@ class PlanningController extends Controller
     public function index()
     {
         $plannings = Planning::with(['project:id,name', 'stakeholders:id,name'])
+            ->withCount(['features', 'stakeholders'])
             ->latest('created_at')
             ->paginate(20);
 
