@@ -14,6 +14,7 @@ import FeatureDescription from './components/FeatureDescription';
 import FeatureDetails from './components/FeatureDetails';
 import FeatureHeader from './components/FeatureHeader';
 
+import { Comments } from '@/components/comments';
 import { useComponentManagement } from '@/hooks/useComponentManagement';
 import { useEstimationManagement } from '@/hooks/useEstimationManagement';
 import { Edit2 } from 'lucide-react';
@@ -69,6 +70,11 @@ interface Feature {
     estimation_components: EstimationComponent[];
     dependencies?: DependencyItem[];
     dependents?: DependencyItem[];
+    status_details?: {
+        value: string;
+        name: string;
+        color: string;
+    };
 }
 
 interface ShowProps {
@@ -140,83 +146,118 @@ export default function Show({ feature, auth }: ShowProps) {
                             </TabsList>
 
                             <TabsContent value="stammdaten" className="space-y-6">
-                                {/* Feature-Details anzeigen */}
-                                <FeatureDetails
-                                    jiraKey={feature.jira_key}
-                                    projectName={feature.project?.name}
-                                    requesterName={feature.requester?.name}
-                                />
+                                {/* Two-column layout: 60% left, 40% right */}
+                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[60%_1fr]">
+                                    {/* Left Column - Main Content */}
+                                    <div className="space-y-6">
+                                        {/* Feature-Details anzeigen */}
+                                        <FeatureDetails
+                                            jiraKey={feature.jira_key}
+                                            projectName={feature.project?.name}
+                                            requesterName={feature.requester?.name}
+                                        />
 
-                                {/* Abhängigkeiten anzeigen */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Abhängigkeiten</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        {feature.dependencies && feature.dependencies.length > 0 ? (
-                                            <ul className="space-y-2">
-                                                {feature.dependencies.map((dep) => (
-                                                    <li key={dep.id} className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            <Badge className={typeBadgeClass(dep.type)}>{translateDepType(dep.type)}</Badge>
-                                                            {dep.related ? (
-                                                                <Link
-                                                                    href={route('features.show', { feature: dep.related.id })}
-                                                                    className="text-blue-600 hover:underline"
-                                                                >
-                                                                    {dep.related.jira_key} – {dep.related.name}
-                                                                </Link>
-                                                            ) : (
-                                                                <span>-</span>
-                                                            )}
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="text-gray-500">Keine Abhängigkeiten erfasst.</p>
+                                        {/* Abhängigkeiten anzeigen */}
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Abhängigkeiten</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                {feature.dependencies && feature.dependencies.length > 0 ? (
+                                                    <ul className="space-y-2">
+                                                        {feature.dependencies.map((dep) => (
+                                                            <li key={dep.id} className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-2">
+                                                                    <Badge className={typeBadgeClass(dep.type)}>{translateDepType(dep.type)}</Badge>
+                                                                    {dep.related ? (
+                                                                        <Link
+                                                                            href={route('features.show', { feature: dep.related.id })}
+                                                                            className="text-blue-600 hover:underline"
+                                                                        >
+                                                                            {dep.related.jira_key} – {dep.related.name}
+                                                                        </Link>
+                                                                    ) : (
+                                                                        <span>-</span>
+                                                                    )}
+                                                                </div>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                ) : (
+                                                    <p className="text-gray-500">Keine Abhängigkeiten erfasst.</p>
+                                                )}
+
+                                                {feature.dependents && feature.dependents.length > 0 && (
+                                                    <div className="mt-4">
+                                                        <h4 className="mb-2 text-sm font-medium">Wird referenziert von</h4>
+                                                        <ul className="space-y-2">
+                                                            {feature.dependents.map((dep) => (
+                                                                <li key={`dep-${dep.id}`} className="flex items-center gap-2">
+                                                                    <Badge variant="outline">{translateDepType(dep.type)}</Badge>
+                                                                    {dep.feature ? (
+                                                                        <Link
+                                                                            href={route('features.show', { feature: dep.feature.id })}
+                                                                            className="text-blue-600 hover:underline"
+                                                                        >
+                                                                            {dep.feature.jira_key} – {dep.feature.name}
+                                                                        </Link>
+                                                                    ) : (
+                                                                        <span>-</span>
+                                                                    )}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </CardContent>
+                                        </Card>
+
+                                        {/* Feature Beschreibung */}
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Beschreibung</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                {feature.description ? (
+                                                    <div className="prose prose-sm max-w-none">
+                                                        <FeatureDescription content={feature.description} />
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-gray-500">Keine Beschreibung vorhanden.</p>
+                                                )}
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+
+                                    {/* Right Column - Status and Comments */}
+                                    <div className="space-y-6">
+                                        {/* Status anzeigen */}
+                                        {feature.status_details && (
+                                            <Card>
+                                                <CardHeader>
+                                                    <CardTitle>Status</CardTitle>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="flex items-center">
+                                                        <span
+                                                            className={`inline-block rounded-md px-3 py-1.5 text-sm font-medium ${feature.status_details.color}`}
+                                                        >
+                                                            {feature.status_details.name}
+                                                        </span>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
                                         )}
 
-                                        {feature.dependents && feature.dependents.length > 0 && (
-                                            <div className="mt-4">
-                                                <h4 className="mb-2 text-sm font-medium">Wird referenziert von</h4>
-                                                <ul className="space-y-2">
-                                                    {feature.dependents.map((dep) => (
-                                                        <li key={`dep-${dep.id}`} className="flex items-center gap-2">
-                                                            <Badge variant="outline">{translateDepType(dep.type)}</Badge>
-                                                            {dep.feature ? (
-                                                                <Link
-                                                                    href={route('features.show', { feature: dep.feature.id })}
-                                                                    className="text-blue-600 hover:underline"
-                                                                >
-                                                                    {dep.feature.jira_key} – {dep.feature.name}
-                                                                </Link>
-                                                            ) : (
-                                                                <span>-</span>
-                                                            )}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-
-                                {/* Feature Beschreibung */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Beschreibung</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        {feature.description ? (
-                                            <div className="prose prose-sm max-w-none">
-                                                <FeatureDescription content={feature.description} />
-                                            </div>
-                                        ) : (
-                                            <p className="text-gray-500">Keine Beschreibung vorhanden.</p>
-                                        )}
-                                    </CardContent>
-                                </Card>
+                                        {/* Kommentare */}
+                                        <Comments
+                                            entity={{
+                                                type: 'App\\Models\\Feature',
+                                                id: feature.id,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
                             </TabsContent>
 
                             <TabsContent value="schaetzungen" className="space-y-6">
