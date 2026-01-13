@@ -143,9 +143,9 @@ export default function Index({ projects, currentUserId }: IndexProps) {
             </div>
 
             {/* Filter-Box */}
-            <div className="mx-4 mb-6 rounded-lg border bg-gray-50 p-4">
+            <div className="mx-4 mb-6 rounded-lg border bg-muted p-4">
                 <div className="mb-2 flex items-center gap-2">
-                    <Search className="h-4 w-4 text-gray-500" />
+                    <Search className="h-4 w-4 text-muted-foreground" />
                     <h2 className="font-medium">Filter</h2>
 
                     {/* Dauerhaft sichtbarer Reset-Button */}
@@ -157,7 +157,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div>
-                        <label htmlFor="projectNumber" className="mb-1 block text-sm font-medium text-gray-700">
+                        <label htmlFor="projectNumber" className="mb-1 block text-sm font-medium text-foreground">
                             Projektnummer
                         </label>
                         <Input
@@ -170,14 +170,14 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                     </div>
 
                     <div>
-                        <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-700">
+                        <label htmlFor="name" className="mb-1 block text-sm font-medium text-foreground">
                             Projektname
                         </label>
                         <Input id="name" name="name" placeholder="Nach Projektname filtern..." value={filters.name} onChange={handleFilterChange} />
                     </div>
 
                     <div>
-                        <label htmlFor="leader" className="mb-1 block text-sm font-medium text-gray-700">
+                        <label htmlFor="leader" className="mb-1 block text-sm font-medium text-foreground">
                             Projektleiter
                         </label>
                         <Input
@@ -193,7 +193,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
 
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Ergebnisanzeige mit Paginierung */}
-                <div className="mb-2 flex items-center justify-between text-sm text-gray-500">
+                <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
                     <div>{totalItems > 0 ? `Zeige ${startItem} bis ${endItem} von ${totalItems} Projekten` : 'Keine Projekte gefunden'}</div>
 
                     {/* Seitenauswahl */}
@@ -245,7 +245,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                                                 {project.status_details.name}
                                             </span>
                                         ) : (
-                                            <span className="inline-block rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-800">In Planung</span>
+                                            <span className="inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">In Planung</span>
                                         )}
                                     </TableCell>
                                     <TableCell>{project.project_leader ? project.project_leader.name : '-'}</TableCell>
@@ -288,7 +288,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                         {/* Anzeigen, wenn keine Ergebnisse gefunden wurden */}
                         {filteredProjects.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={7} className="py-8 text-center text-gray-500">
+                                <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
                                     Keine Projekte gefunden, die den Filterkriterien entsprechen.
                                 </TableCell>
                             </TableRow>
@@ -299,7 +299,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                 {/* Verbesserte Paginierungs-Navigation */}
                 {filteredProjects.length > 0 && (
                     <div className="mt-4 flex items-center justify-between">
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                             Zeige {totalItems === 0 ? 0 : startItem} bis {totalItems === 0 ? 0 : endItem} von {totalItems} Einträgen
                         </div>
 

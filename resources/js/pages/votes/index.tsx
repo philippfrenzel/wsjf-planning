@@ -41,7 +41,7 @@ export default function Index({ votes }: PageProps) {
         <AppLayout breadcrumbs={[{ title: 'Votes', href: '/votes' }]}>
             <div className="p-6">
                 <Card>
-                    <CardHeader className="bg-gray-50">
+                    <CardHeader className="bg-muted">
                         <CardTitle>Alle Votes im Tenant ({pagination?.total ?? voteData.length})</CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -65,7 +65,7 @@ export default function Index({ votes }: PageProps) {
                                             <TableCell className="font-medium">{v.planning?.title ?? '-'}</TableCell>
                                             <TableCell>
                                                 {v.feature ? (
-                                                    <span className="text-gray-900">
+                                                    <span className="text-foreground">
                                                         <Badge variant="outline" className="mr-2">
                                                             {v.feature.jira_key}
                                                         </Badge>
@@ -76,7 +76,7 @@ export default function Index({ votes }: PageProps) {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge className={typeColor[v.type] ?? 'bg-gray-100 text-gray-800'}>{v.type}</Badge>
+                                                <Badge className={typeColor[v.type] ?? 'bg-muted text-muted-foreground'}>{v.type}</Badge>
                                             </TableCell>
                                             <TableCell className="font-mono">{v.value}</TableCell>
                                             <TableCell>{v.user?.name ?? '-'}</TableCell>

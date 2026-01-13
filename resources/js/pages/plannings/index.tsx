@@ -159,10 +159,10 @@ export default function Index({ plannings }: IndexProps) {
 
             {/* Filter-Bereich */}
             <div className="flex flex-col p-5">
-                <Card className="border border-gray-200 bg-gray-50">
+                <Card className="border bg-muted">
                     <CardContent>
                         <div className="mb-4 flex items-center gap-2">
-                            <Search className="h-4 w-4 text-gray-500" />
+                            <Search className="h-4 w-4 text-muted-foreground" />
                             <h2 className="font-medium">Filter</h2>
 
                             {/* Dauerhaft sichtbarer Reset-Button */}
@@ -184,7 +184,7 @@ export default function Index({ plannings }: IndexProps) {
                                     />
                                     {filters.title && (
                                         <button
-                                            className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                            className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                             onClick={() => handleFilterChange('title', '')}
                                         >
                                             <X className="h-4 w-4" />
@@ -268,8 +268,8 @@ export default function Index({ plannings }: IndexProps) {
                 {/* Tabellen-Bereich */}
                 <div className="mt-4">
                     {/* Ergebnisanzeige with Paginierung */}
-                    <div className="mb-2 flex items-center justify-between text-sm text-gray-500">
-                        <div className="text-sm text-gray-500">
+                    <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="text-sm text-muted-foreground">
                             {filteredPlannings.length > 0
                                 ? `Zeige ${startItem} bis ${endItem} von ${filteredPlannings.length} Plannings`
                                 : 'Keine Plannings gefunden'}
@@ -312,8 +312,8 @@ export default function Index({ plannings }: IndexProps) {
                                 <TableRow>
                                     <TableCell colSpan={8} className="py-8 text-center">
                                         <div className="flex flex-col items-center justify-center">
-                                            <Search className="mb-2 h-8 w-8 text-gray-300" />
-                                            <p className="text-gray-500">Keine Plannings gefunden</p>
+                                            <Search className="mb-2 h-8 w-8 text-muted-foreground" />
+                                            <p className="text-muted-foreground">Keine Plannings gefunden</p>
                                             {Object.values(filters).some((f) => f !== '') && (
                                                 <Button variant="link" onClick={resetFilters} className="mt-2">
                                                     Filter zurücksetzen
@@ -381,7 +381,7 @@ export default function Index({ plannings }: IndexProps) {
                     {/* Verbesserte Paginierungs-Navigation */}
                     {filteredPlannings.length > 0 && (
                         <div className="mt-4 flex items-center justify-between">
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-muted-foreground">
                                 Zeige {Math.min(filteredPlannings.length, (currentPage - 1) * itemsPerPage + 1)} bis{' '}
                                 {Math.min(filteredPlannings.length, currentPage * itemsPerPage)} von {filteredPlannings.length} Einträgen
                             </div>
