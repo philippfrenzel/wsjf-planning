@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Eye, MoreHorizontal, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { Eye, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface Role {
@@ -168,9 +168,11 @@ export default function Index({ users }: UsersIndexProps) {
                     </div>
                     <div className="flex justify-end gap-3">
                         <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                            <X />
                             Abbrechen
                         </Button>
                         <Button variant="destructive" onClick={() => userToDelete && handleDelete(userToDelete)}>
+                            <Trash2 />
                             Löschen
                         </Button>
                     </div>

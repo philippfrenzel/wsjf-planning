@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { Link } from '@inertiajs/react';
+import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface Planning {
@@ -165,6 +166,7 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
                                                     className="btn-sm btn-outline-danger"
                                                 >
                                                     <Button size="sm" variant="destructive">
+                                                        <Trash2 />
                                                         Löschen
                                                     </Button>
                                                 </Link>

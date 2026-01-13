@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { type SharedData } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
+import { X } from 'lucide-react';
 
 export default function TenantsIndex() {
     const page = usePage<SharedData>();
@@ -220,6 +221,7 @@ export default function TenantsIndex() {
                                                                     variant="destructive"
                                                                     onClick={() => revokeInvitation(selectedOwnedTenant.id, p.id)}
                                                                 >
+                                                                    <X />
                                                                     Zurückziehen
                                                                 </Button>
                                                             </li>

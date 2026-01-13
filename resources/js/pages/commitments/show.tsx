@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { Link } from '@inertiajs/react';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface Planning {
     id: number;
@@ -85,10 +86,16 @@ export default function ShowCommitment({ commitment }: ShowCommitmentProps) {
                     <h1 className="text-2xl font-bold">Commitment Details</h1>
                     <div className="flex gap-2">
                         <Link href={route('commitments.edit', commitment.id)}>
-                            <Button variant="outline">Bearbeiten</Button>
+                            <Button variant="outline">
+                                <Pencil />
+                                Bearbeiten
+                            </Button>
                         </Link>
                         <Link href={route('commitments.destroy', commitment.id)} method="delete" as="button">
-                            <Button variant="destructive">Löschen</Button>
+                            <Button variant="destructive">
+                                <Trash2 />
+                                Löschen
+                            </Button>
                         </Link>
                     </div>
                 </div>
