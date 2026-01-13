@@ -5,7 +5,8 @@ import axios from 'axios';
  */
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.headers.common['Accept'] = 'application/json';
-axios.defaults.headers.common['Content-Type'] = 'application/json';
+// Let axios automatically set Content-Type based on the data being sent
+// Setting it globally to 'application/json' can cause issues with data serialization
 
 /**
  * Configure CSRF token for all axios requests
