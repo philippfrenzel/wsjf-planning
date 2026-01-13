@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { Inertia } from '@inertiajs/inertia';
 import { usePage } from '@inertiajs/react';
+import { Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 // TipTap Imports statt ReactQuill
 import TextAlign from '@tiptap/extension-text-align';
@@ -256,9 +257,11 @@ export default function Create({ projects, users }: CreateProps) {
 
                         <div className="flex justify-end gap-2 pt-4">
                             <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                <X />
                                 Abbrechen
                             </Button>
                             <Button type="submit" variant="success">
+                                <Save />
                                 Feature speichern
                             </Button>
                         </div>

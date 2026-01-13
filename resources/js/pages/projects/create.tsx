@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Inertia } from '@inertiajs/inertia';
 import { usePage } from '@inertiajs/react';
+import { Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 
 // Beispiel: users als Prop (Inertia muss die User-Liste mitgeben)
@@ -140,9 +141,11 @@ export default function Create({ users }: CreateProps) {
                         </div>
                         <div className="flex justify-end gap-2 pt-2">
                             <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                <X />
                                 Abbrechen
                             </Button>
                             <Button type="submit" variant="success">
+                                <Save />
                                 Speichern
                             </Button>
                         </div>

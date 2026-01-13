@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Save } from 'lucide-react';
 import { FormEvent } from 'react';
 
 interface ComponentFormProps {
@@ -33,6 +34,7 @@ export default function ComponentForm({ componentData, onNameChange, onDescripti
                     </div>
                     <div className="flex justify-end">
                         <Button type="submit" variant="success">
+                            <Save />
                             Komponente erstellen
                         </Button>
                     </div>

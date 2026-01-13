@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { useForm } from '@inertiajs/react';
+import { Save, X } from 'lucide-react';
 import React from 'react';
 
 interface Planning {
@@ -93,6 +94,18 @@ export default function EditCommitment({
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Action buttons at top */}
+                            <div className="flex justify-end gap-2 border-b pb-4">
+                                <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                    <X />
+                                    Abbrechen
+                                </Button>
+                                <Button type="submit" variant="success" disabled={processing}>
+                                    <Save />
+                                    {processing ? 'Wird gespeichert...' : 'Änderungen speichern'}
+                                </Button>
+                            </div>
+
                             {/* Feature - Read-Only */}
                             <div>
                                 <Label htmlFor="feature_id">Feature</Label>
@@ -174,9 +187,11 @@ export default function EditCommitment({
 
                             <div className="flex justify-end gap-2">
                                 <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                    <X />
                                     Abbrechen
                                 </Button>
                                 <Button type="submit" variant="success" disabled={processing}>
+                                    <Save />
                                     {processing ? 'Wird gespeichert...' : 'Änderungen speichern'}
                                 </Button>
                             </div>

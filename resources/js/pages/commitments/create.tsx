@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { useForm } from '@inertiajs/react';
 import axios from '@/bootstrap';
+import { Save, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 interface Planning {
@@ -219,9 +220,11 @@ export default function CreateCommitment({
 
                             <div className="flex justify-end gap-2">
                                 <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                    <X />
                                     Abbrechen
                                 </Button>
                                 <Button type="submit" variant="success" disabled={processing}>
+                                    <Save />
                                     {processing ? 'Wird gespeichert...' : 'Commitment erstellen'}
                                 </Button>
                             </div>

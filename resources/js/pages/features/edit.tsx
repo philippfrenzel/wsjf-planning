@@ -14,7 +14,7 @@ import { usePage } from '@inertiajs/react';
 import TextAlign from '@tiptap/extension-text-align';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Check } from 'lucide-react';
+import { Check, Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Comments } from '@/components/comments';
 
@@ -242,6 +242,18 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Action buttons at top */}
+                        <div className="flex justify-end gap-2 border-b pb-4">
+                            <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                <X />
+                                Abbrechen
+                            </Button>
+                            <Button type="submit" variant="success">
+                                <Save />
+                                Änderungen speichern
+                            </Button>
+                        </div>
+
                         {/* Two-column layout: 60% left, 30% right */}
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[60%_1fr]">
                             {/* Left Column - Main Form Fields */}
@@ -381,9 +393,11 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
 
                         <div className="flex justify-end gap-2 border-t pt-4">
                             <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                <X />
                                 Abbrechen
                             </Button>
                             <Button type="submit" variant="success">
+                                <Save />
                                 Änderungen speichern
                             </Button>
                         </div>

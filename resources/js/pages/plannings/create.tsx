@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Inertia } from '@inertiajs/inertia';
 import { usePage } from '@inertiajs/react';
+import { Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 
 interface Project {
@@ -206,9 +207,11 @@ export default function Create({ projects, users }: CreateProps) {
 
                         <div className="flex justify-end gap-2">
                             <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                <X />
                                 Abbrechen
                             </Button>
                             <Button type="submit" variant="success">
+                                <Save />
                                 Speichern
                             </Button>
                         </div>

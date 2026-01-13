@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Save, X } from 'lucide-react';
 import { FormEvent } from 'react';
 
 interface EstimationData {
@@ -117,9 +118,11 @@ export default function EstimationDialog({
                     </div>
                     <div className="flex justify-end gap-2 pt-2">
                         <Button type="button" variant="cancel" onClick={() => onOpenChange(false)}>
+                            <X />
                             Abbrechen
                         </Button>
                         <Button type="submit" variant="success">
+                            <Save />
                             {isEditing ? 'Schätzung aktualisieren' : 'Schätzung speichern'}
                         </Button>
                     </div>
