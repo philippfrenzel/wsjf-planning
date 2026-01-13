@@ -108,8 +108,8 @@ const CommitmentModal: React.FC<CommitmentModalProps> = ({
 
     // CSS-Klasse für den aktuellen Status
     const getCurrentStatusColor = () => {
-        if (!currentStatus) return 'bg-gray-100 text-gray-800';
-        return statusColors[currentStatus] || 'bg-gray-100 text-gray-800';
+        if (!currentStatus) return 'bg-muted text-muted-foreground';
+        return statusColors[currentStatus] || 'bg-muted text-muted-foreground';
     };
 
     return (
@@ -123,7 +123,7 @@ const CommitmentModal: React.FC<CommitmentModalProps> = ({
                     {selectedFeature && (
                         <div>
                             <Label className="mb-1 text-sm font-semibold">Feature</Label>
-                            <div className="rounded-md border bg-gray-50 p-2">
+                            <div className="rounded-md border bg-muted p-2">
                                 {selectedFeature.jira_key}: {selectedFeature.name}
                             </div>
                         </div>
@@ -132,7 +132,7 @@ const CommitmentModal: React.FC<CommitmentModalProps> = ({
                     {selectedCommitment && (
                         <div>
                             <Label className="mb-1 text-sm font-semibold">Erstellt von</Label>
-                            <div className="rounded-md border bg-gray-50 p-2">{selectedCommitment.user?.name || 'Unbekannter Benutzer'}</div>
+                            <div className="rounded-md border bg-muted p-2">{selectedCommitment.user?.name || 'Unbekannter Benutzer'}</div>
                         </div>
                     )}
 
@@ -156,7 +156,7 @@ const CommitmentModal: React.FC<CommitmentModalProps> = ({
                     {isEditing && (
                         <div className="space-y-1">
                             <Label className="mb-1 text-sm font-semibold">Aktueller Status</Label>
-                            <div className="flex items-center rounded-md border bg-gray-50 p-2">
+                            <div className="flex items-center rounded-md border bg-muted p-2">
                                 <Badge className={getCurrentStatusColor()}>{getCurrentStatusName()}</Badge>
                             </div>
                         </div>

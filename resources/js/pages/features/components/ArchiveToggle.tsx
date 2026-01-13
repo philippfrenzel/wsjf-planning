@@ -8,7 +8,7 @@ interface ArchiveToggleProps {
 
 export default function ArchiveToggle({ showArchived, toggleArchived }: ArchiveToggleProps) {
     return (
-        <Button variant="secondary" size="sm" onClick={toggleArchived} className="text-gray-600">
+        <Button variant="secondary" size="sm" onClick={toggleArchived} className="text-muted-foreground">
             {showArchived ? (
                 <>
                     <EyeOffIcon className="mr-1 h-4 w-4" />

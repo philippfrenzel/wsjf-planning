@@ -38,7 +38,7 @@ export default function ComponentItem({
                     <div className="flex items-center gap-2">
                         <span>{component.name}</span>
                         {component.status === 'archived' && (
-                            <Badge variant="outline" className="bg-gray-100">
+                            <Badge variant="outline" className="bg-muted">
                                 Archiviert
                             </Badge>
                         )}
@@ -78,7 +78,7 @@ export default function ComponentItem({
                         onDelete={onDeleteEstimation ? (estimationId) => onDeleteEstimation(component.id, estimationId) : undefined}
                     />
                 ) : (
-                    <p className="text-gray-500">Noch keine Schätzungen vorhanden.</p>
+                    <p className="text-muted-foreground">Noch keine Schätzungen vorhanden.</p>
                 )}
             </CardContent>
         </Card>

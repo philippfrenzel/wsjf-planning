@@ -76,7 +76,7 @@ function getCommitmentTypeBadgeClass(type: string): string {
         B: 'bg-yellow-100 text-yellow-800',
         A: 'bg-green-100 text-green-800',
     };
-    return classes[type] || 'bg-gray-100 text-gray-800';
+    return classes[type] || 'bg-muted text-muted-foreground';
 }
 
 function getCommitmentTypeLabel(type: string): string {

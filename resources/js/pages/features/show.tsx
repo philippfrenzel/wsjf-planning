@@ -184,7 +184,7 @@ export default function Show({ feature, auth }: ShowProps) {
                                                         ))}
                                                     </ul>
                                                 ) : (
-                                                    <p className="text-gray-500">Keine Abhängigkeiten erfasst.</p>
+                                                    <p className="text-muted-foreground">Keine Abhängigkeiten erfasst.</p>
                                                 )}
 
                                                 {feature.dependents && feature.dependents.length > 0 && (
@@ -223,7 +223,7 @@ export default function Show({ feature, auth }: ShowProps) {
                                                         <FeatureDescription content={feature.description} />
                                                     </div>
                                                 ) : (
-                                                    <p className="text-gray-500">Keine Beschreibung vorhanden.</p>
+                                                    <p className="text-muted-foreground">Keine Beschreibung vorhanden.</p>
                                                 )}
                                             </CardContent>
                                         </Card>
@@ -307,7 +307,7 @@ export default function Show({ feature, auth }: ShowProps) {
                                                 ))}
                                         </div>
                                     ) : (
-                                        <p className="text-gray-500">Noch keine Komponenten vorhanden.</p>
+                                        <p className="text-muted-foreground">Noch keine Komponenten vorhanden.</p>
                                     )}
                                 </div>
                             </TabsContent>
@@ -369,6 +369,6 @@ function typeBadgeClass(t: string): string {
         case 'ersetzt':
             return 'bg-purple-100 text-purple-800';
         default:
-            return 'bg-gray-100 text-gray-800';
+            return 'bg-muted text-foreground';
     }
 }

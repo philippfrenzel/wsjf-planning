@@ -102,7 +102,7 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
         if (!editor) return null;
 
         return (
-            <div className="flex flex-wrap gap-1 border-b bg-gray-50 p-2">
+            <div className="flex flex-wrap gap-1 border-b bg-muted p-2">
                 {/* Textformatierungen */}
                 <div className="mr-2 flex gap-1 border-r pr-2">
                     <Button
@@ -349,7 +349,7 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
                                                                     className={`mr-2 inline-block h-3 w-3 rounded-full ${option.color.replace('bg-', 'bg-').replace('text-', '')}`}
                                                                 ></span>
                                                                 {option.label}
-                                                                {option.current && <span className="ml-2 text-xs text-gray-500">(aktuell)</span>}
+                                                                {option.current && <span className="ml-2 text-xs text-muted-foreground">(aktuell)</span>}
                                                             </div>
                                                         </SelectItem>
                                                     ))}

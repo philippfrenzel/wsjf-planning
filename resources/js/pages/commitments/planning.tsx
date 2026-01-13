@@ -52,7 +52,7 @@ function getCommitmentTypeBadge(type: string) {
         A: 'bg-green-100 text-green-800',
     };
 
-    return classes[type as keyof typeof classes] || 'bg-gray-100 text-gray-800';
+    return classes[type as keyof typeof classes] || 'bg-muted text-foreground';
 }
 
 function getStatusBadge(status: Commitment['status_details']) {
@@ -87,7 +87,7 @@ export default function PlanningCommitments({ planning, commitmentTypes }: Plann
                 {planning.features.length === 0 ? (
                     <Card>
                         <CardContent className="py-6">
-                            <p className="text-center text-gray-500">Dieses Planning enthält keine Features.</p>
+                            <p className="text-center text-muted-foreground">Dieses Planning enthält keine Features.</p>
                         </CardContent>
                     </Card>
                 ) : (
@@ -114,7 +114,7 @@ export default function PlanningCommitments({ planning, commitmentTypes }: Plann
                                 </CardHeader>
                                 <CardContent>
                                     {feature.commitments.length === 0 ? (
-                                        <div className="py-2 text-center text-gray-500">
+                                        <div className="py-2 text-center text-muted-foreground">
                                             Keine Commitments für dieses Feature.
                                             <div className="mt-2">
                                                 <Link href={route('commitments.create', { planning_id: planning.id, feature_id: feature.id })}>
