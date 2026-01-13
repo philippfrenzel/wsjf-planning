@@ -1,8 +1,8 @@
+import axios from '@/bootstrap';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import type { Comment, CommentableEntity } from '@/types/comment';
-import axios from '@/bootstrap';
 import { MessageSquare, Send } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { CommentItem } from './CommentItem';
@@ -50,7 +50,7 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
                 commentable_type: entity.type,
                 commentable_id: entity.id,
             });
-            
+
             setNewComment('');
             // Reload comments to show new comment in the correct place
             await loadComments();
@@ -70,7 +70,7 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
                 commentable_id: entity.id,
                 parent_id: parentId,
             });
-            
+
             // Reload comments to show new reply in the correct place
             await loadComments();
         } catch (error) {
@@ -131,19 +131,11 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
                 {loading ? (
                     <div className="py-4 text-center text-sm text-gray-500">Kommentare werden geladen...</div>
                 ) : comments.length === 0 ? (
-                    <div className="py-8 text-center text-sm text-gray-500">
-                        Noch keine Kommentare vorhanden. Seien Sie der Erste!
-                    </div>
+                    <div className="py-8 text-center text-sm text-gray-500">Noch keine Kommentare vorhanden. Seien Sie der Erste!</div>
                 ) : (
                     <div className="space-y-4">
                         {comments.map((comment) => (
-                            <CommentItem
-                                key={comment.id}
-                                comment={comment}
-                                onReply={handleReply}
-                                onUpdate={handleUpdate}
-                                onDelete={handleDelete}
-                            />
+                            <CommentItem key={comment.id} comment={comment} onReply={handleReply} onUpdate={handleUpdate} onDelete={handleDelete} />
                         ))}
                     </div>
                 )}

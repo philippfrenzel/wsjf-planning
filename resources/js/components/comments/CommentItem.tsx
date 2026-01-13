@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import type { Comment } from '@/types/comment';
 import { Edit2, MessageCircle, Trash2, X } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 interface CommentItemProps {
     comment: Comment;
@@ -68,11 +68,9 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
                     <div className="flex-1 space-y-2">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <span className="font-semibold text-sm">{comment.user.name}</span>
+                                <span className="text-sm font-semibold">{comment.user.name}</span>
                                 <span className="text-xs text-gray-500">{formatDate(comment.created_at)}</span>
-                                {comment.created_at !== comment.updated_at && (
-                                    <span className="text-xs text-gray-400">(bearbeitet)</span>
-                                )}
+                                {comment.created_at !== comment.updated_at && <span className="text-xs text-gray-400">(bearbeitet)</span>}
                             </div>
 
                             {comment.is_owner && !isEditing && (
@@ -89,12 +87,7 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
 
                         {isEditing ? (
                             <div className="space-y-2">
-                                <Textarea
-                                    value={editText}
-                                    onChange={(e) => setEditText(e.target.value)}
-                                    rows={3}
-                                    className="resize-none"
-                                />
+                                <Textarea value={editText} onChange={(e) => setEditText(e.target.value)} rows={3} className="resize-none" />
                                 <div className="flex gap-2">
                                     <Button size="sm" onClick={handleUpdate}>
                                         Speichern
@@ -113,7 +106,7 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-sm text-gray-700 whitespace-pre-wrap">{comment.body}</div>
+                            <div className="text-sm whitespace-pre-wrap text-gray-700">{comment.body}</div>
                         )}
 
                         {!isEditing && canReply && (
@@ -157,14 +150,7 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
             {comment.replies && comment.replies.length > 0 && (
                 <div className="space-y-2">
                     {comment.replies.map((reply) => (
-                        <CommentItem
-                            key={reply.id}
-                            comment={reply}
-                            onReply={onReply}
-                            onUpdate={onUpdate}
-                            onDelete={onDelete}
-                            depth={depth + 1}
-                        />
+                        <CommentItem key={reply.id} comment={reply} onReply={onReply} onUpdate={onUpdate} onDelete={onDelete} depth={depth + 1} />
                     ))}
                 </div>
             )}

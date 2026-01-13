@@ -30,14 +30,14 @@ interface CreateProps {
 
 export default function Create({ projects, users }: CreateProps) {
     const { errors } = usePage().props as { errors: Record<string, string> };
-    
+
     // Breadcrumbs definieren
     const breadcrumbs = [
         { title: 'Startseite', href: '/' },
         { title: 'Plannings', href: route('plannings.index') },
         { title: 'Neues Planning', href: '#' },
     ];
-    
+
     const [values, setValues] = useState({
         project_id: '',
         title: '',

@@ -1,3 +1,4 @@
+import { Comments } from '@/components/comments';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
@@ -16,7 +17,6 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Check, Save, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { Comments } from '@/components/comments';
 
 interface Project {
     id: number;
