@@ -14,6 +14,8 @@ Diese Anwendung ermöglicht es Teams, Planungszyklen zu organisieren, Aufwände 
 - **Stakeholder-Integration**: Binden Sie relevante Teammitglieder in den Planungsprozess ein
 - **Filter und Suche**: Finden Sie schnell relevante Planungen und Features durch umfangreiche Filtermöglichkeiten
 - **Abonnements**: Benutzer können Pläne auswählen und monatliche Zahlungen veranlassen
+- **Kommentarfunktion**: Diskutieren Sie Features, Planungen und Projekte mit verschachtelten Kommentaren
+- **Versionsinformation**: Automatische Anzeige von Version und Git-Commit für besseres Issue-Tracking
 
 ## Installation
 
@@ -32,12 +34,19 @@ Diese Anwendung ermöglicht es Teams, Planungszyklen zu organisieren, Aufwände 
     npm install
     ```
 
-4. Starten Sie den Laravel-Server:
+4. Konfigurieren Sie die Umgebungsvariablen:
+    ```bash
+    cp .env.example .env
+    # Setzen Sie APP_VERSION (optional, Standard: 1.0.0)
+    APP_VERSION=1.0.0
+    ```
+
+5. Starten Sie den Laravel-Server:
     ```bash
     php artisan serve
     ```
 
-5. Starten Sie die Frontend-Entwicklung:
+6. Starten Sie die Frontend-Entwicklung:
     ```bash
     npm run dev
     ```
@@ -50,6 +59,13 @@ composer test
 # oder
 npm run test:e2e
 ```
+
+## Dokumentation
+
+Weitere Dokumentation finden Sie im `docs/` Verzeichnis:
+- [Kommentarfunktion](docs/FRONTEND_KOMMENTARE.md) - Nutzung der Kommentarfunktion
+- [Versionsinformation](docs/VERSION_INFO.md) - Details zur Versionsverwaltung
+- [Kommentar-Fix](docs/COMMENT_COMPONENT_FIX.md) - Technische Details zum Kommentar-Fix
 
 Technologien
 Backend: Laravel (PHP)

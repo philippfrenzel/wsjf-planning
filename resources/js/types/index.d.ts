@@ -29,6 +29,13 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface AppVersion {
+    version: string;
+    commit: string | null;
+    commitShort: string | null;
+    commitDate: string | null;
+}
+
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
@@ -36,6 +43,7 @@ export interface SharedData {
     ziggy: Config & { location: string };
     locale: string;
     sidebarOpen: boolean;
+    appVersion: AppVersion;
     [key: string]: unknown;
 }
 
