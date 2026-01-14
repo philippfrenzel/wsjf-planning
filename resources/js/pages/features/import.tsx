@@ -143,7 +143,7 @@ export default function Import({ project }: PageProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="max-w-2xl p-6">
                 <Card>
-                    <CardHeader className="bg-gray-50">
+                    <CardHeader className="bg-muted">
                         <CardTitle>Features importieren</CardTitle>
                         <CardDescription>
                             Projekt: <span className="font-semibold">{project.name}</span>
@@ -214,7 +214,7 @@ export default function Import({ project }: PageProps) {
                                                         preview[rowIdx] ? (
                                                             <tr
                                                                 key={`ex-${rowIdx}`}
-                                                                className={rowIdx === 0 && data.has_header ? 'bg-gray-50 font-semibold' : ''}
+                                                                className={rowIdx === 0 && data.has_header ? 'bg-muted font-semibold' : ''}
                                                             >
                                                                 {data.mapping.map((_, i) => (
                                                                     <td key={`ex-${rowIdx}-${i}`} className="border-t px-2 py-1 whitespace-pre-wrap">
@@ -232,7 +232,7 @@ export default function Import({ project }: PageProps) {
                                         <table className="min-w-full text-sm">
                                             <tbody>
                                                 {preview.map((row, idx) => (
-                                                    <tr key={idx} className={idx === 0 && data.has_header ? 'bg-gray-50 font-semibold' : ''}>
+                                                    <tr key={idx} className={idx === 0 && data.has_header ? 'bg-muted font-semibold' : ''}>
                                                         {row.map((cell, i) => (
                                                             <td key={i} className="border-t px-2 py-1 whitespace-pre-wrap">
                                                                 {cell}
@@ -263,7 +263,7 @@ export default function Import({ project }: PageProps) {
                                 </Button>
                             </div>
 
-                            <div className="mt-4 text-xs text-gray-500">
+                            <div className="mt-4 text-xs text-muted-foreground">
                                 Upsert-Logik: Features werden anhand des Jira-Keys im Projekt angelegt oder aktualisiert.
                             </div>
                         </form>

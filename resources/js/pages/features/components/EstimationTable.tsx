@@ -94,8 +94,8 @@ export default function EstimationTable({ estimations, onEdit, onDelete }: Estim
                             </TableRow>
                             {estimation.notes && (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="bg-gray-50">
-                                        <div className="p-2 text-sm text-gray-700">
+                                    <TableCell colSpan={8} className="bg-muted">
+                                        <div className="p-2 text-sm text-foreground">
                                             <strong>Notiz:</strong> {renderMultilineText(estimation.notes)}
                                         </div>
                                     </TableCell>

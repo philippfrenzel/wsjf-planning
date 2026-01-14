@@ -109,7 +109,7 @@ export default function EditCommitment({
                             {/* Feature - Read-Only */}
                             <div>
                                 <Label htmlFor="feature_id">Feature</Label>
-                                <div className="flex items-center rounded-md border bg-gray-50 p-2">
+                                <div className="flex items-center rounded-md border bg-muted p-2">
                                     {features.find((f) => f.id === Number(data.feature_id))?.jira_key}:{' '}
                                     {features.find((f) => f.id === Number(data.feature_id))?.name}
                                 </div>
@@ -120,7 +120,7 @@ export default function EditCommitment({
                             {/* User - Read-Only */}
                             <div>
                                 <Label htmlFor="user_id">Benutzer</Label>
-                                <div className="flex items-center rounded-md border bg-gray-50 p-2">
+                                <div className="flex items-center rounded-md border bg-muted p-2">
                                     {users.find((u) => u.id === Number(data.user_id))?.name}
                                 </div>
                                 <input type="hidden" name="user_id" value={data.user_id} />
@@ -150,7 +150,7 @@ export default function EditCommitment({
                                 {/* Aktueller Status - Read-Only */}
                                 <div>
                                     <Label>Aktueller Status</Label>
-                                    <div className="flex items-center rounded-md border bg-gray-50 p-2">
+                                    <div className="flex items-center rounded-md border bg-muted p-2">
                                         <span className={`mr-2 inline-block h-3 w-3 rounded-full ${commitment.status_details?.color || ''}`} />
                                         {commitment.status_details?.name || 'Status nicht gesetzt'}
                                     </div>
@@ -179,7 +179,7 @@ export default function EditCommitment({
                                 )}
 
                                 {possibleTransitions.length === 0 && (
-                                    <p className="mt-2 text-sm text-gray-500">Keine weiteren Status-Übergänge möglich.</p>
+                                    <p className="mt-2 text-sm text-muted-foreground">Keine weiteren Status-Übergänge möglich.</p>
                                 )}
 
                                 {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status}</p>}

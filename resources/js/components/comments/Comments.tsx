@@ -129,9 +129,9 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
 
                 {/* Comments List */}
                 {loading ? (
-                    <div className="py-4 text-center text-sm text-gray-500">Kommentare werden geladen...</div>
+                    <div className="py-4 text-center text-sm text-muted-foreground">Kommentare werden geladen...</div>
                 ) : comments.length === 0 ? (
-                    <div className="py-8 text-center text-sm text-gray-500">Noch keine Kommentare vorhanden. Seien Sie der Erste!</div>
+                    <div className="py-8 text-center text-sm text-muted-foreground">Noch keine Kommentare vorhanden. Seien Sie der Erste!</div>
                 ) : (
                     <div className="space-y-4">
                         {comments.map((comment) => (

@@ -80,11 +80,11 @@ export default function Index({ estimations }: PageProps) {
         <AppLayout>
             <div className="p-6">
                 <Card>
-                    <CardHeader className="bg-gray-50">
+                    <CardHeader className="bg-muted">
                         <CardTitle className="flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-bold">Schätzungen</h2>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-muted-foreground">
                                     {estimations.total} {estimations.total === 1 ? 'Schätzung' : 'Schätzungen'} insgesamt
                                 </p>
                             </div>
@@ -113,7 +113,7 @@ export default function Index({ estimations }: PageProps) {
                                         </TableHeader>
                                         <TableBody>
                                             {estimations.data.map((estimation) => (
-                                                <TableRow key={estimation.id} className="hover:bg-gray-50/50">
+                                                <TableRow key={estimation.id} className="hover:bg-muted/50">
                                                     <TableCell>
                                                         <div className="font-medium">
                                                             <a
@@ -123,7 +123,7 @@ export default function Index({ estimations }: PageProps) {
                                                                 {estimation.component.name}
                                                             </a>
                                                         </div>
-                                                        <div className="text-sm text-gray-500">
+                                                        <div className="text-sm text-muted-foreground">
                                                             {estimation.component.feature && (
                                                                 <a
                                                                     href={route('features.show', estimation.component.feature.id)}
@@ -239,10 +239,10 @@ export default function Index({ estimations }: PageProps) {
                             </>
                         ) : (
                             <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-                                <div className="mb-3 rounded-full bg-gray-100 p-4">
+                                <div className="mb-3 rounded-full bg-muted p-4">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
-                                        className="h-8 w-8 text-gray-400"
+                                        className="h-8 w-8 text-muted-foreground"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -255,8 +255,8 @@ export default function Index({ estimations }: PageProps) {
                                         />
                                     </svg>
                                 </div>
-                                <h3 className="mb-1 text-lg font-medium text-gray-900">Keine Schätzungen vorhanden</h3>
-                                <p className="mb-4 text-gray-500">Erstellen Sie eine neue Schätzung, um loszulegen.</p>
+                                <h3 className="mb-1 text-lg font-medium">Keine Schätzungen vorhanden</h3>
+                                <p className="mb-4 text-muted-foreground">Erstellen Sie eine neue Schätzung, um loszulegen.</p>
                                 <Button onClick={() => router.visit(route('estimations.create'))}>Erste Schätzung erstellen</Button>
                             </div>
                         )}

@@ -265,11 +265,11 @@ export default function Index({ features }: IndexProps) {
             {/* Gesamtcontainer für Filter und Tabelle */}
             <div className="flex flex-col gap-4 p-5">
                 {/* Filter-Bereich */}
-                <Card className="border border-gray-200 bg-gray-50">
+                <Card className="border border-gray-200 bg-muted">
                     <CardContent>
                         {/* Neue Position für den Filter-Button in der oberen Zeile */}
                         <div className="mb-4 flex items-center gap-2">
-                            <Search className="h-4 w-4 text-gray-500" />
+                            <Search className="h-4 w-4 text-muted-foreground" />
                             <h2 className="font-medium">Filter</h2>
 
                             {/* Dauerhaft sichtbarer Reset-Button */}
@@ -291,7 +291,7 @@ export default function Index({ features }: IndexProps) {
                                     />
                                     {filters.jira_key && (
                                         <button
-                                            className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                            className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                             onClick={() => handleFilterChange('jira_key', '')}
                                         >
                                             <X className="h-4 w-4" />
@@ -309,7 +309,7 @@ export default function Index({ features }: IndexProps) {
                                     />
                                     {filters.name && (
                                         <button
-                                            className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                            className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                             onClick={() => handleFilterChange('name', '')}
                                         >
                                             <X className="h-4 w-4" />
@@ -358,7 +358,7 @@ export default function Index({ features }: IndexProps) {
                                                 <Badge key={status} variant="secondary" className="text-xs">
                                                     {status}
                                                     <button
-                                                        className="ml-1 text-gray-500 hover:text-gray-700"
+                                                        className="ml-1 text-muted-foreground hover:text-foreground"
                                                         onClick={() => handleStatusToggle(status)}
                                                     >
                                                         <X className="h-3 w-3" />
@@ -515,8 +515,8 @@ export default function Index({ features }: IndexProps) {
                 {/* Tabellen-Bereich ohne eigene Flexbox-Container-Eigenschaften */}
                 <div className="mt-4">
                     {/* Ergebnisanzeige mit Paginierung */}
-                    <div className="mb-2 flex items-center justify-between text-sm text-gray-500">
-                        <div className="text-sm text-gray-500">
+                    <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="text-sm text-muted-foreground">
                             Zeige {Math.min(filteredAndSortedFeatures.length, (currentPage - 1) * itemsPerPage + 1)} bis{' '}
                             {Math.min(filteredAndSortedFeatures.length, currentPage * itemsPerPage)} von {filteredAndSortedFeatures.length} Einträgen
                         </div>
@@ -541,13 +541,13 @@ export default function Index({ features }: IndexProps) {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSortChange('jira_key')}>
+                                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSortChange('jira_key')}>
                                     <span className="flex items-center">
                                         Jira Key
                                         {getSortIcon('jira_key')}
                                     </span>
                                 </TableHead>
-                                <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSortChange('name')}>
+                                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSortChange('name')}>
                                     <span className="flex items-center">
                                         Name
                                         {getSortIcon('name')}
@@ -558,13 +558,13 @@ export default function Index({ features }: IndexProps) {
                                 {/* Neue Spalten für Schätzungsinformationen */}
                                 <TableHead>Komponenten</TableHead>
                                 <TableHead>Gesamtschätzung</TableHead>
-                                <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSortChange('project')}>
+                                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSortChange('project')}>
                                     <span className="flex items-center">
                                         Projekt
                                         {getSortIcon('project')}
                                     </span>
                                 </TableHead>
-                                <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSortChange('requester')}>
+                                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSortChange('requester')}>
                                     <span className="flex items-center">
                                         Anforderer
                                         {getSortIcon('requester')}
@@ -579,8 +579,8 @@ export default function Index({ features }: IndexProps) {
                                     <TableCell colSpan={6} className="py-8 text-center">
                                         {/* Erhöhe colSpan auf 6, da wir eine Spalte hinzugefügt haben */}
                                         <div className="flex flex-col items-center justify-center">
-                                            <Search className="mb-2 h-8 w-8 text-gray-300" />
-                                            <p className="text-gray-500">Keine Features gefunden</p>
+                                            <Search className="mb-2 h-8 w-8 text-muted-foreground" />
+                                            <p className="text-muted-foreground">Keine Features gefunden</p>
                                             {Object.entries(filters).some(([key, value]) =>
                                                 key === 'statuses' ? (value as string[]).length > 0 : value !== '',
                                             ) && (
@@ -684,7 +684,7 @@ export default function Index({ features }: IndexProps) {
                     {/* Pagination UI */}
                     {filteredAndSortedFeatures.length > 0 && (
                         <div className="mt-4 flex items-center justify-between">
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-muted-foreground">
                                 Zeige {Math.min(filteredAndSortedFeatures.length, (currentPage - 1) * itemsPerPage + 1)} bis{' '}
                                 {Math.min(filteredAndSortedFeatures.length, currentPage * itemsPerPage)} von {filteredAndSortedFeatures.length}{' '}
                                 Einträgen

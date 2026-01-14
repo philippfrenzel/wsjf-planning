@@ -281,7 +281,7 @@ export default function Edit({
                                 <div>
                                     <Label>Stakeholder</Label>
                                     <div className="flex flex-wrap gap-2">
-                                        {users.length === 0 && <span className="text-sm text-gray-500">Keine Benutzer vorhanden.</span>}
+                                        {users.length === 0 && <span className="text-sm text-muted-foreground">Keine Benutzer vorhanden.</span>}
                                         {users.length > 0 && (
                                             <Table>
                                                 <TableHeader>
@@ -339,7 +339,7 @@ export default function Edit({
                                     )}
                                     <div className="flex flex-wrap gap-2">
                                         {availableFeatures.length === 0 && (
-                                            <span className="text-sm text-gray-500">Keine Features im Projekt vorhanden.</span>
+                                            <span className="text-sm text-muted-foreground">Keine Features im Projekt vorhanden.</span>
                                         )}
                                         {availableFeatures.length > 0 && (
                                             <Table>
