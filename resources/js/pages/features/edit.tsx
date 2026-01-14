@@ -1,22 +1,20 @@
 import { Comments } from '@/components/comments';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Inertia } from '@inertiajs/inertia';
 import { usePage } from '@inertiajs/react';
 import TextAlign from '@tiptap/extension-text-align';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Check, Save, X } from 'lucide-react';
+import { Save, X } from 'lucide-react';
 import React, { useState } from 'react';
+
+import DependencyManager from './components/DependencyManager';
 
 interface Project {
     id: number;
@@ -102,7 +100,7 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
         if (!editor) return null;
 
         return (
-            <div className="flex flex-wrap gap-1 border-b bg-muted p-2">
+            <div className="bg-muted flex flex-wrap gap-1 border-b p-2">
                 {/* Textformatierungen */}
                 <div className="mr-2 flex gap-1 border-r pr-2">
                     <Button
@@ -350,7 +348,9 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
                                                                         className={`mr-2 inline-block h-3 w-3 rounded-full ${option.color.replace('bg-', 'bg-').replace('text-', '')}`}
                                                                     ></span>
                                                                     {option.label}
-                                                                    {option.current && <span className="ml-2 text-xs text-muted-foreground">(aktuell)</span>}
+                                                                    {option.current && (
+                                                                        <span className="text-muted-foreground ml-2 text-xs">(aktuell)</span>
+                                                                    )}
                                                                 </div>
                                                             </SelectItem>
                                                         ))}
@@ -407,111 +407,5 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
                 />
             </div>
         </AppLayout>
-    );
-}
-
-function DependencyManager({
-    featureId,
-    options,
-    initialItems,
-}: {
-    featureId: number;
-    options: { id: number; jira_key: string; name: string }[];
-    initialItems: DependencyItem[];
-}) {
-    const [items, setItems] = useState<DependencyItem[]>(initialItems || []);
-    const [type, setType] = useState<'ermoeglicht' | 'verhindert' | 'bedingt' | 'ersetzt' | 'ignore'>('ermoeglicht');
-    const [relatedId, setRelatedId] = useState<string>('');
-    const [open, setOpen] = useState(false);
-
-    const add = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!relatedId || type === 'ignore') return;
-        Inertia.post(route('features.dependencies.store', featureId), { related_feature_id: Number(relatedId), type });
-    };
-
-    const remove = (depId: number) => {
-        Inertia.delete(route('features.dependencies.destroy', { feature: featureId, dependency: depId }));
-    };
-
-    return (
-        <div className="space-y-3">
-            <div className="flex flex-wrap items-end gap-2">
-                <div>
-                    <Label>Typ</Label>
-                    <select className="rounded border px-2 py-1" value={type} onChange={(e) => setType(e.target.value as any)}>
-                        <option value="ermoeglicht">ermöglicht</option>
-                        <option value="verhindert">verhindert</option>
-                        <option value="bedingt">bedingt</option>
-                        <option value="ersetzt">ersetzt</option>
-                    </select>
-                </div>
-                <div className="min-w-[260px] flex-1">
-                    <Label>Feature</Label>
-                    <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-                                {relatedId
-                                    ? (() => {
-                                          const sel = options.find((o) => String(o.id) === String(relatedId));
-                                          return sel ? `${sel.jira_key} — ${sel.name}` : '— Feature wählen —';
-                                      })()
-                                    : '— Feature wählen —'}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                            <Command>
-                                <CommandInput placeholder="Feature suchen..." className="h-9" />
-                                <CommandEmpty>Kein Feature gefunden.</CommandEmpty>
-                                <CommandGroup className="max-h-64 overflow-y-auto">
-                                    {options.map((f) => (
-                                        <CommandItem
-                                            key={f.id}
-                                            value={`${f.jira_key} ${f.name}`}
-                                            onSelect={() => {
-                                                setRelatedId(String(f.id));
-                                                setOpen(false);
-                                            }}
-                                            className="text-sm"
-                                        >
-                                            <Check className={cn('mr-2 h-4 w-4', String(relatedId) === String(f.id) ? 'opacity-100' : 'opacity-0')} />
-                                            {f.jira_key} — {f.name}
-                                        </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                            </Command>
-                        </PopoverContent>
-                    </Popover>
-                </div>
-                <Button onClick={add} type="button">
-                    Hinzufügen
-                </Button>
-            </div>
-
-            <div className="rounded border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Typ</TableHead>
-                            <TableHead>Feature</TableHead>
-                            <TableHead className="w-[120px] text-right">Aktionen</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {(items && items.length > 0 ? items : initialItems).map((dep) => (
-                            <TableRow key={dep.id}>
-                                <TableCell className="capitalize">{dep.type}</TableCell>
-                                <TableCell>{dep.related ? `${dep.related.jira_key} — ${dep.related.name}` : '-'}</TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="destructive" size="sm" onClick={() => remove(dep.id)}>
-                                        Entfernen
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
-        </div>
     );
 }
