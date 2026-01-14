@@ -53,6 +53,11 @@ Added `cache()->increment('app.data.version', 1)` in all controllers that modify
 - `EstimationController::update()`
 - `EstimationController::destroy()`
 
+#### Comments (affects feature comments)
+- `CommentController::store()` - Creating new comments
+- `CommentController::update()` - Updating existing comments
+- `CommentController::destroy()` - Deleting comments
+
 ## How It Works
 
 ### Normal Flow (No Version Change)
@@ -132,4 +137,6 @@ If you need more granular control:
 - `app/Http/Controllers/FeatureImportController.php`
 - `app/Http/Controllers/EstimationComponentController.php`
 - `app/Http/Controllers/EstimationController.php`
+- `app/Http/Controllers/CommentController.php`
 - `tests/Feature/VersionIncrementTest.php`
+- `tests/Feature/CommentTest.php`
