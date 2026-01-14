@@ -52,6 +52,8 @@ class CommentController extends Controller
 
         $comment->load(['user', 'replies.user']);
 
+        cache()->increment('app.data.version', 1);
+
         return response()->json([
             'data' => new CommentResource($comment),
             'message' => 'Kommentar erfolgreich erstellt.',
@@ -81,6 +83,8 @@ class CommentController extends Controller
 
         $comment->load(['user', 'replies.user']);
 
+        cache()->increment('app.data.version', 1);
+
         return response()->json([
             'data' => new CommentResource($comment),
             'message' => 'Kommentar erfolgreich aktualisiert.',
@@ -100,6 +104,8 @@ class CommentController extends Controller
         }
 
         $comment->delete();
+
+        cache()->increment('app.data.version', 1);
 
         return response()->json([
             'message' => 'Kommentar erfolgreich gelöscht.',

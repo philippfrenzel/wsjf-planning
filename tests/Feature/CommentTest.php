@@ -7,6 +7,7 @@ use App\Models\Feature;
 use App\Models\User;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class CommentTest extends TestCase
@@ -218,5 +219,55 @@ class CommentTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.replies', fn ($replies) => count($replies) === 2);
+    }
+
+    public function test_version_increments_on_comment_create(): void
+    {
+        $initialVersion = Cache::get('app.data.version', 1);
+
+        $this->actingAs($this->user)
+            ->postJson(route('comments.store'), [
+                'body' => 'This is a test comment',
+                'commentable_type' => Feature::class,
+                'commentable_id' => $this->feature->id,
+            ]);
+
+        $newVersion = Cache::get('app.data.version', 1);
+        $this->assertGreaterThan($initialVersion, $newVersion);
+    }
+
+    public function test_version_increments_on_comment_update(): void
+    {
+        $comment = Comment::factory()->create([
+            'user_id' => $this->user->id,
+            'tenant_id' => $this->tenant->id,
+            'body' => 'Original comment',
+        ]);
+
+        $initialVersion = Cache::get('app.data.version', 1);
+
+        $this->actingAs($this->user)
+            ->putJson(route('comments.update', $comment), [
+                'body' => 'Updated comment',
+            ]);
+
+        $newVersion = Cache::get('app.data.version', 1);
+        $this->assertGreaterThan($initialVersion, $newVersion);
+    }
+
+    public function test_version_increments_on_comment_delete(): void
+    {
+        $comment = Comment::factory()->create([
+            'user_id' => $this->user->id,
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        $initialVersion = Cache::get('app.data.version', 1);
+
+        $this->actingAs($this->user)
+            ->deleteJson(route('comments.destroy', $comment));
+
+        $newVersion = Cache::get('app.data.version', 1);
+        $this->assertGreaterThan($initialVersion, $newVersion);
     }
 }
