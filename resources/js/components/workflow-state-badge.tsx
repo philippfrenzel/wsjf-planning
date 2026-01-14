@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import * as React from 'react';
 
 /**
@@ -30,6 +31,7 @@ interface WorkflowStateBadgeProps {
     defaultColor?: string;
     /**
      * Whether to make the badge clickable (adds hover effect)
+     * Note: This is automatically enabled if onClick is provided
      * @default false
      */
     clickable?: boolean;
@@ -81,14 +83,15 @@ export function WorkflowStateBadge({
     const label = statusDetails?.name || defaultLabel;
     const colorClasses = statusDetails?.color || defaultColor;
 
-    // Build the final className
-    const badgeClassName = [
+    // Auto-enable clickable if onClick is provided
+    const isClickable = clickable || !!onClick;
+
+    // Build the final className using cn utility for proper merging
+    const badgeClassName = cn(
         colorClasses,
-        clickable && 'cursor-pointer hover:opacity-80',
+        isClickable && 'cursor-pointer hover:opacity-80',
         className,
-    ]
-        .filter(Boolean)
-        .join(' ');
+    );
 
     return (
         <Badge className={badgeClassName} onClick={onClick}>
