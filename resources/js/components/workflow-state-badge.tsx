@@ -91,7 +91,7 @@ export function WorkflowStateBadge({
         .join(' ');
 
     return (
-        <Badge className={badgeClassName} onClick={onClick} variant="outline">
+        <Badge className={badgeClassName} onClick={onClick}>
             {label}
         </Badge>
     );
