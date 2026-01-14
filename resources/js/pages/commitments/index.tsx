@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
 import { Link } from '@inertiajs/react';
 import { Trash2 } from 'lucide-react';
@@ -68,13 +69,6 @@ function getCommitmentTypeBadge(type: string) {
     };
 
     return <Badge className={classes[type as keyof typeof classes]}>{labels[type as keyof typeof labels]}</Badge>;
-}
-
-function getStatusBadge(statusDetails: Commitment['status_details']) {
-    if (!statusDetails) {
-        return <Badge variant="outline">Nicht gesetzt</Badge>;
-    }
-    return <Badge className={statusDetails.color}>{statusDetails.name}</Badge>;
 }
 
 export default function CommitmentsIndex({ commitments, plannings, selectedPlanning }: CommitmentsIndexProps) {
@@ -147,7 +141,9 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
                                             </TableCell>
                                             <TableCell>{getCommitmentTypeBadge(commitment.commitment_type)}</TableCell>
                                             <TableCell>{commitment.user.name}</TableCell>
-                                            <TableCell>{getStatusBadge(commitment.status_details)}</TableCell>
+                                            <TableCell>
+                                                <WorkflowStateBadge statusDetails={commitment.status_details} />
+                                            </TableCell>
                                             <TableCell className="space-x-2">
                                                 <Link href={route('commitments.show', commitment.id)}>
                                                     <Button size="sm" variant="outline">

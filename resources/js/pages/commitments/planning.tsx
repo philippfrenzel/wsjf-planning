@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
 import { Link } from '@inertiajs/react';
 
@@ -53,13 +54,6 @@ function getCommitmentTypeBadge(type: string) {
     };
 
     return classes[type as keyof typeof classes] || 'bg-muted text-foreground';
-}
-
-function getStatusBadge(status: Commitment['status_details']) {
-    if (!status) {
-        return <Badge variant="outline">Nicht gesetzt</Badge>;
-    }
-    return <Badge className={status.color}>{status.name}</Badge>;
 }
 
 export default function PlanningCommitments({ planning, commitmentTypes }: PlanningCommitmentsProps) {
@@ -144,7 +138,9 @@ export default function PlanningCommitments({ planning, commitmentTypes }: Plann
                                                                 {getTypeLabel(commitment.commitment_type)}
                                                             </Badge>
                                                         </TableCell>
-                                                        <TableCell>{getStatusBadge(commitment.status_details)}</TableCell>
+                                                        <TableCell>
+                                                            <WorkflowStateBadge statusDetails={commitment.status_details} />
+                                                        </TableCell>
                                                         <TableCell>
                                                             <div className="flex space-x-2">
                                                                 <Link href={route('commitments.show', commitment.id)}>

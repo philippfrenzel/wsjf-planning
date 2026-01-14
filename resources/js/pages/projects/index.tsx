@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
 import { Inertia } from '@inertiajs/inertia';
@@ -240,13 +241,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                                     <TableCell>{project.project_number}</TableCell>
                                     <TableCell>{project.name}</TableCell>
                                     <TableCell>
-                                        {project.status_details ? (
-                                            <span className={`inline-block rounded-md px-2 py-1 text-xs ${project.status_details.color}`}>
-                                                {project.status_details.name}
-                                            </span>
-                                        ) : (
-                                            <span className="inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">In Planung</span>
-                                        )}
+                                        <WorkflowStateBadge statusDetails={project.status_details} defaultLabel="In Planung" />
                                     </TableCell>
                                     <TableCell>{project.project_leader ? project.project_leader.name : '-'}</TableCell>
                                     <TableCell>{project.deputy_leader ? project.deputy_leader.name : '-'}</TableCell>
