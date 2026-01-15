@@ -38,8 +38,12 @@ Added `cache()->increment('app.data.version', 1)` in all controllers that modify
 - `FeatureController::store()` - Creating new features
 - `FeatureController::update()` - Updating existing features
 - `FeatureController::destroy()` - Deleting features
-- `FeatureController::updateStatus()` - Changing feature status
 - `FeatureImportController::store()` - Bulk importing features
+
+**Note:** `FeatureController::updateStatus()` does NOT increment the version because:
+- It's called via AJAX from the board view
+- The board view manages its own local state
+- Version increment would cause unnecessary page reloads after the next Inertia request
 
 #### Estimation Components (affects feature counts)
 - `EstimationComponentController::store()`

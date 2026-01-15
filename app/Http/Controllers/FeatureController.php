@@ -392,9 +392,6 @@ class FeatureController extends Controller
                 'new_status' => $feature->status,
             ]);
 
-            // Increment data version to trigger Inertia page reload
-            cache()->increment('app.data.version', 1);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Status erfolgreich aktualisiert',
