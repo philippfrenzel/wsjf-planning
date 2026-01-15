@@ -14,7 +14,8 @@ import StarterKit from '@tiptap/starter-kit';
 import { Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 
-import DependencyManager from './components/DependencyManager';
+import DependenciesSection from './components/DependenciesSection';
+import WorkflowManager from './components/WorkflowManager';
 
 interface Project {
     id: number;
@@ -71,7 +72,6 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
         description: feature.description || '',
         requester_id: feature.requester_id ? String(feature.requester_id) : '',
         project_id: feature.project_id ? String(feature.project_id) : '',
-        status: statusOptions.find((option) => option.current)?.value || '',
     });
 
     // Breadcrumbs definieren
@@ -253,134 +253,74 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
                                 </Button>
                             </div>
 
-                            {/* Two-column layout: 60% left, 30% right */}
-                            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[60%_1fr]">
-                                {/* Left Column - Main Form Fields */}
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                        <div>
-                                            <Label htmlFor="jira_key">Jira Key</Label>
-                                            <Input
-                                                id="jira_key"
-                                                name="jira_key"
-                                                value={values.jira_key}
-                                                onChange={handleChange}
-                                                className="w-full"
-                                                required
-                                            />
-                                            {errors.jira_key && <p className="mt-1 text-sm text-red-600">{errors.jira_key}</p>}
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="name">Name</Label>
-                                            <Input id="name" name="name" value={values.name} onChange={handleChange} className="w-full" required />
-                                            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
-                                        </div>
-                                    </div>
-
+                            {/* Main Form Fields */}
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div>
-                                        <Label htmlFor="description">Beschreibung</Label>
-                                        <div className="overflow-hidden rounded border">
-                                            {addToolbar()}
-                                            <EditorContent editor={editor} className="min-h-[120px] bg-white p-2" />
-                                        </div>
-                                        {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+                                        <Label htmlFor="jira_key">Jira Key</Label>
+                                        <Input
+                                            id="jira_key"
+                                            name="jira_key"
+                                            value={values.jira_key}
+                                            onChange={handleChange}
+                                            className="w-full"
+                                            required
+                                        />
+                                        {errors.jira_key && <p className="mt-1 text-sm text-red-600">{errors.jira_key}</p>}
                                     </div>
-
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                        <div>
-                                            <Label htmlFor="project_id">Projekt</Label>
-                                            <Select value={values.project_id} onValueChange={(value) => handleSelectChange('project_id', value)}>
-                                                <SelectTrigger id="project_id" className="w-full">
-                                                    <SelectValue placeholder="Projekt wählen" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {projects.map((project) => (
-                                                        <SelectItem key={project.id} value={project.id.toString()}>
-                                                            {project.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            {errors.project_id && <p className="mt-1 text-sm text-red-600">{errors.project_id}</p>}
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="requester_id">Anforderer (optional)</Label>
-                                            <Select
-                                                value={values.requester_id || 'none'}
-                                                onValueChange={(value) => handleSelectChange('requester_id', value === 'none' ? '' : value)}
-                                            >
-                                                <SelectTrigger id="requester_id" className="w-full">
-                                                    <SelectValue placeholder="Anforderer wählen" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="none">-</SelectItem>
-                                                    {users.map((user) => (
-                                                        <SelectItem key={user.id} value={user.id.toString()}>
-                                                            {user.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            {errors.requester_id && <p className="mt-1 text-sm text-red-600">{errors.requester_id}</p>}
-                                        </div>
+                                    <div>
+                                        <Label htmlFor="name">Name</Label>
+                                        <Input id="name" name="name" value={values.name} onChange={handleChange} className="w-full" required />
+                                        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                                     </div>
                                 </div>
 
-                                {/* Right Column - Workflow and Dependencies */}
-                                <div className="space-y-6">
-                                    {/* Status-Auswahl (Workflow) */}
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Status</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div>
-                                                <Label htmlFor="status">Status</Label>
-                                                <Select value={values.status} onValueChange={(value) => handleSelectChange('status', value)}>
-                                                    <SelectTrigger id="status" className="w-full">
-                                                        <SelectValue placeholder="Status wählen" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {statusOptions.map((option) => (
-                                                            <SelectItem key={option.value} value={option.value}>
-                                                                <div className="flex items-center">
-                                                                    <span
-                                                                        className={`mr-2 inline-block h-3 w-3 rounded-full ${option.color.replace('bg-', 'bg-').replace('text-', '')}`}
-                                                                    ></span>
-                                                                    {option.label}
-                                                                    {option.current && (
-                                                                        <span className="text-muted-foreground ml-2 text-xs">(aktuell)</span>
-                                                                    )}
-                                                                </div>
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status}</p>}
+                                <div>
+                                    <Label htmlFor="description">Beschreibung</Label>
+                                    <div className="overflow-hidden rounded border">
+                                        {addToolbar()}
+                                        <EditorContent editor={editor} className="min-h-[120px] bg-white p-2" />
+                                    </div>
+                                    {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+                                </div>
 
-                                                {values.status && statusOptions.find((option) => option.value === values.status) && (
-                                                    <div className="mt-2 flex items-center">
-                                                        <span className="mr-2 text-sm">Neuer Status:</span>
-                                                        <span
-                                                            className={`inline-block rounded-md px-2 py-1 text-xs ${statusOptions.find((option) => option.value === values.status)?.color}`}
-                                                        >
-                                                            {statusOptions.find((option) => option.value === values.status)?.label}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    {/* Abhängigkeiten */}
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Abhängigkeiten</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <DependencyManager featureId={feature.id} options={featureOptions} initialItems={dependencies} />
-                                        </CardContent>
-                                    </Card>
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div>
+                                        <Label htmlFor="project_id">Projekt</Label>
+                                        <Select value={values.project_id} onValueChange={(value) => handleSelectChange('project_id', value)}>
+                                            <SelectTrigger id="project_id" className="w-full">
+                                                <SelectValue placeholder="Projekt wählen" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {projects.map((project) => (
+                                                    <SelectItem key={project.id} value={project.id.toString()}>
+                                                        {project.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.project_id && <p className="mt-1 text-sm text-red-600">{errors.project_id}</p>}
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="requester_id">Anforderer (optional)</Label>
+                                        <Select
+                                            value={values.requester_id || 'none'}
+                                            onValueChange={(value) => handleSelectChange('requester_id', value === 'none' ? '' : value)}
+                                        >
+                                            <SelectTrigger id="requester_id" className="w-full">
+                                                <SelectValue placeholder="Anforderer wählen" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">-</SelectItem>
+                                                {users.map((user) => (
+                                                    <SelectItem key={user.id} value={user.id.toString()}>
+                                                        {user.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.requester_id && <p className="mt-1 text-sm text-red-600">{errors.requester_id}</p>}
+                                    </div>
                                 </div>
                             </div>
 
@@ -395,6 +335,30 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
                                 </Button>
                             </div>
                         </form>
+                    </CardContent>
+                </Card>
+
+                {/* Workflow - Outside the form to avoid nested form issues */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Status</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <WorkflowManager
+                            featureId={feature.id}
+                            statusOptions={statusOptions}
+                            currentStatus={statusOptions.find((option) => option.current)?.value || ''}
+                        />
+                    </CardContent>
+                </Card>
+
+                {/* Abhängigkeiten - Outside the form to avoid nested form issues */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Abhängigkeiten</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <DependenciesSection featureId={feature.id} featureOptions={featureOptions} dependencies={dependencies} />
                     </CardContent>
                 </Card>
 
