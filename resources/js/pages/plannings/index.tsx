@@ -1,15 +1,16 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { Inertia } from '@inertiajs/inertia';
 import { Link, usePage } from '@inertiajs/react';
-import { Check, ChevronLeft, ChevronRight, Eye, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Eye, LayoutGrid, LayoutList, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 interface Planning {
@@ -68,6 +69,9 @@ export default function Index({ plannings }: IndexProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const userId = (usePage().props as any)?.auth?.user?.id ?? 'guest';
     const [itemsPerPage, setItemsPerPage] = useLocalStorage<number>(`tablePrefs:${userId}:plannings.index:itemsPerPage`, 10);
+
+    // View mode state (table or card) with persistence
+    const [viewMode, setViewMode] = useLocalStorage<'table' | 'card'>(`viewPrefs:${userId}:plannings.index:viewMode`, 'table');
 
     // Extrahiere alle eindeutigen Projekte für die Autovervollständigung
     const planningData = Array.isArray(plannings) ? plannings : plannings.data;
@@ -149,20 +153,30 @@ export default function Index({ plannings }: IndexProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="mb-6 flex items-center justify-between p-5">
                 <h1 className="text-2xl font-bold">Plannings</h1>
-                <Button asChild>
-                    <Link href={route('plannings.create')}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Neues Planning erstellen
-                    </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                    <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'table' | 'card')}>
+                        <ToggleGroupItem value="table" aria-label="Tabellenansicht">
+                            <LayoutList className="h-4 w-4" />
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="card" aria-label="Kartenansicht">
+                            <LayoutGrid className="h-4 w-4" />
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                    <Button asChild>
+                        <Link href={route('plannings.create')}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Neues Planning erstellen
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             {/* Filter-Bereich */}
             <div className="flex flex-col p-5">
-                <Card className="border bg-muted">
+                <Card className="bg-muted border">
                     <CardContent>
                         <div className="mb-4 flex items-center gap-2">
-                            <Search className="h-4 w-4 text-muted-foreground" />
+                            <Search className="text-muted-foreground h-4 w-4" />
                             <h2 className="font-medium">Filter</h2>
 
                             {/* Dauerhaft sichtbarer Reset-Button */}
@@ -184,7 +198,7 @@ export default function Index({ plannings }: IndexProps) {
                                     />
                                     {filters.title && (
                                         <button
-                                            className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
                                             onClick={() => handleFilterChange('title', '')}
                                         >
                                             <X className="h-4 w-4" />
@@ -268,8 +282,8 @@ export default function Index({ plannings }: IndexProps) {
                 {/* Tabellen-Bereich */}
                 <div className="mt-4">
                     {/* Ergebnisanzeige with Paginierung */}
-                    <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
-                        <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground mb-2 flex items-center justify-between text-sm">
+                        <div className="text-muted-foreground text-sm">
                             {filteredPlannings.length > 0
                                 ? `Zeige ${startItem} bis ${endItem} von ${filteredPlannings.length} Plannings`
                                 : 'Keine Plannings gefunden'}
@@ -294,94 +308,179 @@ export default function Index({ plannings }: IndexProps) {
                         )}
                     </div>
 
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>ID</TableHead>
-                                <TableHead>Titel</TableHead>
-                                <TableHead>Projekt</TableHead>
-                                <TableHead>Features</TableHead>
-                                <TableHead>Benutzer</TableHead>
-                                <TableHead>Geplant am</TableHead>
-                                <TableHead>Durchgeführt am</TableHead>
-                                <TableHead className="text-right">Aktionen</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {paginatedPlannings.length === 0 ? (
+                    {viewMode === 'table' ? (
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell colSpan={8} className="py-8 text-center">
-                                        <div className="flex flex-col items-center justify-center">
-                                            <Search className="mb-2 h-8 w-8 text-muted-foreground" />
-                                            <p className="text-muted-foreground">Keine Plannings gefunden</p>
-                                            {Object.values(filters).some((f) => f !== '') && (
-                                                <Button variant="link" onClick={resetFilters} className="mt-2">
-                                                    Filter zurücksetzen
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </TableCell>
+                                    <TableHead>ID</TableHead>
+                                    <TableHead>Titel</TableHead>
+                                    <TableHead>Projekt</TableHead>
+                                    <TableHead>Features</TableHead>
+                                    <TableHead>Benutzer</TableHead>
+                                    <TableHead>Geplant am</TableHead>
+                                    <TableHead>Durchgeführt am</TableHead>
+                                    <TableHead className="text-right">Aktionen</TableHead>
                                 </TableRow>
-                            ) : (
-                                paginatedPlannings.map((planning) => (
-                                    <TableRow key={planning.id}>
-                                        <TableCell>{planning.id}</TableCell>
-                                        <TableCell>{planning.title}</TableCell>
-                                        <TableCell>{planning.project?.name ?? '-'}</TableCell>
-                                        <TableCell>{planning.features_count ?? 0}</TableCell>
-                                        <TableCell>{planning.stakeholders_count ?? 0}</TableCell>
-                                        <TableCell>{formatDate(planning.planned_at)}</TableCell>
-                                        <TableCell>{formatDate(planning.executed_at)}</TableCell>
-                                        <TableCell className="flex justify-end gap-2">
-                                            {/* Ansichts-Button für alle Benutzer */}
-                                            <Button asChild size="icon" variant="outline">
-                                                <Link href={route('plannings.show', planning)}>
-                                                    <Eye className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-
-                                            {/* Voting-Button für alle Benutzer */}
-                                            <Button asChild size="icon" variant="outline">
-                                                <Link href={route('votes.session', { planning: planning.id })}>
-                                                    <Vote className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-
-                                            {/* Bearbeitungs-Button für Ersteller, Owner und Deputy */}
-                                            {canEditPlanning(planning) && (
-                                                <Button asChild size="icon" variant="outline">
-                                                    <Link href={route('plannings.edit', planning)}>
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                            )}
-
-                                            {/* Lösch-Button für Ersteller, Owner und Deputy */}
-                                            {canEditPlanning(planning) && (
-                                                <form
-                                                    onSubmit={(e) => {
-                                                        e.preventDefault();
-                                                        if (confirm('Sind Sie sicher, dass Sie dieses Planning löschen möchten?')) {
-                                                            Inertia.delete(route('plannings.destroy', planning));
-                                                        }
-                                                    }}
-                                                >
-                                                    <Button type="submit" size="icon" variant="destructive">
-                                                        <Trash2 className="h-4 w-4" />
+                            </TableHeader>
+                            <TableBody>
+                                {paginatedPlannings.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={8} className="py-8 text-center">
+                                            <div className="flex flex-col items-center justify-center">
+                                                <Search className="text-muted-foreground mb-2 h-8 w-8" />
+                                                <p className="text-muted-foreground">Keine Plannings gefunden</p>
+                                                {Object.values(filters).some((f) => f !== '') && (
+                                                    <Button variant="link" onClick={resetFilters} className="mt-2">
+                                                        Filter zurücksetzen
                                                     </Button>
-                                                </form>
-                                            )}
+                                                )}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
+                                ) : (
+                                    paginatedPlannings.map((planning) => (
+                                        <TableRow key={planning.id}>
+                                            <TableCell>{planning.id}</TableCell>
+                                            <TableCell>{planning.title}</TableCell>
+                                            <TableCell>{planning.project?.name ?? '-'}</TableCell>
+                                            <TableCell>{planning.features_count ?? 0}</TableCell>
+                                            <TableCell>{planning.stakeholders_count ?? 0}</TableCell>
+                                            <TableCell>{formatDate(planning.planned_at)}</TableCell>
+                                            <TableCell>{formatDate(planning.executed_at)}</TableCell>
+                                            <TableCell className="flex justify-end gap-2">
+                                                {/* Ansichts-Button für alle Benutzer */}
+                                                <Button asChild size="icon" variant="outline">
+                                                    <Link href={route('plannings.show', planning)}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+
+                                                {/* Voting-Button für alle Benutzer */}
+                                                <Button asChild size="icon" variant="outline">
+                                                    <Link href={route('votes.session', { planning: planning.id })}>
+                                                        <Vote className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+
+                                                {/* Bearbeitungs-Button für Ersteller, Owner und Deputy */}
+                                                {canEditPlanning(planning) && (
+                                                    <Button asChild size="icon" variant="outline">
+                                                        <Link href={route('plannings.edit', planning)}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                )}
+
+                                                {/* Lösch-Button für Ersteller, Owner und Deputy */}
+                                                {canEditPlanning(planning) && (
+                                                    <form
+                                                        onSubmit={(e) => {
+                                                            e.preventDefault();
+                                                            if (confirm('Sind Sie sicher, dass Sie dieses Planning löschen möchten?')) {
+                                                                Inertia.delete(route('plannings.destroy', planning));
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Button type="submit" size="icon" variant="destructive">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </form>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {paginatedPlannings.length === 0 ? (
+                                <div className="col-span-full py-8 text-center">
+                                    <div className="flex flex-col items-center justify-center">
+                                        <Search className="text-muted-foreground mb-2 h-8 w-8" />
+                                        <p className="text-muted-foreground">Keine Plannings gefunden</p>
+                                        {Object.values(filters).some((f) => f !== '') && (
+                                            <Button variant="link" onClick={resetFilters} className="mt-2">
+                                                Filter zurücksetzen
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                paginatedPlannings.map((planning) => (
+                                    <Card key={planning.id} className="flex flex-col">
+                                        <CardHeader>
+                                            <CardTitle className="text-lg">{planning.title}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="flex flex-1 flex-col gap-3">
+                                            <div className="space-y-2 text-sm">
+                                                <div>
+                                                    <span className="font-medium">Projekt:</span>{' '}
+                                                    <span className="text-muted-foreground">{planning.project?.name ?? '-'}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium">Features:</span>{' '}
+                                                    <span className="text-muted-foreground">{planning.features_count ?? 0}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium">Benutzer:</span>{' '}
+                                                    <span className="text-muted-foreground">{planning.stakeholders_count ?? 0}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium">Geplant am:</span>{' '}
+                                                    <span className="text-muted-foreground">{formatDate(planning.planned_at)}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium">Durchgeführt am:</span>{' '}
+                                                    <span className="text-muted-foreground">{formatDate(planning.executed_at)}</span>
+                                                </div>
+                                            </div>
+                                            <div className="mt-auto flex gap-2 pt-4">
+                                                <Button asChild size="sm" variant="outline" className="flex-1">
+                                                    <Link href={route('plannings.show', planning)}>
+                                                        <Eye className="mr-2 h-4 w-4" />
+                                                        Ansehen
+                                                    </Link>
+                                                </Button>
+                                                <Button asChild size="sm" variant="outline" className="flex-1">
+                                                    <Link href={route('votes.session', { planning: planning.id })}>
+                                                        <Vote className="mr-2 h-4 w-4" />
+                                                        Voting
+                                                    </Link>
+                                                </Button>
+                                                {canEditPlanning(planning) && (
+                                                    <Button asChild size="sm" variant="outline">
+                                                        <Link href={route('plannings.edit', planning)}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                )}
+                                                {canEditPlanning(planning) && (
+                                                    <form
+                                                        onSubmit={(e) => {
+                                                            e.preventDefault();
+                                                            if (confirm('Sind Sie sicher, dass Sie dieses Planning löschen möchten?')) {
+                                                                Inertia.delete(route('plannings.destroy', planning));
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Button type="submit" size="sm" variant="destructive">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </form>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 ))
                             )}
-                        </TableBody>
-                    </Table>
+                        </div>
+                    )}
 
                     {/* Verbesserte Paginierungs-Navigation */}
                     {filteredPlannings.length > 0 && (
                         <div className="mt-4 flex items-center justify-between">
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-muted-foreground text-sm">
                                 Zeige {Math.min(filteredPlannings.length, (currentPage - 1) * itemsPerPage + 1)} bis{' '}
                                 {Math.min(filteredPlannings.length, currentPage * itemsPerPage)} von {filteredPlannings.length} Einträgen
                             </div>
