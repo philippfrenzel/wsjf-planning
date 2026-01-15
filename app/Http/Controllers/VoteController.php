@@ -197,6 +197,14 @@ class VoteController extends Controller
         // Automatisch Durchschnitts-Votes für den Planning-Ersteller berechnen
         $this->voteService->calculateAverageVotesForCreator($planning);
 
+        // Check if a specific redirect target was requested
+        $redirectTo = $request->input('redirect_to');
+        if ($redirectTo === 'card-session') {
+            return redirect()->route('votes.card-session', $planning->id);
+        } elseif ($redirectTo === 'table-session') {
+            return redirect()->route('votes.session', $planning->id);
+        }
+
         return redirect()->route('votes.session', $planning->id)
             ->with('success', 'Deine Stimmen wurden gespeichert.');
     }
