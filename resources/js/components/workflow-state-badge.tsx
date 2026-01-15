@@ -1,6 +1,5 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import * as React from 'react';
 
 /**
  * Interface for status details returned by StatusMapper
@@ -87,11 +86,7 @@ export function WorkflowStateBadge({
     const isClickable = clickable || !!onClick;
 
     // Build the final className using cn utility for proper merging
-    const badgeClassName = cn(
-        colorClasses,
-        isClickable && 'cursor-pointer hover:opacity-80',
-        className,
-    );
+    const badgeClassName = cn(colorClasses, isClickable && 'cursor-pointer hover:opacity-80', className);
 
     return (
         <Badge className={badgeClassName} onClick={onClick}>

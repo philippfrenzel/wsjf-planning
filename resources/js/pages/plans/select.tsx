@@ -32,7 +32,7 @@ export default function Select({ plans }: Props) {
                         <div key={plan.id} className="flex justify-between rounded border p-4">
                             <div>
                                 <div className="font-medium">{plan.name}</div>
-                                <div className="text-sm text-muted-foreground">
+                                <div className="text-muted-foreground text-sm">
                                     {plan.price / 100} € / {plan.interval}
                                 </div>
                             </div>

@@ -263,7 +263,7 @@ export default function Import({ project }: PageProps) {
                                 </Button>
                             </div>
 
-                            <div className="mt-4 text-xs text-muted-foreground">
+                            <div className="text-muted-foreground mt-4 text-xs">
                                 Upsert-Logik: Features werden anhand des Jira-Keys im Projekt angelegt oder aktualisiert.
                             </div>
                         </form>

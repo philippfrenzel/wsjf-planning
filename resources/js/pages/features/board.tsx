@@ -285,7 +285,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
                     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                         <div className="flex flex-wrap items-center gap-4">
                             <div className="w-64">
-                                <label htmlFor="projectFilter" className="mb-1 block text-sm font-medium text-foreground">
+                                <label htmlFor="projectFilter" className="text-foreground mb-1 block text-sm font-medium">
                                     Projekt
                                 </label>
                                 <select
@@ -303,7 +303,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
                                 </select>
                             </div>
                             <div className="w-64">
-                                <label htmlFor="planningFilter" className="mb-1 block text-sm font-medium text-foreground">
+                                <label htmlFor="planningFilter" className="text-foreground mb-1 block text-sm font-medium">
                                     Planning (optional)
                                 </label>
                                 <select
@@ -321,7 +321,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
                                 </select>
                             </div>
                             <div className="w-64">
-                                <label htmlFor="closedStatusFilter" className="mb-1 block text-sm font-medium text-foreground">
+                                <label htmlFor="closedStatusFilter" className="text-foreground mb-1 block text-sm font-medium">
                                     Abgeschlossene Features
                                 </label>
                                 <select

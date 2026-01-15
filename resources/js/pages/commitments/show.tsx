@@ -110,7 +110,7 @@ export default function ShowCommitment({ commitment }: ShowCommitmentProps) {
                     <CardContent>
                         <dl className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-1">
-                                <dt className="text-sm font-medium text-muted-foreground">Planning</dt>
+                                <dt className="text-muted-foreground text-sm font-medium">Planning</dt>
                                 <dd>
                                     <Link href={route('plannings.show', commitment.planning.id)} className="text-blue-600 hover:underline">
                                         {commitment.planning.title}
@@ -119,38 +119,38 @@ export default function ShowCommitment({ commitment }: ShowCommitmentProps) {
                             </div>
 
                             <div className="space-y-1">
-                                <dt className="text-sm font-medium text-muted-foreground">Feature</dt>
+                                <dt className="text-muted-foreground text-sm font-medium">Feature</dt>
                                 <dd>
                                     {commitment.feature.jira_key}: {commitment.feature.name}
                                 </dd>
                             </div>
 
                             <div className="space-y-1">
-                                <dt className="text-sm font-medium text-muted-foreground">Commitment-Typ</dt>
+                                <dt className="text-muted-foreground text-sm font-medium">Commitment-Typ</dt>
                                 <dd>
                                     <Badge className={commitmentType.class}>{commitmentType.label}</Badge>
                                 </dd>
                             </div>
 
                             <div className="space-y-1">
-                                <dt className="text-sm font-medium text-muted-foreground">Benutzer</dt>
+                                <dt className="text-muted-foreground text-sm font-medium">Benutzer</dt>
                                 <dd>{commitment.user.name}</dd>
                             </div>
 
                             <div className="space-y-1">
-                                <dt className="text-sm font-medium text-muted-foreground">Status</dt>
+                                <dt className="text-muted-foreground text-sm font-medium">Status</dt>
                                 <dd>
                                     <WorkflowStateBadge statusDetails={commitment.status_details} />
                                 </dd>
                             </div>
 
                             <div className="space-y-1">
-                                <dt className="text-sm font-medium text-muted-foreground">Erstellt am</dt>
+                                <dt className="text-muted-foreground text-sm font-medium">Erstellt am</dt>
                                 <dd>{formatDate(commitment.created_at)}</dd>
                             </div>
 
                             <div className="space-y-1">
-                                <dt className="text-sm font-medium text-muted-foreground">Zuletzt aktualisiert</dt>
+                                <dt className="text-muted-foreground text-sm font-medium">Zuletzt aktualisiert</dt>
                                 <dd>{formatDate(commitment.updated_at)}</dd>
                             </div>
                         </dl>

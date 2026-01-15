@@ -118,7 +118,7 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
                 </CardHeader>
                 <CardContent>
                     {commitmentData.length === 0 ? (
-                        <div className="py-4 text-center text-muted-foreground">Keine Commitments gefunden.</div>
+                        <div className="text-muted-foreground py-4 text-center">Keine Commitments gefunden.</div>
                     ) : (
                         <>
                             <Table>

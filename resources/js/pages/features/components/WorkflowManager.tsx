@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Inertia } from '@inertiajs/inertia';
 import { usePage } from '@inertiajs/react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 interface StatusOption {
     value: string;
@@ -38,7 +38,7 @@ export default function WorkflowManager({ featureId, statusOptions, currentStatu
                 onSuccess: () => {
                     setHasChanges(false);
                 },
-            }
+            },
         );
     };
 
@@ -68,10 +68,10 @@ export default function WorkflowManager({ featureId, statusOptions, currentStatu
 
                 {status && statusOptions.find((option) => option.value === status) && (
                     <div className="mt-2 flex items-center">
-                        <span className="mr-2 text-sm">
-                            {hasChanges ? 'Neuer Status:' : 'Aktueller Status:'}
-                        </span>
-                        <span className={`inline-block rounded-md px-2 py-1 text-xs ${statusOptions.find((option) => option.value === status)?.color}`}>
+                        <span className="mr-2 text-sm">{hasChanges ? 'Neuer Status:' : 'Aktueller Status:'}</span>
+                        <span
+                            className={`inline-block rounded-md px-2 py-1 text-xs ${statusOptions.find((option) => option.value === status)?.color}`}
+                        >
                             {statusOptions.find((option) => option.value === status)?.label}
                         </span>
                     </div>
