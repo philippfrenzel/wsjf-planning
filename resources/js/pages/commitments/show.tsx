@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
 import { Link } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -139,11 +140,7 @@ export default function ShowCommitment({ commitment }: ShowCommitmentProps) {
                             <div className="space-y-1">
                                 <dt className="text-sm font-medium text-muted-foreground">Status</dt>
                                 <dd>
-                                    {commitment.status_details ? (
-                                        <Badge className={commitment.status_details.color}>{commitment.status_details.name}</Badge>
-                                    ) : (
-                                        <Badge variant="outline">Status nicht gesetzt</Badge>
-                                    )}
+                                    <WorkflowStateBadge statusDetails={commitment.status_details} />
                                 </dd>
                             </div>
 

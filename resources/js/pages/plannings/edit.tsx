@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
 import { Inertia } from '@inertiajs/inertia';
 import { usePage } from '@inertiajs/react';
@@ -365,15 +366,7 @@ export default function Edit({
                                                             <TableCell>{feature.jira_key}</TableCell>
                                                             <TableCell>{feature.name}</TableCell>
                                                             <TableCell>
-                                                                {feature.status_details ? (
-                                                                    <span
-                                                                        className={`inline-block rounded-md px-2 py-1 text-xs ${feature.status_details.color}`}
-                                                                    >
-                                                                        {feature.status_details.name}
-                                                                    </span>
-                                                                ) : (
-                                                                    '-'
-                                                                )}
+                                                                <WorkflowStateBadge statusDetails={feature.status_details} />
                                                             </TableCell>
                                                         </TableRow>
                                                     ))}

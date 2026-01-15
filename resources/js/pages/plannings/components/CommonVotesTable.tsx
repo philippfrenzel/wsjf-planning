@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import { router, useForm } from '@inertiajs/react';
 import { PlusCircle } from 'lucide-react';
 import React, { useState } from 'react';
@@ -415,14 +416,13 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
                                             </TableCell>
                                             <TableCell>
                                                 {feature.commitments && feature.commitments.length > 0 && feature.commitments[0].status_details ? (
-                                                    <Badge
-                                                        className={`${feature.commitments[0].status_details.color} cursor-pointer hover:opacity-80`}
+                                                    <WorkflowStateBadge
+                                                        statusDetails={feature.commitments[0].status_details}
+                                                        clickable
                                                         onClick={() =>
                                                             feature.commitments && handleEditCommitmentModal(feature, feature.commitments[0])
                                                         }
-                                                    >
-                                                        {feature.commitments[0].status_details.name}
-                                                    </Badge>
+                                                    />
                                                 ) : (
                                                     '-'
                                                 )}

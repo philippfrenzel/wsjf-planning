@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
 import { useForm } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
@@ -151,8 +152,7 @@ export default function EditCommitment({
                                 <div>
                                     <Label>Aktueller Status</Label>
                                     <div className="flex items-center rounded-md border bg-muted p-2">
-                                        <span className={`mr-2 inline-block h-3 w-3 rounded-full ${commitment.status_details?.color || ''}`} />
-                                        {commitment.status_details?.name || 'Status nicht gesetzt'}
+                                        <WorkflowStateBadge statusDetails={commitment.status_details} />
                                     </div>
                                 </div>
 

@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
 import { Link } from '@inertiajs/react';
 
@@ -187,11 +188,7 @@ export default function Show({ feature, auth }: ShowProps) {
                                                 </CardHeader>
                                                 <CardContent>
                                                     <div className="flex items-center">
-                                                        <span
-                                                            className={`inline-block rounded-md px-3 py-1.5 text-sm font-medium ${feature.status_details.color}`}
-                                                        >
-                                                            {feature.status_details.name}
-                                                        </span>
+                                                        <WorkflowStateBadge statusDetails={feature.status_details} />
                                                     </div>
                                                 </CardContent>
                                             </Card>
