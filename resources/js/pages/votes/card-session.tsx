@@ -790,7 +790,24 @@ export default function CardVoteSession({ planning, features, types, existingVot
             clearTimeout(saveTimer.current);
             saveTimer.current = null;
         }
-        saveVotes(() => Inertia.get(route('votes.session', planning.id)));
+        setIsSaving(true);
+        setSaveError(null);
+
+        Inertia.post(
+            route('votes.session.store', planning.id),
+            { votes, redirect_to: 'table-session' },
+            {
+                preserveScroll: false,
+                preserveState: false,
+                onSuccess: () => {
+                    setIsSaving(false);
+                },
+                onError: () => {
+                    setIsSaving(false);
+                    setSaveError('Speichern fehlgeschlagen – bitte erneut versuchen.');
+                },
+            },
+        );
     };
 
     useEffect(() => {
