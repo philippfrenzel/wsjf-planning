@@ -84,7 +84,7 @@ export default function Index({ estimations }: PageProps) {
                         <CardTitle className="flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-bold">Schätzungen</h2>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-muted-foreground text-sm">
                                     {estimations.total} {estimations.total === 1 ? 'Schätzung' : 'Schätzungen'} insgesamt
                                 </p>
                             </div>
@@ -123,7 +123,7 @@ export default function Index({ estimations }: PageProps) {
                                                                 {estimation.component.name}
                                                             </a>
                                                         </div>
-                                                        <div className="text-sm text-muted-foreground">
+                                                        <div className="text-muted-foreground text-sm">
                                                             {estimation.component.feature && (
                                                                 <a
                                                                     href={route('features.show', estimation.component.feature.id)}
@@ -239,10 +239,10 @@ export default function Index({ estimations }: PageProps) {
                             </>
                         ) : (
                             <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-                                <div className="mb-3 rounded-full bg-muted p-4">
+                                <div className="bg-muted mb-3 rounded-full p-4">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
-                                        className="h-8 w-8 text-muted-foreground"
+                                        className="text-muted-foreground h-8 w-8"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -256,7 +256,7 @@ export default function Index({ estimations }: PageProps) {
                                     </svg>
                                 </div>
                                 <h3 className="mb-1 text-lg font-medium">Keine Schätzungen vorhanden</h3>
-                                <p className="mb-4 text-muted-foreground">Erstellen Sie eine neue Schätzung, um loszulegen.</p>
+                                <p className="text-muted-foreground mb-4">Erstellen Sie eine neue Schätzung, um loszulegen.</p>
                                 <Button onClick={() => router.visit(route('estimations.create'))}>Erste Schätzung erstellen</Button>
                             </div>
                         )}

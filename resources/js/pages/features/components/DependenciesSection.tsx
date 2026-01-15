@@ -1,4 +1,3 @@
-import React from 'react';
 import DependencyManager from './DependencyManager';
 
 interface DependencyItem {

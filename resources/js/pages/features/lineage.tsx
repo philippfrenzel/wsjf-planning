@@ -28,7 +28,7 @@ function FeatureNode({ data }: { data: { label: string; jiraKey: string; feature
             style={{ minWidth: '200px' }}
         >
             <div className="mb-1 text-sm font-bold text-blue-600">{data.jiraKey}</div>
-            <div className="text-xs text-foreground">{data.label}</div>
+            <div className="text-foreground text-xs">{data.label}</div>
         </div>
     );
 }
@@ -121,7 +121,7 @@ export default function Lineage({ features }: LineageProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
                 <h1 className="mb-4 text-2xl font-bold">Feature Abhängigkeits-Übersicht</h1>
-                <div className="flex-1 rounded-lg border bg-muted" style={{ height: '700px' }}>
+                <div className="bg-muted flex-1 rounded-lg border" style={{ height: '700px' }}>
                     <ReactFlow
                         nodes={nodes}
                         edges={edges}

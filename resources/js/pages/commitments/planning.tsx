@@ -81,7 +81,7 @@ export default function PlanningCommitments({ planning, commitmentTypes }: Plann
                 {planning.features.length === 0 ? (
                     <Card>
                         <CardContent className="py-6">
-                            <p className="text-center text-muted-foreground">Dieses Planning enthält keine Features.</p>
+                            <p className="text-muted-foreground text-center">Dieses Planning enthält keine Features.</p>
                         </CardContent>
                     </Card>
                 ) : (
@@ -108,7 +108,7 @@ export default function PlanningCommitments({ planning, commitmentTypes }: Plann
                                 </CardHeader>
                                 <CardContent>
                                     {feature.commitments.length === 0 ? (
-                                        <div className="py-2 text-center text-muted-foreground">
+                                        <div className="text-muted-foreground py-2 text-center">
                                             Keine Commitments für dieses Feature.
                                             <div className="mt-2">
                                                 <Link href={route('commitments.create', { planning_id: planning.id, feature_id: feature.id })}>

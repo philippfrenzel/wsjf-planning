@@ -1,8 +1,8 @@
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import { VersionInfo } from '@/components/version-info';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { VersionInfo } from '@/components/version-info';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, BarChart3 as Donut, Folder, Kanban, LayoutGrid, Route, Shield, Shirt } from 'lucide-react';

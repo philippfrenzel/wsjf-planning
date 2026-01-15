@@ -171,7 +171,7 @@ export default function Create({ projects, users }: CreateProps) {
                                 <div>
                                     <Label>Stakeholder</Label>
                                     <div className="flex flex-wrap gap-2">
-                                        {users.length === 0 && <span className="text-sm text-muted-foreground">Keine Benutzer vorhanden.</span>}
+                                        {users.length === 0 && <span className="text-muted-foreground text-sm">Keine Benutzer vorhanden.</span>}
                                         {users.length > 0 && (
                                             <Table>
                                                 <TableHeader>

@@ -54,7 +54,7 @@ export default function Create({ projects, users }: CreateProps) {
         if (!editor) return null;
 
         return (
-            <div className="flex flex-wrap gap-1 border-b bg-muted p-2">
+            <div className="bg-muted flex flex-wrap gap-1 border-b p-2">
                 {/* Textformatierungen */}
                 <div className="mr-2 flex gap-1 border-r pr-2">
                     <Button

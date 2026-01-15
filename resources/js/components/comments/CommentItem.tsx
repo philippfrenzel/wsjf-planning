@@ -69,8 +69,8 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-semibold">{comment.user.name}</span>
-                                <span className="text-xs text-muted-foreground">{formatDate(comment.created_at)}</span>
-                                {comment.created_at !== comment.updated_at && <span className="text-xs text-muted-foreground">(bearbeitet)</span>}
+                                <span className="text-muted-foreground text-xs">{formatDate(comment.created_at)}</span>
+                                {comment.created_at !== comment.updated_at && <span className="text-muted-foreground text-xs">(bearbeitet)</span>}
                             </div>
 
                             {comment.is_owner && !isEditing && (
@@ -106,7 +106,7 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-sm whitespace-pre-wrap text-foreground">{comment.body}</div>
+                            <div className="text-foreground text-sm whitespace-pre-wrap">{comment.body}</div>
                         )}
 
                         {!isEditing && canReply && (
@@ -120,7 +120,7 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
             </div>
 
             {isReplying && (
-                <div className="ml-11 space-y-2 rounded-lg border bg-muted p-3">
+                <div className="bg-muted ml-11 space-y-2 rounded-lg border p-3">
                     <Textarea
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}

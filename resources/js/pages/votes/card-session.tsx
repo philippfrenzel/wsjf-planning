@@ -354,7 +354,7 @@ const CategoryTabContent: React.FC<{
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="text-center text-muted-foreground">
+                                    <div className="text-muted-foreground text-center">
                                         <CheckCircle2 className="mx-auto mb-2 h-12 w-12 text-green-500" />
                                         <p>Alle Features wurden bewertet</p>
                                     </div>
@@ -384,7 +384,7 @@ const CategoryTabContent: React.FC<{
                                             />
                                         ))
                                     ) : (
-                                        <div className="text-center text-muted-foreground">
+                                        <div className="text-muted-foreground text-center">
                                             <ArrowDownCircle className="mx-auto mb-2 h-12 w-12 text-blue-500" />
                                             <p>Fügen Sie Features hinzu, um sie zu bewerten</p>
                                         </div>
