@@ -123,12 +123,14 @@ export default function VoteSession({ planning, features, types, existingVotes, 
             route('votes.session.store', planning.id),
             { votes },
             {
-                preserveScroll: true,
-                preserveState: true,
-                replace: true,
-                onFinish: () => {
+                preserveScroll: !next, // Only preserve scroll if not navigating
+                preserveState: !next, // Only preserve state if not navigating
+                replace: !next, // Only replace if not navigating
+                onSuccess: () => {
                     setIsSaving(false);
-                    next?.();
+                    if (next) {
+                        next();
+                    }
                 },
                 onError: () => {
                     setIsSaving(false);
