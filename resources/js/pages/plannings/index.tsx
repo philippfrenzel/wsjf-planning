@@ -173,10 +173,10 @@ export default function Index({ plannings }: IndexProps) {
 
             {/* Filter-Bereich */}
             <div className="flex flex-col p-5">
-                <Card className="border bg-muted">
+                <Card className="bg-muted border">
                     <CardContent>
                         <div className="mb-4 flex items-center gap-2">
-                            <Search className="h-4 w-4 text-muted-foreground" />
+                            <Search className="text-muted-foreground h-4 w-4" />
                             <h2 className="font-medium">Filter</h2>
 
                             {/* Dauerhaft sichtbarer Reset-Button */}
@@ -198,7 +198,7 @@ export default function Index({ plannings }: IndexProps) {
                                     />
                                     {filters.title && (
                                         <button
-                                            className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
                                             onClick={() => handleFilterChange('title', '')}
                                         >
                                             <X className="h-4 w-4" />
@@ -282,8 +282,8 @@ export default function Index({ plannings }: IndexProps) {
                 {/* Tabellen-Bereich */}
                 <div className="mt-4">
                     {/* Ergebnisanzeige with Paginierung */}
-                    <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
-                        <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground mb-2 flex items-center justify-between text-sm">
+                        <div className="text-muted-foreground text-sm">
                             {filteredPlannings.length > 0
                                 ? `Zeige ${startItem} bis ${endItem} von ${filteredPlannings.length} Plannings`
                                 : 'Keine Plannings gefunden'}
@@ -327,7 +327,7 @@ export default function Index({ plannings }: IndexProps) {
                                     <TableRow>
                                         <TableCell colSpan={8} className="py-8 text-center">
                                             <div className="flex flex-col items-center justify-center">
-                                                <Search className="mb-2 h-8 w-8 text-muted-foreground" />
+                                                <Search className="text-muted-foreground mb-2 h-8 w-8" />
                                                 <p className="text-muted-foreground">Keine Plannings gefunden</p>
                                                 {Object.values(filters).some((f) => f !== '') && (
                                                     <Button variant="link" onClick={resetFilters} className="mt-2">
@@ -397,7 +397,7 @@ export default function Index({ plannings }: IndexProps) {
                             {paginatedPlannings.length === 0 ? (
                                 <div className="col-span-full py-8 text-center">
                                     <div className="flex flex-col items-center justify-center">
-                                        <Search className="mb-2 h-8 w-8 text-muted-foreground" />
+                                        <Search className="text-muted-foreground mb-2 h-8 w-8" />
                                         <p className="text-muted-foreground">Keine Plannings gefunden</p>
                                         {Object.values(filters).some((f) => f !== '') && (
                                             <Button variant="link" onClick={resetFilters} className="mt-2">
@@ -480,7 +480,7 @@ export default function Index({ plannings }: IndexProps) {
                     {/* Verbesserte Paginierungs-Navigation */}
                     {filteredPlannings.length > 0 && (
                         <div className="mt-4 flex items-center justify-between">
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-muted-foreground text-sm">
                                 Zeige {Math.min(filteredPlannings.length, (currentPage - 1) * itemsPerPage + 1)} bis{' '}
                                 {Math.min(filteredPlannings.length, currentPage * itemsPerPage)} von {filteredPlannings.length} Einträgen
                             </div>
