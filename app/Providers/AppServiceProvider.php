@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite;
 use App\Models\Estimation;
 use App\Models\Feature;
 use App\Observers\EstimationObserver;
@@ -29,5 +30,8 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.env') !== 'local') {
             URL::forceScheme('https');
         }
+
+        // Prefetch Vite assets for improved performance
+        Vite::prefetch(concurrency: 3);
     }
 }
