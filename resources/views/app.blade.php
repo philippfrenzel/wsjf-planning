@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="api-base-url" content="{{ config('app.url') }}">
         <meta name="description" content="Tool zur Planung und Priorisierung von Features nach dem WSJF-Prinzip" inertia head-key="description">
         <meta property="og:title" content="{{ config('app.name', 'Laravel') }}" inertia head-key="og:title">
         <meta property="og:description" content="Tool zur Planung und Priorisierung von Features nach dem WSJF-Prinzip" inertia head-key="og:description">
