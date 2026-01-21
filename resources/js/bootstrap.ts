@@ -1,6 +1,14 @@
 import axios from 'axios';
 
 /**
+ * Configure axios base URL
+ */
+const baseUrlMeta = document.head.querySelector<HTMLMetaElement>('meta[name="api-base-url"]');
+if (baseUrlMeta) {
+    axios.defaults.baseURL = baseUrlMeta.content;
+}
+
+/**
  * Configure axios defaults for Laravel
  */
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
