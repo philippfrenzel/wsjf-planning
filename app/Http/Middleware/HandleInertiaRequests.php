@@ -51,6 +51,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'tenants' => fn () => $request->user()?->tenants()->get(['tenants.id', 'tenants.name']) ?? [],
                 'currentTenant' => fn () => $request->user()?->currentTenant()->first(['id', 'name']),
+                'currentRole' => fn () => $request->user()?->currentTenantRole(),
+                'isSuperAdmin' => fn () => $request->user()?->isSuperAdmin() ?? false,
             ],
             'locale' => app()->getLocale(),
             'ziggy' => fn (): array => [

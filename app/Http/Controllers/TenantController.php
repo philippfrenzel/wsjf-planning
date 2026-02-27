@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -33,7 +34,7 @@ class TenantController extends Controller
         $owned = Tenant::where('owner_user_id', $user->id)
             ->with([
                 'members' => function ($q) {
-                    $q->select('users.id', 'users.name', 'users.email');
+                    $q->select('users.id', 'users.name', 'users.email')->withPivot('role');
                 },
                 'invitations' => function ($q) {
                     $q->select('id', 'tenant_id', 'email', 'accepted_at', 'created_at');
@@ -113,6 +114,46 @@ class TenantController extends Controller
         $invitation->delete();
 
         return back()->with('success', 'Einladung wurde zurückgezogen.');
+    }
+
+    public function updateMemberRole(Request $request, Tenant $tenant, User $member): RedirectResponse
+    {
+        $request->validate(['role' => 'required|in:Admin,Planner,Voter']);
+
+        if (!$tenant->members()->where('users.id', $member->id)->exists()) {
+            abort(404, 'Member not found in this tenant.');
+        }
+
+        DB::table('tenant_user')
+            ->where('tenant_id', $tenant->id)
+            ->where('user_id', $member->id)
+            ->update(['role' => $request->role]);
+
+        return back()->with('success', 'Role updated.');
+    }
+
+    public function removeMember(Request $request, Tenant $tenant, User $member): RedirectResponse
+    {
+        if (Auth::id() === $member->id) {
+            return back()->withErrors(['member' => 'You cannot remove yourself from the tenant.']);
+        }
+
+        $tenant->members()->detach($member->id);
+
+        if ($member->current_tenant_id === $tenant->id) {
+            $member->forceFill(['current_tenant_id' => null])->save();
+        }
+
+        return back()->with('success', 'Member removed.');
+    }
+
+    public function update(Request $request, Tenant $tenant): RedirectResponse
+    {
+        $request->validate(['name' => 'required|string|min:2|max:100']);
+
+        $tenant->update(['name' => $request->name]);
+
+        return back()->with('success', 'Tenant name updated.');
     }
 
     public function accept(Request $request): RedirectResponse

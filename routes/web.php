@@ -65,6 +65,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified', 'role:Admin'])->group(function () {
     Route::get('plannings/admin', [PlanningController::class, 'adminPlannings'])->name('plannings.admin');
     Route::post('plannings/{planning}/set-creator', [PlanningController::class, 'setCreator'])->name('plannings.set-creator');
+    Route::post('tenants/{tenant}/invite', [TenantController::class, 'invite'])->name('tenants.invite');
+    Route::delete('tenants/{tenant}/invitations/{invitation}', [TenantController::class, 'revokeInvitation'])->name('tenants.invitations.destroy');
+    Route::patch('tenants/{tenant}/members/{user}', [TenantController::class, 'updateMemberRole'])->name('tenants.members.update');
+    Route::delete('tenants/{tenant}/members/{user}', [TenantController::class, 'removeMember'])->name('tenants.members.destroy');
+    Route::patch('tenants/{tenant}', [TenantController::class, 'update'])->name('tenants.update');
 });
 
 Route::resource('projects', ProjectController::class);
@@ -110,9 +115,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Tenants: Übersicht, Wechsel, Einladungen
     Route::get('tenants', [TenantController::class, 'index'])->name('tenants.index');
     Route::post('tenants/{tenant}/switch', [TenantController::class, 'switch'])->name('tenants.switch');
-    Route::post('tenants/{tenant}/invite', [TenantController::class, 'invite'])->name('tenants.invite');
-    Route::delete('tenants/{tenant}/invitations/{invitation}', [TenantController::class, 'revokeInvitation'])
-        ->name('tenants.invitations.destroy');
 });
 
 Route::post('tenants/accept', [TenantController::class, 'accept'])->name('tenants.accept');
