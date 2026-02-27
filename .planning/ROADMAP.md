@@ -13,6 +13,7 @@
 **Requirements**: INV-01 → INV-05, ROLE-01 → ROLE-07, TEN-01 → TEN-04
 
 **Progress:**
+- [x] Plan 01: Role foundation — migration, User helpers, Gate bypass, TenantScope bypass ✅
 - [x] Plan 02: Invitation flow — email dispatch, Voter role on accept, registration token handling ✅
 
 **Deliverables:**
@@ -105,4 +106,4 @@
 
 ---
 *Roadmap defined: 2026-02-27*
-*Last updated: 2026-02-27 after Plan 02 (invitation flow) — Phase 1 in progress*
+*Last updated: 2026-02-27 after Plan 01 (role foundation) execution*

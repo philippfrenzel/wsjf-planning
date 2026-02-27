@@ -10,10 +10,18 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 ## Current Status
 
 **Phase:** 1 of 4
-**Phase status:** In progress — Plan 02 complete
+**Phase status:** In progress — Plans 01 and 02 complete
 **Milestone:** v1.0 (Sellable SaaS)
 
 ## What Was Just Done
+
+- **Plan 01: Role Foundation** (2026-02-27)
+  - Migration: seeded SuperAdmin/Admin/Planner/Voter role names, backfilled tenant owners to `role='Admin'`
+  - `User::isSuperAdmin()` — memoized with `once()`, queries `role_user` pivot
+  - `User::hasRoleInTenant()` — queries `tenant_user` pivot
+  - `User::currentTenantRole()` — returns current tenant role string
+  - `Gate::before()` registered: SuperAdmin bypasses all policy checks
+  - `TenantScope::apply()` early-returns for SuperAdmin (sees all tenant data)
 
 - **Plan 02: Invitation Flow** (2026-02-27)
   - Created `TenantInvitationMail` queued mailable + blade email template
@@ -23,7 +31,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Run Plan 03: Role enforcement middleware and policy updates.
+Run Plan 03: RequireRole middleware — gate routes based on tenant role.
 
 ## Key Decisions (Accumulated)
 
@@ -40,4 +48,4 @@ Run Plan 03: Role enforcement middleware and policy updates.
 _Add notes here during active work sessions._
 
 ---
-*Last updated: 2026-02-27 after Plan 02 (invitation flow) execution*
+*Last updated: 2026-02-27 after Plan 01 (role foundation) execution*
