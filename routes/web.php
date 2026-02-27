@@ -16,6 +16,7 @@ use App\Http\Controllers\CommitmentController;
 use App\Http\Controllers\PlanController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\TenantController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CommentController;
 
 Route::get('/', function () {
@@ -123,6 +124,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('comments/{comment}', [CommentController::class, 'show'])->name('comments.show');
     Route::put('comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
     Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+});
+
+// Billing routes (auth + verified; NOT behind subscribed middleware)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('billing', [BillingController::class, 'index'])->name('billing.index');
+    Route::get('billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
+    Route::get('billing/success', [BillingController::class, 'success'])->name('billing.success');
+    Route::get('billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
 });
 
 require __DIR__ . '/settings.php';
