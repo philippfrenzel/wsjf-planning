@@ -140,6 +140,8 @@ class TenantController extends Controller
 
         $tenant->members()->detach($member->id);
 
+        $this->syncSeatCount($tenant);
+
         if ($member->current_tenant_id === $tenant->id) {
             $member->forceFill(['current_tenant_id' => null])->save();
         }
@@ -154,6 +156,16 @@ class TenantController extends Controller
         $tenant->update(['name' => $request->name]);
 
         return back()->with('success', 'Tenant name updated.');
+    }
+
+    private function syncSeatCount(Tenant $tenant): void
+    {
+        if (! $tenant->subscribed('default')) {
+            return; // Generic trial — no Cashier subscription object exists yet
+        }
+
+        $count = $tenant->members()->count();
+        $tenant->subscription('default')->updateQuantity($count);
     }
 
     public function accept(Request $request): RedirectResponse
@@ -183,6 +195,8 @@ class TenantController extends Controller
         }
 
         $inv->acceptFor($user);
+
+        $this->syncSeatCount($inv->tenant);
 
         $request->session()->forget('tenant_invitation_token');
 
