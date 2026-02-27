@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Models\Project;
 use App\Models\Feature;
@@ -44,7 +45,11 @@ class DashboardController extends Controller
         $statusKeys = ['in-planning', 'approved', 'implemented', 'rejected'];
 
         $featureStatusByPlanning = $planningsForStatus->map(function ($planning) use ($statusKeys) {
-            $counts = Feature::whereHas('plannings', fn($q) => $q->where('plannings.id', $planning->id))
+            $featureIds = DB::table('feature_planning')
+                ->where('planning_id', $planning->id)
+                ->pluck('feature_id');
+
+            $counts = Feature::whereIn('id', $featureIds)
                 ->selectRaw("COALESCE(status, 'in-planning') as status, COUNT(*) as count")
                 ->groupBy('status')
                 ->pluck('count', 'status');
