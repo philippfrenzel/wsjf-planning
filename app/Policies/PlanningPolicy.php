@@ -22,17 +22,26 @@ class PlanningPolicy
 
     public function create(User $user): bool
     {
-        return $this->userHasTenant($user);
+        $tenantId = $this->tenantId($user);
+        if (!$tenantId) return false;
+        return $user->hasRoleInTenant('Admin', $tenantId)
+            || $user->hasRoleInTenant('Planner', $tenantId);
     }
 
     public function update(User $user, Planning $planning): bool
     {
-        return $this->sameTenant($user, $planning);
+        if (!$this->sameTenant($user, $planning)) return false;
+        $tenantId = $this->tenantId($user);
+        return $user->hasRoleInTenant('Admin', $tenantId)
+            || $user->hasRoleInTenant('Planner', $tenantId);
     }
 
     public function delete(User $user, Planning $planning): bool
     {
-        return $this->sameTenant($user, $planning);
+        if (!$this->sameTenant($user, $planning)) return false;
+        $tenantId = $this->tenantId($user);
+        return $user->hasRoleInTenant('Admin', $tenantId)
+            || $user->hasRoleInTenant('Planner', $tenantId);
     }
 
     public function restore(User $user, Planning $planning): bool
