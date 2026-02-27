@@ -22,17 +22,26 @@ class CommitmentPolicy
 
     public function create(User $user): bool
     {
-        return $this->userHasTenant($user);
+        $tenantId = $this->tenantId($user);
+        if (!$tenantId) return false;
+        return $user->hasRoleInTenant('Admin', $tenantId)
+            || $user->hasRoleInTenant('Planner', $tenantId);
     }
 
     public function update(User $user, Commitment $commitment): bool
     {
-        return $this->sameTenant($user, $commitment);
+        if (!$this->sameTenant($user, $commitment)) return false;
+        $tenantId = $this->tenantId($user);
+        return $user->hasRoleInTenant('Admin', $tenantId)
+            || $user->hasRoleInTenant('Planner', $tenantId);
     }
 
     public function delete(User $user, Commitment $commitment): bool
     {
-        return $this->sameTenant($user, $commitment);
+        if (!$this->sameTenant($user, $commitment)) return false;
+        $tenantId = $this->tenantId($user);
+        return $user->hasRoleInTenant('Admin', $tenantId)
+            || $user->hasRoleInTenant('Planner', $tenantId);
     }
 
     public function restore(User $user, Commitment $commitment): bool
