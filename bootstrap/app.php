@@ -25,6 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RequireRole::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'stripe/*',
+        ]);
+
         if (env('APP_ENV') == 'local') {
             $middleware->trustProxies(at: '*');
         }

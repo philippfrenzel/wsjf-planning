@@ -49,6 +49,7 @@ class RegisteredUserController extends Controller
         $tenant = Tenant::create([
             'name' => ($user->name ?: $user->email) . ' Tenant',
             'owner_user_id' => $user->id,
+            'trial_ends_at' => now()->addDays(14),
         ]);
 
         // Set default and current tenant

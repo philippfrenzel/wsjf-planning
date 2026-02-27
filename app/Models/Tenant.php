@@ -8,14 +8,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Concerns\SoftDeletesWithUser;
+use Laravel\Cashier\Billable;
 
 class Tenant extends Model
 {
-    use HasFactory, SoftDeletesWithUser;
+    use HasFactory, SoftDeletesWithUser, Billable;
 
     protected $fillable = [
         'name',
         'owner_user_id',
+    ];
+
+    protected $casts = [
+        'trial_ends_at' => 'datetime',
     ];
 
     public function owner(): BelongsTo

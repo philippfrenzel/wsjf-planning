@@ -14,7 +14,6 @@ use App\Http\Controllers\FeatureImportController;
 use App\Http\Controllers\EstimationController;
 use App\Http\Controllers\CommitmentController;
 use App\Http\Controllers\PlanController;
-use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\CommentController;
@@ -109,8 +108,6 @@ Route::post('plannings/{planning}/recalculate-commonvotes', [PlanningController:
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('plans', PlanController::class)->only(['index', 'create', 'store']);
-    Route::get('subscribe', [SubscriptionController::class, 'create'])->name('subscriptions.create');
-    Route::post('subscribe', [SubscriptionController::class, 'store'])->name('subscriptions.store');
 
     // Tenants: Übersicht, Wechsel, Einladungen
     Route::get('tenants', [TenantController::class, 'index'])->name('tenants.index');

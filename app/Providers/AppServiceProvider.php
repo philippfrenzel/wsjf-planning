@@ -10,6 +10,7 @@ use App\Models\Feature;
 use App\Observers\EstimationObserver;
 use App\Observers\FeatureObserver;
 use Spatie\Permission\PermissionRegistrar;
+use Laravel\Cashier\Cashier;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Cashier::useCustomerModel(\App\Models\Tenant::class);
+
         Estimation::observe(EstimationObserver::class);
         Feature::observe(FeatureObserver::class);
 
