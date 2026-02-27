@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use App\Models\Estimation;
@@ -25,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Cashier::useCustomerModel(\App\Models\Tenant::class);
+
+        Event::listen(
+            \Laravel\Cashier\Events\WebhookReceived::class,
+            \App\Listeners\StripeEventListener::class,
+        );
 
         Estimation::observe(EstimationObserver::class);
         Feature::observe(FeatureObserver::class);
