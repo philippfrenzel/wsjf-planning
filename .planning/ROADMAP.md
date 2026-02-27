@@ -39,16 +39,12 @@
 
 **Requirements**: BILL-01 → BILL-08, ENF-01 → ENF-02
 
-**Deliverables:**
-- `laravel/cashier-stripe` installed and configured
-- `Plan` model updated with Stripe price IDs and per-seat pricing
-- 14-day free trial on tenant registration
-- Stripe Checkout or Payment Intent flow for adding a payment method
-- Seat metering: subscription quantity synced when members join/leave
-- Stripe billing portal integration (manage card, view invoices)
-- Webhook handler: payment_succeeded, payment_failed, customer.subscription.deleted
-- Subscription middleware: blocks non-subscribed tenants with upgrade prompt
-- SuperAdmin exempt from enforcement
+**Progress:**
+- [ ] Plan 01: Cashier foundation — laravel/cashier installed, Tenant billable, migrations, 14-day trial ✅
+- [ ] Plan 02: BillingController — Stripe Checkout, billing portal, subscription management
+- [ ] Plan 03: Seat sync — member join/leave syncs subscription quantity
+- [ ] Plan 04: Webhook handler — payment_succeeded, payment_failed, subscription.deleted
+- [ ] Plan 05: Subscription enforcement middleware — blocks non-subscribed tenants
 
 **Done when:** A new tenant can sign up, start a trial, enter a card, be billed per seat, cancel, and see their billing history — all without manual intervention.
 
@@ -109,4 +105,4 @@
 
 ---
 *Roadmap defined: 2026-02-27*
-*Last updated: 2026-02-27 after Plan 05 (tenant management UI) Tasks 1 & 2 — checkpoint pending*
+*Last updated: 2026-02-28 after Phase 2 Plan 01 (cashier-foundation) — complete*

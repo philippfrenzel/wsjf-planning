@@ -5,15 +5,28 @@
 See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 **Core value:** Teams can run a complete WSJF planning session without friction, in a single sitting.
-**Current focus:** Phase 1 — Tenant Invitations & Role Enforcement
+**Current focus:** Phase 2 — Stripe Subscription & Per-Seat Billing
 
 ## Current Status
 
-**Phase:** 1 of 4
-**Phase status:** In progress — Plans 01, 02, 03, and 04 complete
+**Phase:** 2 of 4
+**Phase status:** In progress — Plan 01 complete
 **Milestone:** v1.0 (Sellable SaaS)
 
 ## What Was Just Done
+
+- **Plan 01: Cashier Foundation** (2026-02-28) — Phase 2, Plan 01
+  - Installed `laravel/cashier` v16.3
+  - Published and customised Cashier migrations: `subscriptions.tenant_id` (not user_id), Cashier columns on `tenants` table
+  - Drop-stub migration (timestamp 185620) drops the hand-rolled subscriptions table before Cashier migrations run
+  - `Tenant` model: added `Billable` trait, `trial_ends_at` datetime cast
+  - `Plan` model: added `stripe_price_id` to fillable; removed stub `subscriptions()` relationship
+  - `AppServiceProvider::boot()`: registered `Cashier::useCustomerModel(Tenant::class)`
+  - `bootstrap/app.php`: CSRF exclusion for `stripe/*` webhooks
+  - `RegisteredUserController`: new tenants get `trial_ends_at = now()->addDays(14)` (14-day generic trial)
+  - Deleted `Subscription` model and `SubscriptionController` stubs; removed stub routes from web.php
+
+## Previous Completed Work
 
 - **Plan 01: Role Foundation** (2026-02-27)
   - Migration: seeded SuperAdmin/Admin/Planner/Voter role names, backfilled tenant owners to `role='Admin'`
@@ -47,25 +60,27 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
   - `routes/web.php`: moved invite/revoke into role:Admin group; added 3 new tenant management routes
   - `tenants/index.tsx`: Members tab with role badges + role-change + remove; Settings tab with name edit, seat count, subscription placeholder; admin-gated UI controls
   - `types/index.d.ts`: `Auth` interface updated with `currentRole` and `isSuperAdmin`
-  - **Awaiting:** Task 3 human verification checkpoint
 
 ## What's Next
 
-Checkpoint Task 3: Manual verification of tenant management UI (Admin vs Voter/Planner views). After approval, Phase 1 is complete.
+Phase 2, Plan 02: BillingController — Stripe Checkout session, billing portal, subscription management endpoints.
 
 ## Key Decisions (Accumulated)
 
 - `Mail::queue()` used (not `Mail::send()`) — non-blocking, compatible with sync queue in tests
 - `acceptFor()` uses raw `DB::table` update-check for `accepted_at` atomicity (not `forceFill`)
 - New tenant owner `role='Admin'` assigned via `whereNull('role')` patch immediately after registration login
+- Cashier billable model is `Tenant` (not `User`) — `Cashier::useCustomerModel(Tenant::class)` in AppServiceProvider
+- CSRF exclusion for `stripe/*` registered in bootstrap/app.php
 
 ## Open Questions / Blockers
 
-- PHP binary broken on host (libicu version mismatch) — runtime verification done by code inspection only.
+- PHP binary broken on host (libicu version mismatch) — runtime verification done with PHP 8.3 (`/opt/homebrew/opt/php@8.3/bin/php`)
+- Stripe API keys not yet configured (needed for Plan 02)
 
 ## Session Notes
 
 _Add notes here during active work sessions._
 
 ---
-*Last updated: 2026-02-27 after Plan 05 Tasks 1 & 2 — awaiting Task 3 human-verify checkpoint*
+*Last updated: 2026-02-28 after Phase 2 Plan 01 (cashier-foundation) — complete*
