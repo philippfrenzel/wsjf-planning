@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 interface User {
@@ -35,7 +35,7 @@ export default function AdminPlannings({ plannings, users }: AdminPlanningsProps
     };
 
     const handleSave = (planningId: number) => {
-        Inertia.post(
+        router.post(
             route('plannings.set-creator', { planning: planningId }),
             {
                 created_by: selectedUser[planningId],

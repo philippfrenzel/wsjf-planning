@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import React, { useState } from 'react';
@@ -66,7 +66,7 @@ export default function Create({ projects, users }: CreateProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        Inertia.post(route('plannings.store'), {
+        router.post(route('plannings.store'), {
             ...values,
             // Konvertiere "none" zu null für das Backend
             deputy_id: values.deputy_id === 'none' ? null : values.deputy_id,

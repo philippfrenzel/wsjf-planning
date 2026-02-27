@@ -8,7 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
 import { Check, ChevronLeft, ChevronRight, Eye, LayoutGrid, LayoutList, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -377,7 +377,7 @@ export default function Index({ plannings }: IndexProps) {
                                                         onSubmit={(e) => {
                                                             e.preventDefault();
                                                             if (confirm('Sind Sie sicher, dass Sie dieses Planning löschen möchten?')) {
-                                                                Inertia.delete(route('plannings.destroy', planning));
+                                                                router.delete(route('plannings.destroy', planning));
                                                             }
                                                         }}
                                                     >
@@ -460,7 +460,7 @@ export default function Index({ plannings }: IndexProps) {
                                                         onSubmit={(e) => {
                                                             e.preventDefault();
                                                             if (confirm('Sind Sie sicher, dass Sie dieses Planning löschen möchten?')) {
-                                                                Inertia.delete(route('plannings.destroy', planning));
+                                                                router.delete(route('plannings.destroy', planning));
                                                             }
                                                         }}
                                                     >

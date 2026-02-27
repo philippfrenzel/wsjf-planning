@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import React, { useState } from 'react';
@@ -51,7 +51,7 @@ export default function Create({ users }: CreateProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        Inertia.post(route('projects.store'), values);
+        router.post(route('projects.store'), values);
     };
 
     return (

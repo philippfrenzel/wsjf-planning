@@ -171,24 +171,36 @@ class VoteController extends Controller
 
         $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'];
 
+        // Only allow feature IDs that belong to this planning (prevents cross-tenant injection)
+        $allowedFeatureIds = $planning->features()->pluck('features.id')->flip();
+
         foreach ($votes as $key => $value) {
             // Key-Format: featureId_type
             [$featureId, $type] = explode('_', $key, 2);
 
-            if (!in_array($type, $types)) {
-                continue; // Ungültiger Typ, überspringen
+            if (!in_array($type, $types, true)) {
+                continue;
             }
 
-            // Vote updaten oder neu anlegen
-            \App\Models\Vote::updateOrCreate(
+            // Reject feature IDs not belonging to this planning
+            if (!$allowedFeatureIds->has((int) $featureId)) {
+                continue;
+            }
+
+            // Validate that value is numeric
+            if (!is_numeric($value)) {
+                continue;
+            }
+
+            Vote::updateOrCreate(
                 [
                     'user_id' => $user->id,
-                    'feature_id' => $featureId,
+                    'feature_id' => (int) $featureId,
                     'planning_id' => $planning->id,
                     'type' => $type,
                 ],
                 [
-                    'value' => $value,
+                    'value' => (int) $value,
                     'voted_at' => now(),
                 ]
             );

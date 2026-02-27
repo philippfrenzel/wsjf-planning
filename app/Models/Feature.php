@@ -114,20 +114,15 @@ class Feature extends Model
     }
 
     /**
-     * Die Common Votes (nur für ein bestimmtes Planning und User)
+     * Die Common Votes für ein bestimmtes Planning und einen bestimmten Creator.
+     *
+     * Scoped relation – verwende commonVotesForPlanning() statt commonvotes() direkt.
      */
-    public function commonvotes()
+    public function commonVotesForPlanning(int $planningId, int $creatorId): HasMany
     {
-        $planning = Planning::find(request('planning_id'));
         return $this->hasMany(Vote::class)
-            ->where(function ($query) use ($planning) {
-                if (request()->has('planning_id')) {
-                    $query->where('planning_id', request('planning_id'));
-                }
-                if (request()->has('user_id')) {
-                    $query->where('user_id', $planning->created_by);
-                }
-            });
+            ->where('planning_id', $planningId)
+            ->where('user_id', $creatorId);
     }
 
     /**

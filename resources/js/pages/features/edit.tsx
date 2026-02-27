@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import TextAlign from '@tiptap/extension-text-align';
 import { EditorContent, useEditor } from '@tiptap/react';
@@ -229,7 +229,7 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        Inertia.put(route('features.update', feature.id), values);
+        router.put(route('features.update', feature.id), values);
     };
 
     return (

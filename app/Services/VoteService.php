@@ -4,12 +4,17 @@ namespace App\Services;
 
 use App\Models\Planning;
 use App\Models\Vote;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class VoteService
 {
     /**
      * Berechnet Durchschnitts-Votes für den Planning-Ersteller.
+     *
+     * Replaces the previous O(6N) loop approach with a single aggregation query
+     * and a single upsert, keeping database round-trips constant regardless of
+     * the number of features.
      */
     public function calculateAverageVotesForCreator(Planning $planning): void
     {
@@ -19,70 +24,48 @@ class VoteService
             return;
         }
 
-        $features = $planning->features()->pluck('features.id');
+        $featureIds = $planning->features()->pluck('features.id');
 
-        if ($features->isEmpty()) {
+        if ($featureIds->isEmpty()) {
             Log::info('Keine Features für Planning gefunden', ['planning_id' => $planning->id]);
             return;
         }
 
-        foreach ($features as $featureId) {
-            foreach (['BusinessValue', 'TimeCriticality', 'RiskOpportunity'] as $type) {
-                $votes = Vote::where('planning_id', $planning->id)
-                    ->where('feature_id', $featureId)
-                    ->where('type', $type)
-                    ->where('user_id', '!=', $creatorId);
+        // Single aggregation query: average per feature/type, excluding the creator
+        $averages = Vote::select('feature_id', 'type', DB::raw('AVG(value) as avg_value'))
+            ->where('planning_id', $planning->id)
+            ->whereIn('feature_id', $featureIds)
+            ->where('user_id', '!=', $creatorId)
+            ->groupBy('feature_id', 'type')
+            ->get();
 
-                $averageVote = $votes->avg('value');
-
-                if ($averageVote === null) {
-                    Log::info('Keine Votes gefunden', [
-                        'planning_id' => $planning->id,
-                        'feature_id' => $featureId,
-                        'type' => $type,
-                    ]);
-                    continue;
-                }
-
-                $roundedAverage = (int) ceil($averageVote);
-
-                $existingVote = Vote::where([
-                    'user_id' => $creatorId,
-                    'feature_id' => $featureId,
-                    'planning_id' => $planning->id,
-                    'type' => $type,
-                ])->first();
-
-                if ($existingVote) {
-                    $existingVote->value = $roundedAverage;
-                    $existingVote->voted_at = now();
-                    $existingVote->save();
-                    Log::info('Creator-Vote aktualisiert', [
-                        'vote_id' => $existingVote->id,
-                        'planning_id' => $planning->id,
-                        'feature_id' => $featureId,
-                        'type' => $type,
-                        'value' => $roundedAverage,
-                    ]);
-                    continue;
-                }
-
-                Vote::create([
-                    'user_id' => $creatorId,
-                    'feature_id' => $featureId,
-                    'planning_id' => $planning->id,
-                    'type' => $type,
-                    'value' => $roundedAverage,
-                    'voted_at' => now(),
-                ]);
-
-                Log::info('Creator-Vote erstellt', [
-                    'planning_id' => $planning->id,
-                    'feature_id' => $featureId,
-                    'type' => $type,
-                    'value' => $roundedAverage,
-                ]);
-            }
+        if ($averages->isEmpty()) {
+            Log::info('Keine Votes für Durchschnittsberechnung gefunden', ['planning_id' => $planning->id]);
+            return;
         }
+
+        $now = now();
+        $upsertRows = $averages->map(fn($row) => [
+            'user_id'     => $creatorId,
+            'feature_id'  => $row->feature_id,
+            'planning_id' => $planning->id,
+            'type'        => $row->type,
+            'value'       => (int) ceil($row->avg_value),
+            'voted_at'    => $now,
+            'created_at'  => $now,
+            'updated_at'  => $now,
+        ])->all();
+
+        // Single upsert – one round-trip regardless of N
+        Vote::upsert(
+            $upsertRows,
+            ['user_id', 'feature_id', 'planning_id', 'type'],
+            ['value', 'voted_at', 'updated_at']
+        );
+
+        Log::info('Creator-Votes berechnet und gespeichert', [
+            'planning_id' => $planning->id,
+            'rows'        => count($upsertRows),
+        ]);
     }
 }

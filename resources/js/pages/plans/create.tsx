@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import React, { useState } from 'react';
 
 export default function Create() {
@@ -9,7 +9,7 @@ export default function Create() {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        Inertia.post(route('plans.store'), form);
+        router.post(route('plans.store'), form);
     };
 
     const breadcrumbs = [

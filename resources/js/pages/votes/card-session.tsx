@@ -4,12 +4,13 @@ import AppLayout from '@/layouts/app-layout';
 import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import DOMPurify from 'dompurify';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import { ArrowDownCircle, CheckCircle2, HelpCircle, MoveHorizontal } from 'lucide-react';
 
@@ -84,7 +85,7 @@ const FeatureCard: React.FC<{
                 <CardContent className="pt-0 pb-2">
                     <div className="text-muted-foreground line-clamp-2 text-sm">
                         {feature.description ? (
-                            <div dangerouslySetInnerHTML={{ __html: feature.description.substring(0, 100) + '...' }} />
+                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(feature.description.substring(0, 100) + '...') }} />
                         ) : (
                             <p>Keine Beschreibung vorhanden.</p>
                         )}
@@ -123,7 +124,7 @@ const FeatureCard: React.FC<{
 
                     <div className="prose prose-sm max-w-none overflow-auto">
                         {feature.description ? (
-                            <div dangerouslySetInnerHTML={{ __html: feature.description }} />
+                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(feature.description) }} />
                         ) : (
                             <p>Keine Beschreibung vorhanden.</p>
                         )}
@@ -174,7 +175,7 @@ const SortableFeatureCard: React.FC<{
                     <CardContent className="pt-0 pb-2">
                         <div className="text-muted-foreground line-clamp-2 text-sm">
                             {feature.description ? (
-                                <div dangerouslySetInnerHTML={{ __html: feature.description.substring(0, 100) + '...' }} />
+                                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(feature.description.substring(0, 100) + '...') }} />
                             ) : (
                                 <p>Keine Beschreibung vorhanden.</p>
                             )}
@@ -221,7 +222,7 @@ const SortableFeatureCard: React.FC<{
 
                     <div className="prose prose-sm max-w-none overflow-auto">
                         {feature.description ? (
-                            <div dangerouslySetInnerHTML={{ __html: feature.description }} />
+                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(feature.description) }} />
                         ) : (
                             <p>Keine Beschreibung vorhanden.</p>
                         )}
@@ -322,7 +323,7 @@ const CategoryTabContent: React.FC<{
                                                     <div className="text-muted-foreground line-clamp-2 text-sm">
                                                         {feature.description ? (
                                                             <div
-                                                                dangerouslySetInnerHTML={{ __html: feature.description.substring(0, 100) + '...' }}
+                                                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(feature.description.substring(0, 100) + '...') }}
                                                             />
                                                         ) : (
                                                             <p>Keine Beschreibung vorhanden.</p>
@@ -429,7 +430,7 @@ const CategoryTabContent: React.FC<{
 
                             <div className="prose prose-sm max-w-none overflow-auto">
                                 {detailFeature.description ? (
-                                    <div dangerouslySetInnerHTML={{ __html: detailFeature.description }} />
+                                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(detailFeature.description) }} />
                                 ) : (
                                     <p>Keine Beschreibung vorhanden.</p>
                                 )}
@@ -746,7 +747,7 @@ export default function CardVoteSession({ planning, features, types, existingVot
         setIsSaving(true);
         setSaveError(null);
 
-        Inertia.post(
+        router.post(
             route('votes.session.store', planning.id),
             { votes },
             {
@@ -793,7 +794,7 @@ export default function CardVoteSession({ planning, features, types, existingVot
         setIsSaving(true);
         setSaveError(null);
 
-        Inertia.post(
+        router.post(
             route('votes.session.store', planning.id),
             { votes, redirect_to: 'table-session' },
             {

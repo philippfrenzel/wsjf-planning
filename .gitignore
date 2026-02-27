@@ -26,4 +26,7 @@ yarn-error.log
 # Cypress artifacts
 /cypress/screenshots
 /cypress/videos
+
+# GSD project state (generated per-run, not committed)
+.planning/
 database/migrations/2025_08_26_181433_create_reactions_table.php.skip

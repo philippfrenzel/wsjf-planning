@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import React, { useState } from 'react';
@@ -80,7 +80,7 @@ export default function Edit({ project, users, currentStatus, statusOptions }: E
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        Inertia.put(route('projects.update', project.id), values);
+        router.put(route('projects.update', project.id), values);
     };
 
     return (

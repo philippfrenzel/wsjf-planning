@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -29,7 +29,7 @@ export default function WorkflowManager({ featureId, statusOptions, currentStatu
     };
 
     const handleSave = () => {
-        Inertia.put(
+        router.put(
             route('features.update', featureId),
             { status },
             {

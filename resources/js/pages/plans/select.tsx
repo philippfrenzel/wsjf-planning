@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 
 interface Plan {
     id: number;
@@ -20,7 +20,7 @@ export default function Select({ plans }: Props) {
     ];
 
     const subscribe = (planId: number) => {
-        Inertia.post(route('subscriptions.store'), { plan_id: planId });
+        router.post(route('subscriptions.store'), { plan_id: planId });
     };
 
     return (

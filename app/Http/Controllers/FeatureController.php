@@ -111,7 +111,7 @@ class FeatureController extends Controller
         // Convert to integer or null for "all"
         $filterDays = $closedStatusFilter === 'all' ? null : (int) $closedStatusFilter;
 
-        $featuresQuery = Feature::with(['project:id,name', 'estimationComponents'])
+        $featuresQuery = Feature::with(['project:id,name', 'estimationComponents.estimations'])
             ->withCount('estimationComponents')
             ->filterClosedByDays($filterDays);
 
@@ -200,7 +200,11 @@ class FeatureController extends Controller
 
     public function lineage()
     {
-        $features = Feature::with('dependencies.related')->get();
+        // Load the entire dependency graph upfront: features → dependencies → related → their dependencies
+        // This avoids unbounded recursive lazy-loading in buildLineage.
+        $features = Feature::with([
+            'dependencies.related.dependencies.related',
+        ])->get();
 
         $lineages = $features->map(fn ($feature) => $this->featureService->buildLineage($feature))->values();
 

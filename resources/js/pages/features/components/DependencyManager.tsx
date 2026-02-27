@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { Check } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -29,11 +29,11 @@ export default function DependencyManager({ featureId, options, initialItems }: 
     const add = (e: React.FormEvent) => {
         e.preventDefault();
         if (!relatedId || type === 'ignore') return;
-        Inertia.post(route('features.dependencies.store', featureId), { related_feature_id: Number(relatedId), type });
+        router.post(route('features.dependencies.store', featureId), { related_feature_id: Number(relatedId), type });
     };
 
     const remove = (depId: number) => {
-        Inertia.delete(route('features.dependencies.destroy', { feature: featureId, dependency: depId }));
+        router.delete(route('features.dependencies.destroy', { feature: featureId, dependency: depId }));
     };
 
     return (

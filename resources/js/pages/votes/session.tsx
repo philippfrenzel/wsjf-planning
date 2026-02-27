@@ -2,11 +2,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
+import DOMPurify from 'dompurify';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 
 interface Feature {
@@ -119,7 +120,7 @@ export default function VoteSession({ planning, features, types, existingVotes, 
         setIsSaving(true);
         setSaveError(null);
 
-        Inertia.post(
+        router.post(
             route('votes.session.store', planning.id),
             { votes },
             {
@@ -157,7 +158,7 @@ export default function VoteSession({ planning, features, types, existingVotes, 
         setIsSaving(true);
         setSaveError(null);
 
-        Inertia.post(
+        router.post(
             route('votes.session.store', planning.id),
             { votes, redirect_to: 'card-session' },
             {
@@ -235,7 +236,7 @@ export default function VoteSession({ planning, features, types, existingVotes, 
                     {/* Hier die Änderung: Verwenden von dangerouslySetInnerHTML */}
                     <div className="prose prose-sm max-w-none overflow-auto">
                         {selectedFeature?.description ? (
-                            <div dangerouslySetInnerHTML={{ __html: selectedFeature.description }} />
+                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedFeature.description) }} />
                         ) : (
                             <p>Keine Beschreibung vorhanden.</p>
                         )}

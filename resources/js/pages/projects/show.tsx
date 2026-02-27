@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { PageProps } from '@inertiajs/inertia';
 import { Head, Link, usePage } from '@inertiajs/react';
 
 type Project = {
@@ -17,7 +16,7 @@ type Project = {
 };
 
 export default function ProjectShow() {
-    const { project } = usePage<PageProps & { project: Project }>().props;
+    const { project } = usePage<{ project: Project }>().props;
 
     // Breadcrumbs definieren
     const breadcrumbs = [

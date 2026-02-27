@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Eye, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -123,7 +123,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
 
     const goToPage = (page: number) => {
         if (usesServerPagination && pagination?.current_page) {
-            Inertia.get(route('projects.index'), { page }, { preserveScroll: true, preserveState: true });
+            router.get(route('projects.index'), { page }, { preserveScroll: true, preserveState: true });
             return;
         }
         setCurrentPage(page);
@@ -266,7 +266,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                                                 <form
                                                     onSubmit={(e) => {
                                                         e.preventDefault();
-                                                        Inertia.delete(route('projects.destroy', project.id));
+                                                        router.delete(route('projects.destroy', project.id));
                                                     }}
                                                 >
                                                     <Button type="submit" size="icon" variant="destructive">

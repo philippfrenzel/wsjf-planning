@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
@@ -148,7 +148,7 @@ export default function Edit({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        Inertia.put(route('plannings.update', planning.id), {
+        router.put(route('plannings.update', planning.id), {
             ...values,
             // Konvertiere "none" zu null für das Backend
             deputy_id: values.deputy_id === 'none' ? null : values.deputy_id,

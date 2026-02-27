@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
 import { ArrowDown, ArrowUp, Check, Eye, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -666,7 +666,7 @@ export default function Index({ features }: IndexProps) {
                                                 onSubmit={(e) => {
                                                     e.preventDefault();
                                                     if (confirm('Sind Sie sicher, dass Sie dieses Feature löschen möchten?')) {
-                                                        Inertia.delete(route('features.destroy', { feature: feature.id }));
+                                                        router.delete(route('features.destroy', { feature: feature.id }));
                                                     }
                                                 }}
                                             >
