@@ -22,7 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
         $middleware->alias([
-            'role' => \App\Http\Middleware\RequireRole::class,
+            'role'       => \App\Http\Middleware\RequireRole::class,
+            'subscribed' => \App\Http\Middleware\RequireSubscription::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
