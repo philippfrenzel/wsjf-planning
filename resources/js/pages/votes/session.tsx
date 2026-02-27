@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 
+const FIBONACCI_VALUES = [1, 2, 3, 5, 8, 13, 20] as const;
+
 interface Feature {
     id: number;
     jira_key: string;
@@ -70,6 +72,18 @@ export default function VoteSession({ planning, features, types, existingVotes, 
     // Erweiterte Logik zum Behandeln von Duplikaten und Lücken in den Voting-Werten
     const handleChange = (featureId: number, type: string, value: string) => {
         setVotes((prevVotes) => {
+            // JobSize uses independent Fibonacci values — no ranking/uniqueness logic needed
+            if (type === 'JobSize') {
+                const newVotes = { ...prevVotes };
+                const key = `${featureId}_${type}`;
+                if (value === '') {
+                    delete newVotes[key];
+                } else {
+                    newVotes[key] = value;
+                }
+                return newVotes;
+            }
+
             // Neuen Wert eintragen
             const newVotes = { ...prevVotes };
 
@@ -293,15 +307,32 @@ export default function VoteSession({ planning, features, types, existingVotes, 
                                             </TableCell>
                                             {types.map((type) => (
                                                 <TableCell key={type}>
-                                                    <Input
-                                                        type="number"
-                                                        step="any"
-                                                        min="0"
-                                                        name={`vote_${feature.id}_${type}`}
-                                                        value={votes[`${feature.id}_${type}`] || ''}
-                                                        onChange={(e) => handleChange(feature.id, type, e.target.value)}
-                                                        placeholder="Wert"
-                                                    />
+                                                    {type === 'JobSize' ? (
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {FIBONACCI_VALUES.map((fib) => (
+                                                                <Button
+                                                                    key={fib}
+                                                                    type="button"
+                                                                    variant={votes[`${feature.id}_JobSize`] === String(fib) ? 'default' : 'outline'}
+                                                                    size="sm"
+                                                                    className="h-7 w-9 p-0 text-xs"
+                                                                    onClick={() => handleChange(feature.id, 'JobSize', String(fib))}
+                                                                >
+                                                                    {fib}
+                                                                </Button>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <Input
+                                                            type="number"
+                                                            step="any"
+                                                            min="0"
+                                                            name={`vote_${feature.id}_${type}`}
+                                                            value={votes[`${feature.id}_${type}`] || ''}
+                                                            onChange={(e) => handleChange(feature.id, type, e.target.value)}
+                                                            placeholder="Wert"
+                                                        />
+                                                    )}
                                                 </TableCell>
                                             ))}
                                         </TableRow>

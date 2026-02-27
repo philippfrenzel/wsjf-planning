@@ -56,9 +56,20 @@ function translateVoteType(type: string): string {
         BusinessValue: 'Geschäftswert',
         TimeCriticality: 'Zeitkritikalität',
         RiskOpportunity: 'Risiko/Chance',
+        JobSize: 'Job Size',
         WSJF: 'WSJF Score',
     };
     return translations[type] || type;
+}
+
+function computeWsjfScore(commonvotes?: Vote[]): number | null {
+    if (!commonvotes) return null;
+    const bv = commonvotes.find((v) => v.type === 'BusinessValue')?.value;
+    const tc = commonvotes.find((v) => v.type === 'TimeCriticality')?.value;
+    const rr = commonvotes.find((v) => v.type === 'RiskOpportunity')?.value;
+    const js = commonvotes.find((v) => v.type === 'JobSize')?.value;
+    if (!bv || !tc || !rr || !js || js === 0) return null;
+    return (bv + tc + rr) / js;
 }
 
 function getScoreBadgeClass(value: number, min: number, max: number): string {
@@ -284,7 +295,7 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
     const featuresWithCommonVotes = features.filter((feature) => feature.commonvotes && feature.commonvotes.length > 0);
 
     // Commitments-Typen sind jetzt in der CommitmentModal-Komponente definiert
-    const voteTypes = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'];
+    const voteTypes = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity', 'JobSize'];
 
     // Min/Max für jeden Typ berechnen
     const minMax: Record<string, { min: number; max: number }> = {};
@@ -343,6 +354,7 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
                                                 {sort?.type === type && <span className="ml-1">{sort.direction === 'asc' ? '▲' : '▼'}</span>}
                                             </TableHead>
                                         ))}
+                                        <TableHead>WSJF Score</TableHead>
                                         <TableHead>Commitment</TableHead>
                                         <TableHead>Status</TableHead>
                                     </TableRow>
@@ -392,6 +404,16 @@ const CommonVotesTable: React.FC<CommonVotesTableProps> = ({ features, planningI
                                                     </TableCell>
                                                 );
                                             })}
+                                            <TableCell>
+                                                {(() => {
+                                                    const score = computeWsjfScore(feature.commonvotes);
+                                                    return score !== null ? (
+                                                        <Badge className="bg-indigo-100 text-indigo-800">{score.toFixed(2)}</Badge>
+                                                    ) : (
+                                                        <span className="text-muted-foreground text-xs">—</span>
+                                                    );
+                                                })()}
+                                            </TableCell>
                                             <TableCell>
                                                 {feature.commitments && feature.commitments.length > 0 ? (
                                                     <Badge

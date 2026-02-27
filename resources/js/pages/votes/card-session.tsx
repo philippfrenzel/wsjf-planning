@@ -15,6 +15,8 @@ import { usePage } from '@inertiajs/react';
 import { ArrowDownCircle, CheckCircle2, HelpCircle, MoveHorizontal } from 'lucide-react';
 
 // Typdefinitionen
+const FIBONACCI_VALUES = [1, 2, 3, 5, 8, 13, 20] as const;
+
 interface Feature {
     id: number;
     jira_key: string;
@@ -54,6 +56,8 @@ const getCategoryLabel = (category: string): string => {
             return 'Zeitkritikalität';
         case 'RiskOpportunity':
             return 'Risiko/Chance';
+        case 'JobSize':
+            return 'Job Size';
         default:
             return category;
     }
@@ -743,6 +747,19 @@ export default function CardVoteSession({ planning, features, types, existingVot
     };
 
     // Form-Submission
+    const handleJobSizeChange = (featureId: number, value: string) => {
+        setVotes((prev) => {
+            const next = { ...prev };
+            const key = `${featureId}_JobSize`;
+            if (value === '') {
+                delete next[key];
+            } else {
+                next[key] = value;
+            }
+            return next;
+        });
+    };
+
     const saveVotes = (next?: () => void) => {
         setIsSaving(true);
         setSaveError(null);
@@ -884,13 +901,40 @@ export default function CardVoteSession({ planning, features, types, existingVot
 
                         {types.map((type) => (
                             <TabsContent key={type} value={type} className="mt-0">
-                                <CategoryTabContent
-                                    type={type}
-                                    categorizedFeatures={categorizedFeatures}
-                                    onDragStart={handleDragStart}
-                                    onDragEnd={handleDragEnd}
-                                    draggingFeature={draggingFeature}
-                                />
+                                {type === 'JobSize' ? (
+                                    <div className="space-y-3">
+                                        {features.map((feature) => (
+                                            <div key={feature.id} className="flex items-center justify-between rounded-lg border p-3">
+                                                <div>
+                                                    <div className="text-sm font-medium">{feature.jira_key}</div>
+                                                    <div className="text-muted-foreground text-xs">{feature.name}</div>
+                                                </div>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {FIBONACCI_VALUES.map((fib) => (
+                                                        <Button
+                                                            key={fib}
+                                                            type="button"
+                                                            variant={votes[`${feature.id}_JobSize`] === String(fib) ? 'default' : 'outline'}
+                                                            size="sm"
+                                                            className="h-8 w-10 p-0 text-xs"
+                                                            onClick={() => handleJobSizeChange(feature.id, String(fib))}
+                                                        >
+                                                            {fib}
+                                                        </Button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <CategoryTabContent
+                                        type={type}
+                                        categorizedFeatures={categorizedFeatures}
+                                        onDragStart={handleDragStart}
+                                        onDragEnd={handleDragEnd}
+                                        draggingFeature={draggingFeature}
+                                    />
+                                )}
                             </TabsContent>
                         ))}
                     </Tabs>

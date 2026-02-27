@@ -9,19 +9,16 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## Current Status
 
-**Phase:** 2 of 4
-**Phase status:** In progress — Plans 01, 02, 03, 04 complete; awaiting Task 3 human-verify checkpoint
-**Milestone:** v1.0 (Sellable SaaS)
+**Phase:** 3 of 4
+**Phase status:** Planning complete — 3 plans written (01-job-size-vote-type, 02-voting-session-ui, 03-wsjf-ranking-display); ready to execute
+**Milestone:** v2.0 (WSJF Formula Complete)
 
 ## What Was Just Done
 
-- **Plan 04: Enforcement Middleware** (2026-02-28) — Phase 2, Plan 04
-  - Created `RequireSubscription` middleware: SuperAdmin bypass, allows subscribed/onGenericTrial/onGracePeriod, denies others
-  - HTML denied requests redirect to `billing.index` with `upgrade_prompt` session flash
-  - JSON denied requests return 402
-  - Registered `'subscribed'` alias in `bootstrap/app.php`
-  - Consolidated all core routes (dashboard, votes, estimations, projects, plannings, features, commitments) into `['auth', 'verified', 'subscribed']` group
-  - Admin route group updated to include `'subscribed'`; billing, tenants, auth routes remain ungated
+- **Phase 3 Planning** (2026-03-01) — Plans 01, 02, 03 written for WSJF Formula Completion
+  - Plan 01: `01-job-size-vote-type-PLAN.md` — DB enum migration (SQLite-guarded), StoreVoteRequest/UpdateVoteRequest Fibonacci validation, all 5 VoteController `$types` arrays updated
+  - Plan 02: `02-voting-session-ui-PLAN.md` — Fibonacci button-group picker in session.tsx and card-session.tsx; ensureUniqueValues skipped for JobSize
+  - Plan 03: `03-wsjf-ranking-display-PLAN.md` — CommonVotesTable adds JobSize + WSJF Score columns; plannings/show.tsx gets third "WSJF Ranking" tab with frontend sort
 
 ## Previous Completed Work
 
@@ -67,8 +64,9 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Phase 2, Plan 05 (if exists): Any remaining billing/webhook plans.
-Phase 3: WSJF Formula Completion (Job Size Voting).
+Phase 3, Plan 01: Execute `01-job-size-vote-type-PLAN.md` — migration + validation + controller whitelist.
+Phase 3, Plan 02: Execute `02-voting-session-ui-PLAN.md` — Fibonacci picker in session pages.
+Phase 3, Plan 03: Execute `03-wsjf-ranking-display-PLAN.md` — WSJF Ranking tab on planning show page.
 
 ## Key Decisions (Accumulated)
 
@@ -88,4 +86,4 @@ Phase 3: WSJF Formula Completion (Job Size Voting).
 _Add notes here during active work sessions._
 
 ---
-*Last updated: 2026-02-28 after Phase 2 Plan 02 (billing-controller-ui) — complete*
+*Last updated: 2026-03-01 after Phase 3 planning complete — 3 plans ready to execute*

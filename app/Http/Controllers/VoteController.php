@@ -59,7 +59,7 @@ class VoteController extends Controller
             'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'features' => Feature::where('tenant_id', $tenantId)->get(['id', 'jira_key', 'name']),
             'plannings' => Planning::where('tenant_id', $tenantId)->get(['id', 'title']),
-            'types' => ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'],
+            'types' => ['BusinessValue', 'TimeCriticality', 'RiskOpportunity', 'JobSize'],
         ]);
     }
 
@@ -89,7 +89,7 @@ class VoteController extends Controller
             'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'features' => Feature::where('tenant_id', $tenantId)->get(['id', 'jira_key', 'name']),
             'plannings' => Planning::where('tenant_id', $tenantId)->get(['id', 'title']),
-            'types' => ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'],
+            'types' => ['BusinessValue', 'TimeCriticality', 'RiskOpportunity', 'JobSize'],
         ]);
     }
 
@@ -137,7 +137,7 @@ class VoteController extends Controller
             ->keyBy(fn($vote) => $vote->feature_id . '_' . $vote->type);
 
         // Typen für das Votum
-        $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'];
+        $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity', 'JobSize'];
 
         return Inertia::render('votes/session', [
             'planning' => $planning->only(['id', 'title', 'project_id']),
@@ -169,7 +169,7 @@ class VoteController extends Controller
             $votes = [];
         }
 
-        $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'];
+        $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity', 'JobSize'];
 
         // Only allow feature IDs that belong to this planning (prevents cross-tenant injection)
         $allowedFeatureIds = $planning->features()->pluck('features.id')->flip();
@@ -255,7 +255,7 @@ class VoteController extends Controller
             ->keyBy(fn($vote) => $vote->feature_id . '_' . $vote->type);
 
         // Typen für das Votum
-        $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity'];
+        $types = ['BusinessValue', 'TimeCriticality', 'RiskOpportunity', 'JobSize'];
 
         return Inertia::render('votes/card-session', [
             'planning' => $planning->only(['id', 'title', 'project_id']),

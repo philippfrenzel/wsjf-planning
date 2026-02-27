@@ -71,6 +71,17 @@ interface Planning {
     creator?: User; // Für Ersteller-Angabe
 }
 
+// WSJF score computed on-the-fly from commonvotes
+function computeWsjfScore(commonvotes?: Vote[]): number | null {
+    if (!commonvotes) return null;
+    const bv = commonvotes.find((v) => v.type === 'BusinessValue')?.value;
+    const tc = commonvotes.find((v) => v.type === 'TimeCriticality')?.value;
+    const rr = commonvotes.find((v) => v.type === 'RiskOpportunity')?.value;
+    const js = commonvotes.find((v) => v.type === 'JobSize')?.value;
+    if (!bv || !tc || !rr || !js || js === 0) return null;
+    return (bv + tc + rr) / js;
+}
+
 interface ShowProps {
     planning: Planning;
     stakeholders: Stakeholder[]; // Ergänzt: vom Controller direkt übergebene Stakeholder
@@ -233,12 +244,74 @@ export default function Show({ planning, stakeholders }: ShowProps) {
                             <TabsList>
                                 <TabsTrigger value="details">Details & Common Vote</TabsTrigger>
                                 <TabsTrigger value="features">Features & Individual Votes</TabsTrigger>
+                                <TabsTrigger value="wsjf-ranking">WSJF Ranking</TabsTrigger>
                             </TabsList>
                             <TabsContent value="details">
                                 <PlanningDetailsCard planning={planning} stakeholders={stakeholders} />
                             </TabsContent>
                             <TabsContent value="features">
                                 <FeaturesTable features={planning.features} />
+                            </TabsContent>
+                            <TabsContent value="wsjf-ranking">
+                                <div className="mt-4 rounded-md border">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="w-12">Rang</TableHead>
+                                                <TableHead>Feature</TableHead>
+                                                <TableHead className="w-16 text-center">BV</TableHead>
+                                                <TableHead className="w-16 text-center">TC</TableHead>
+                                                <TableHead className="w-16 text-center">RR</TableHead>
+                                                <TableHead className="w-20 text-center">Job Size</TableHead>
+                                                <TableHead className="w-24 text-center">WSJF Score</TableHead>
+                                                <TableHead className="w-28">Status</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {(planning.features ?? [])
+                                                .slice()
+                                                .sort((a, b) => {
+                                                    const sa = computeWsjfScore(a.commonvotes) ?? -1;
+                                                    const sb = computeWsjfScore(b.commonvotes) ?? -1;
+                                                    return sb - sa;
+                                                })
+                                                .map((feature, index) => {
+                                                    const score = computeWsjfScore(feature.commonvotes);
+                                                    const bv = feature.commonvotes?.find((v) => v.type === 'BusinessValue')?.value;
+                                                    const tc = feature.commonvotes?.find((v) => v.type === 'TimeCriticality')?.value;
+                                                    const rr = feature.commonvotes?.find((v) => v.type === 'RiskOpportunity')?.value;
+                                                    const js = feature.commonvotes?.find((v) => v.type === 'JobSize')?.value;
+                                                    return (
+                                                        <TableRow key={feature.id}>
+                                                            <TableCell className="text-center font-medium">
+                                                                {score !== null ? index + 1 : '—'}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="font-medium">{feature.jira_key}</div>
+                                                                <div className="text-muted-foreground text-xs">{feature.name}</div>
+                                                            </TableCell>
+                                                            <TableCell className="text-center">{bv ?? '—'}</TableCell>
+                                                            <TableCell className="text-center">{tc ?? '—'}</TableCell>
+                                                            <TableCell className="text-center">{rr ?? '—'}</TableCell>
+                                                            <TableCell className="text-center">{js ?? '—'}</TableCell>
+                                                            <TableCell className="text-center">
+                                                                {score !== null ? (
+                                                                    <Badge className="bg-indigo-100 text-indigo-800">{score.toFixed(2)}</Badge>
+                                                                ) : (
+                                                                    '—'
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {score === null && (
+                                                                    <Badge variant="secondary">Incomplete</Badge>
+                                                                )}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })}
+                                        </TableBody>
+                                    </Table>
+                                </div>
                             </TabsContent>
                         </Tabs>
                     </CardContent>
