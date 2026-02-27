@@ -1,251 +1,263 @@
+import { Head, Link, usePage } from '@inertiajs/react';
+import { BarChart3, Building2, CalendarCheck2, CheckCircle2, Gauge, Globe, Lock, Shield, Users } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { type SharedData } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { BarChart3, CalendarCheck2, Gauge, Users } from 'lucide-react';
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
     const { t, locale, setLocale } = useTranslation();
 
+    const trustBadges = ['trust_safe', 'trust_scrum', 'trust_kanban', 'trust_pi'] as const;
+
+    const features = [
+        { icon: <Gauge className="h-8 w-8 text-indigo-500" />, title: t('feat_wsjf_title'), text: t('feat_wsjf_text') },
+        { icon: <Users className="h-8 w-8 text-indigo-500" />, title: t('feat_voting_title'), text: t('feat_voting_text') },
+        { icon: <Building2 className="h-8 w-8 text-indigo-500" />, title: t('feat_multitenant_title'), text: t('feat_multitenant_text') },
+        { icon: <Lock className="h-8 w-8 text-indigo-500" />, title: t('feat_roles_title'), text: t('feat_roles_text') },
+        { icon: <CalendarCheck2 className="h-8 w-8 text-indigo-500" />, title: t('feat_sprint_title'), text: t('feat_sprint_text') },
+        { icon: <BarChart3 className="h-8 w-8 text-indigo-500" />, title: t('feat_reporting_title'), text: t('feat_reporting_text') },
+    ];
+
+    const steps = [
+        { num: 1, title: t('step1_title'), text: t('step1_text') },
+        { num: 2, title: t('step2_title'), text: t('step2_text') },
+        { num: 3, title: t('step3_title'), text: t('step3_text') },
+        { num: 4, title: t('step4_title'), text: t('step4_text') },
+        { num: 5, title: t('step5_title'), text: t('step5_text') },
+    ];
+
+    const securityItems = [
+        { icon: <Shield className="h-8 w-8 text-indigo-400" />, title: t('security_isolation_title'), text: t('security_isolation_text') },
+        { icon: <Lock className="h-8 w-8 text-indigo-400" />, title: t('security_rbac_title'), text: t('security_rbac_text') },
+        { icon: <Globe className="h-8 w-8 text-indigo-400" />, title: t('security_privacy_title'), text: t('security_privacy_text') },
+    ];
+
+    const year = new Date().getFullYear();
+    const copyright = (t('footer_copyright') as string).replace('{year}', String(year));
+
     return (
         <>
-            <Head title={t('hero_title')}>
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+            <Head title="WSJF Planning — PI Planning for SAFe Teams">
+                <link rel="preconnect" href="https://fonts.bunny.net" />
+                <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
             </Head>
-            <div className="flex min-h-screen w-full flex-col items-center bg-[#bff04b] text-[#1b1b18] dark:bg-[#1e1e1e]">
-                {/* Schwarze Navigationsleiste */}
-                <header className="w-full bg-black py-4 text-white">
-                    <div className="mx-auto max-w-[335px] px-4 lg:max-w-4xl">
-                        <nav className="flex items-center justify-end gap-4 text-sm">
+
+            {/* NAV */}
+            <header className="sticky top-0 z-50 bg-[#0f172a] border-b border-slate-800">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="flex h-16 items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <span className="text-xl font-bold text-white">WSJF Planning</span>
+                            <span className="hidden sm:inline text-xs text-slate-400 border border-slate-700 rounded-full px-2 py-0.5">
+                                {t('nav_tagline')}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <select
+                                value={locale}
+                                onChange={(e) => setLocale(e.target.value as 'en' | 'de')}
+                                className="bg-transparent text-slate-400 text-sm border-none outline-none cursor-pointer hover:text-white transition-colors"
+                                aria-label="Language"
+                            >
+                                <option value="en">EN</option>
+                                <option value="de">DE</option>
+                            </select>
                             {auth.user ? (
                                 <Link
                                     href={route('dashboard')}
-                                    className="inline-block rounded-sm border border-[#ffffff35] px-5 py-1.5 text-sm leading-normal text-white hover:border-[#ffffff4a] hover:bg-[#ffffff10]"
+                                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
                                 >
-                                    {t('dashboard')}
+                                    {t('hero_dashboard')}
                                 </Link>
                             ) : (
                                 <>
-                                    <Link
-                                        href={route('login')}
-                                        className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-white hover:border-[#ffffff35] hover:bg-[#ffffff10]"
-                                    >
+                                    <Link href={route('login')} className="text-sm text-slate-300 hover:text-white transition-colors">
                                         {t('login')}
                                     </Link>
                                     <Link
                                         href={route('register')}
-                                        className="inline-block rounded-sm border border-[#ffffff35] px-5 py-1.5 text-sm leading-normal text-white hover:border-[#ffffff4a] hover:bg-[#ffffff10]"
+                                        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
                                     >
                                         {t('register')}
                                     </Link>
                                 </>
                             )}
-                            <select
-                                value={locale}
-                                onChange={(e) => setLocale(e.target.value as 'en' | 'de')}
-                                className="ml-4 rounded-sm border border-[#ffffff35] bg-black px-2 py-1 text-sm text-white"
-                            >
-                                <option value="en">EN</option>
-                                <option value="de">DE</option>
-                            </select>
-                        </nav>
+                        </div>
                     </div>
-                </header>
+                </div>
+            </header>
 
-                {/* Hero-Section - volle Breite, direkt unter der Navigationsleiste */}
-                <section
-                    className="relative flex w-full flex-col items-center overflow-hidden bg-white py-16 text-center"
-                    style={{
-                        backgroundImage: "url('/gfx/wsjf_planning_teaser.png')",
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}
-                >
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-orange-100/80 via-white/90 to-white/80 dark:from-[#23201b] dark:via-[#23201b]/90 dark:to-[#23201b]/80" />
-                    <div className="relative z-10 flex w-full flex-col items-center">
-                        <h1 className="mb-4 text-5xl font-bold" dangerouslySetInnerHTML={{ __html: t('hero_title') }} />
-                        <p
-                            className="mb-6 max-w-xl text-lg text-[#1b1b18] dark:text-[#EDEDEC]"
-                            dangerouslySetInnerHTML={{ __html: t('hero_subtitle') }}
-                        />
+            {/* HERO */}
+            <section className="bg-gradient-to-b from-[#0f172a] to-[#1e293b] py-24 lg:py-32">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-sm text-indigo-300 mb-8">
+                        <CheckCircle2 className="h-4 w-4" />
+                        {t('hero_social_proof')}
+                    </span>
+                    <h1 className="text-5xl lg:text-6xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-tight">
+                        {t('hero_title')}
+                    </h1>
+                    <p className="mt-6 text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                        {t('hero_subtitle')}
+                    </p>
+                    <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                         {auth.user ? (
                             <Link
                                 href={route('dashboard')}
-                                className="bg-primary hover:bg-primary/90 inline-flex items-center rounded-md px-6 py-2 text-sm font-medium text-white shadow"
+                                className="rounded-lg bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/25"
                             >
                                 {t('hero_dashboard')}
                             </Link>
                         ) : (
-                            <Link
-                                href={route('register')}
-                                className="bg-primary hover:bg-primary/90 inline-flex items-center rounded-md px-6 py-2 text-sm font-medium text-white shadow"
-                            >
-                                {t('hero_cta')}
-                            </Link>
+                            <>
+                                <Link
+                                    href={route('register')}
+                                    className="rounded-lg bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/25"
+                                >
+                                    {t('hero_cta')}
+                                </Link>
+                                <a
+                                    href="#how-it-works"
+                                    className="rounded-lg border border-white/20 px-8 py-3.5 text-base font-semibold text-white hover:bg-white/10 transition-colors"
+                                >
+                                    {t('hero_cta_secondary')}
+                                </a>
+                            </>
                         )}
                     </div>
-                </section>
-
-                {/* Container für den restlichen Inhalt mit begrenzter Breite */}
-                <div className="mx-auto w-full max-w-[335px] px-4 py-8 lg:max-w-4xl">
-                    {/* Features-Liste */}
-                    <section className="w-full text-center text-[#1b1b18] dark:text-[#EDEDEC]">
-                        <h2 className="mb-4 text-2xl font-semibold">{t('features_title')}</h2>
-                        <ul className="mx-auto max-w-xl list-disc space-y-1 text-left text-sm text-[#706f6c] dark:text-[#A1A09A]">
-                            {(t('features') as string[]).map((item) => (
-                                <li key={item}>{item}</li>
-                            ))}
-                        </ul>
-                    </section>
                 </div>
+            </section>
 
-                {/* 4-Spalten Feature-Grid über die ganze Breite */}
-                <section className="mt-16 w-full">
-                    <div className="grid w-full grid-cols-1 md:grid-cols-4">
-                        <div className="flex flex-col items-center bg-[#a1d933] px-6 py-12 text-center transition-all hover:translate-y-[-4px] hover:shadow-lg dark:bg-[#283618]">
-                            <Gauge className="mb-4 h-14 w-14 text-orange-500" />
-                            <h3 className="mb-2 text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">{t('grid_wsjf_title')}</h3>
-                            <p className="mx-auto max-w-xs text-sm text-[#2b3313] dark:text-[#BFC8A1]">{t('grid_wsjf_text')}</p>
-                        </div>
-                        <div className="flex flex-col items-center bg-[#b9e45a] px-6 py-12 text-center transition-all hover:translate-y-[-4px] hover:shadow-lg dark:bg-[#3a4a1c]">
-                            <CalendarCheck2 className="mb-4 h-14 w-14 text-orange-500" />
-                            <h3 className="mb-2 text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">{t('grid_sprint_title')}</h3>
-                            <p className="mx-auto max-w-xs text-sm text-[#2b3313] dark:text-[#BFC8A1]">{t('grid_sprint_text')}</p>
-                        </div>
-                        <div className="flex flex-col items-center bg-[#d1ee85] px-6 py-12 text-center transition-all hover:translate-y-[-4px] hover:shadow-lg dark:bg-[#4c5e26]">
-                            <Users className="mb-4 h-14 w-14 text-orange-500" />
-                            <h3 className="mb-2 text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">{t('grid_collab_title')}</h3>
-                            <p className="mx-auto max-w-xs text-sm text-[#2b3313] dark:text-[#BFC8A1]">{t('grid_collab_text')}</p>
-                        </div>
-                        <div className="flex flex-col items-center bg-[#e9f7b7] px-6 py-12 text-center transition-all hover:translate-y-[-4px] hover:shadow-lg dark:bg-[#5e7230]">
-                            <BarChart3 className="mb-4 h-14 w-14 text-orange-500" />
-                            <h3 className="mb-2 text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">{t('grid_reports_title')}</h3>
-                            <p className="mx-auto max-w-xs text-sm text-[#2b3313] dark:text-[#BFC8A1]">{t('grid_reports_text')}</p>
-                        </div>
-                    </div>
-                </section>
-
-                <div className="mx-auto w-full max-w-[335px] px-4 py-8 lg:max-w-4xl">
-                    {/* Detaillierte Funktionsbeschreibungen */}
-                    <section className="mt-16 w-full text-[#1b1b18] dark:text-[#EDEDEC]">
-                        {/* WSJF Planning - Linke Spalte farbig */}
-                        <div className="flex w-full flex-col md:flex-row">
-                            <div className="flex w-full flex-col items-center justify-center bg-[#a1d933] p-8 md:w-1/2 md:items-end dark:bg-[#283618]">
-                                <div className="max-w-md">
-                                    <Gauge className="mb-6 h-16 w-16 text-orange-500" />
-                                    <h2 className="mb-4 text-3xl font-semibold">{t('section_wsjf_title')}</h2>
-                                    <p
-                                        className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]"
-                                        dangerouslySetInnerHTML={{ __html: t('section_wsjf_text') }}
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex w-full flex-col items-center justify-center p-8 md:w-1/2 md:items-start">
-                                <div className="max-w-md">
-                                    <h3 className="mb-3 text-xl font-semibold">{t('Key Features')}</h3>
-                                    <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
-                                        {(t('section_wsjf_points') as string[]).map((p) => (
-                                            <li key={p}>{p}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Sprint Planning - Rechte Spalte farbig */}
-                        <div className="flex w-full flex-col md:flex-row">
-                            <div className="order-1 flex w-full flex-col items-center justify-center p-8 md:order-none md:w-1/2 md:items-end">
-                                <div className="max-w-md">
-                                    <h3 className="mb-3 text-xl font-semibold">{t('Key Features')}</h3>
-                                    <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
-                                        {(t('section_sprint_points') as string[]).map((p) => (
-                                            <li key={p}>{p}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
-                            <div className="order-none flex w-full flex-col items-center justify-center bg-[#b9e45a] p-8 md:order-1 md:w-1/2 md:items-start dark:bg-[#3a4a1c]">
-                                <div className="max-w-md">
-                                    <CalendarCheck2 className="mb-6 h-16 w-16 text-orange-500" />
-                                    <h2 className="mb-4 text-3xl font-semibold">{t('section_sprint_title')}</h2>
-                                    <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_sprint_text')}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Collaboration - Linke Spalte farbig */}
-                        <div className="flex w-full flex-col md:flex-row">
-                            <div className="flex w-full flex-col items-center justify-center bg-[#d1ee85] p-8 md:w-1/2 md:items-end dark:bg-[#4c5e26]">
-                                <div className="max-w-md">
-                                    <Users className="mb-6 h-16 w-16 text-orange-500" />
-                                    <h2 className="mb-4 text-3xl font-semibold">{t('section_collab_title')}</h2>
-                                    <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_collab_text')}</p>
-                                </div>
-                            </div>
-                            <div className="flex w-full flex-col items-center justify-center p-8 md:w-1/2 md:items-start">
-                                <div className="max-w-md">
-                                    <h3 className="mb-3 text-xl font-semibold">{t('Key Features')}</h3>
-                                    <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
-                                        {(t('section_collab_points') as string[]).map((p) => (
-                                            <li key={p}>{p}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Reports - Rechte Spalte farbig */}
-                        <div className="flex w-full flex-col md:flex-row">
-                            <div className="order-1 flex w-full flex-col items-center justify-center p-8 md:order-none md:w-1/2 md:items-end">
-                                <div className="max-w-md">
-                                    <h3 className="mb-3 text-xl font-semibold">{t('Key Features')}</h3>
-                                    <ul className="list-disc space-y-2 pl-5 text-base text-[#706f6c] dark:text-[#A1A09A]">
-                                        {(t('section_report_points') as string[]).map((p) => (
-                                            <li key={p}>{p}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
-                            <div className="order-none flex w-full flex-col items-center justify-center bg-[#e9f7b7] p-8 md:order-1 md:w-1/2 md:items-start dark:bg-[#5e7230]">
-                                <div className="max-w-md">
-                                    <BarChart3 className="mb-6 h-16 w-16 text-orange-500" />
-                                    <h2 className="mb-4 text-3xl font-semibold">{t('section_report_title')}</h2>
-                                    <p className="mb-4 text-base text-[#2b3313] dark:text-[#BFC8A1]">{t('section_report_text')}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Getting Started */}
-                    <section className="mt-16 w-full text-center text-[#1b1b18] dark:text-[#EDEDEC]">
-                        <h2 className="mb-4 text-2xl font-semibold">{t('getting_started_title')}</h2>
-                        <p className="mx-auto mb-6 max-w-xl text-sm text-[#706f6c] dark:text-[#A1A09A]">{t('getting_started_subtitle')}</p>
-                        <ol className="mx-auto max-w-xl list-decimal space-y-1 text-left text-sm text-[#706f6c] dark:text-[#A1A09A]">
-                            {(t('getting_started_steps') as string[]).map((s) => (
-                                <li key={s}>{s}</li>
-                            ))}
-                        </ol>
-                        <Link
-                            href={route('register')}
-                            className="bg-primary hover:bg-primary/90 mt-6 inline-flex items-center rounded-md px-6 py-2 text-sm font-medium text-white shadow"
-                        >
-                            {t('getting_started_cta')}
-                        </Link>
-                    </section>
-                </div>
-
-                {/* Footer-Bereich */}
-                <div className="mt-auto w-full bg-black py-8 text-white">
-                    <div className="mx-auto max-w-[335px] space-y-2 px-4 text-center text-xs lg:max-w-4xl">
-                        <Link href={route('imprint')} className="text-white underline-offset-4 hover:underline">
-                            {t('imprint_link')}
-                        </Link>
-                        <p>© {new Date().getFullYear()} WSJF Planning Tool</p>
+            {/* TRUST BAR */}
+            <section className="bg-[#1e293b] border-t border-slate-700/50 py-8">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+                    <p className="text-slate-400 text-sm mb-4">{t('trust_label')}</p>
+                    <div className="flex flex-wrap items-center justify-center gap-3">
+                        {trustBadges.map((key) => (
+                            <span
+                                key={key}
+                                className="rounded-full bg-slate-700 text-slate-200 px-4 py-1 text-sm font-medium"
+                            >
+                                {t(key)}
+                            </span>
+                        ))}
                     </div>
                 </div>
-            </div>
+            </section>
+
+            {/* PROBLEM / SOLUTION */}
+            <section className="bg-white py-20">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+                        <div className="rounded-2xl bg-rose-50 border border-rose-100 p-8">
+                            <span className="text-xs font-semibold uppercase tracking-widest text-rose-500">{t('problem_eyebrow')}</span>
+                            <h2 className="mt-3 text-2xl font-bold text-slate-900">{t('problem_title')}</h2>
+                            <p className="mt-4 text-slate-600 leading-relaxed">{t('problem_text')}</p>
+                        </div>
+                        <div className="rounded-2xl bg-indigo-50 border border-indigo-100 p-8">
+                            <span className="text-xs font-semibold uppercase tracking-widest text-indigo-600">{t('solution_eyebrow')}</span>
+                            <h2 className="mt-3 text-2xl font-bold text-slate-900">{t('solution_title')}</h2>
+                            <p className="mt-4 text-slate-600 leading-relaxed">{t('solution_text')}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* CORE FEATURES */}
+            <section className="bg-slate-50 py-20">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-12">
+                        <span className="text-xs font-semibold uppercase tracking-widest text-indigo-600">{t('features_eyebrow')}</span>
+                        <h2 className="mt-3 text-3xl lg:text-4xl font-bold text-slate-900">{t('features_title')}</h2>
+                        <p className="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">{t('features_subtitle')}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {features.map((f, i) => (
+                            <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                                <div className="mb-4">{f.icon}</div>
+                                <h3 className="text-lg font-semibold text-slate-900 mb-2">{f.title}</h3>
+                                <p className="text-slate-500 text-sm leading-relaxed">{f.text}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* HOW IT WORKS */}
+            <section id="how-it-works" className="bg-white py-20">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-12">
+                        <span className="text-xs font-semibold uppercase tracking-widest text-indigo-600">{t('steps_eyebrow')}</span>
+                        <h2 className="mt-3 text-3xl lg:text-4xl font-bold text-slate-900">{t('steps_title')}</h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+                        {steps.map((s) => (
+                            <div key={s.num} className="flex flex-col items-start lg:items-center lg:text-center">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white text-lg font-bold mb-4 shrink-0">
+                                    {s.num}
+                                </div>
+                                <h3 className="font-semibold text-slate-900 mb-1">{s.title}</h3>
+                                <p className="text-sm text-slate-500 leading-relaxed">{s.text}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* PRICING TEASER */}
+            <section className="bg-[#0f172a] py-20">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+                    <span className="text-xs font-semibold uppercase tracking-widest text-indigo-400">{t('pricing_eyebrow')}</span>
+                    <h2 className="mt-3 text-3xl lg:text-4xl font-bold text-white">{t('pricing_title')}</h2>
+                    <p className="mt-4 text-lg text-slate-300 max-w-xl mx-auto">{t('pricing_text')}</p>
+                    <Link
+                        href={route('register')}
+                        className="mt-8 inline-block rounded-lg bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/25"
+                    >
+                        {t('pricing_cta')}
+                    </Link>
+                    <p className="mt-4 text-sm text-slate-500">{t('pricing_note')}</p>
+                </div>
+            </section>
+
+            {/* SECURITY */}
+            <section className="bg-slate-50 py-20">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-12">
+                        <span className="text-xs font-semibold uppercase tracking-widest text-indigo-600">{t('security_eyebrow')}</span>
+                        <h2 className="mt-3 text-3xl lg:text-4xl font-bold text-slate-900">{t('security_title')}</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {securityItems.map((item, i) => (
+                            <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 text-center">
+                                <div className="flex justify-center mb-4">{item.icon}</div>
+                                <h3 className="font-semibold text-slate-900 mb-2">{item.title}</h3>
+                                <p className="text-sm text-slate-500 leading-relaxed">{item.text}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* FOOTER */}
+            <footer className="bg-[#0f172a] border-t border-slate-800 py-10">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div>
+                            <span className="text-lg font-bold text-white">WSJF Planning</span>
+                            <p className="text-sm text-slate-400 mt-1">{t('footer_tagline')}</p>
+                        </div>
+                        <nav className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400">
+                            <Link href={route('login')} className="hover:text-white transition-colors">{t('login')}</Link>
+                            <Link href={route('register')} className="hover:text-white transition-colors">{t('register')}</Link>
+                            <Link href={route('imprint')} className="hover:text-white transition-colors">{t('imprint_link')}</Link>
+                        </nav>
+                    </div>
+                    <div className="mt-8 border-t border-slate-800 pt-6 text-center text-sm text-slate-500">
+                        {copyright}
+                    </div>
+                </div>
+            </footer>
         </>
     );
 }
