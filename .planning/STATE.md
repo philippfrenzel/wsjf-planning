@@ -15,14 +15,23 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What Was Just Done
 
+- **Plan 02: BillingController UI** (2026-02-28) — Phase 2, Plan 02
+  - Created `BillingController` with `index`, `checkout`, `success`, `portal` methods
+  - `index()` resolves billingStatus (active/trial/inactive/no_tenant), computes trialDaysLeft, returns Inertia response
+  - `checkout()` calls `$tenant->newSubscription('default', config('services.stripe.price_id'))->checkout([...])`
+  - `portal()` calls `$tenant->redirectToBillingPortal(route('dashboard'))`
+  - Added 4 billing routes under `auth+verified` middleware (NOT subscribed)
+  - Added Stripe env stubs to `.env.example` and `stripe` key to `config/services.php`
+  - Created `resources/js/pages/billing/index.tsx` — status badge, trial countdown, upgrade prompt alert, checkout/portal buttons
+
+## Previous Completed Work
+
 - **Plan 03: Seat Sync & Webhooks** (2026-02-28) — Phase 2, Plan 03
   - `TenantController::syncSeatCount()`: private helper with `subscribed('default')` guard; calls `updateQuantity($count)` via Cashier
   - Wired to `accept()` — seat count synced when invitation accepted
   - Wired to `removeMember()` — seat count synced when member removed
   - Created `app/Listeners/StripeEventListener.php`: handles `invoice.payment_succeeded` (logs amount) and `invoice.payment_failed` (logs attempt_count)
   - Registered `StripeEventListener` against `WebhookReceived` in `AppServiceProvider::boot()` via `Event::listen()`
-
-## Previous Completed Work
 
 - **Plan 01: Role Foundation** (2026-02-27)
   - Migration: seeded SuperAdmin/Admin/Planner/Voter role names, backfilled tenant owners to `role='Admin'`
@@ -59,7 +68,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Phase 2, Plan 02: BillingController — Stripe Checkout session, billing portal, subscription management endpoints.
+Phase 2, Plan 04: Webhook handler — payment_succeeded, payment_failed, subscription.deleted events.
 Phase 2, Plan 04: Webhook handler — deeper webhook handling (subscription.deleted, dunning).
 Phase 2, Plan 05: Subscription enforcement middleware — blocks non-subscribed tenants.
 
@@ -81,4 +90,4 @@ Phase 2, Plan 05: Subscription enforcement middleware — blocks non-subscribed 
 _Add notes here during active work sessions._
 
 ---
-*Last updated: 2026-02-28 after Phase 2 Plan 03 (seat-sync-webhooks) — complete*
+*Last updated: 2026-02-28 after Phase 2 Plan 02 (billing-controller-ui) — complete*
