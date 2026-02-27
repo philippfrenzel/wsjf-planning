@@ -10,21 +10,17 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 ## Current Status
 
 **Phase:** 2 of 4
-**Phase status:** In progress — Plan 01 complete
+**Phase status:** In progress — Plans 01 and 03 complete
 **Milestone:** v1.0 (Sellable SaaS)
 
 ## What Was Just Done
 
-- **Plan 01: Cashier Foundation** (2026-02-28) — Phase 2, Plan 01
-  - Installed `laravel/cashier` v16.3
-  - Published and customised Cashier migrations: `subscriptions.tenant_id` (not user_id), Cashier columns on `tenants` table
-  - Drop-stub migration (timestamp 185620) drops the hand-rolled subscriptions table before Cashier migrations run
-  - `Tenant` model: added `Billable` trait, `trial_ends_at` datetime cast
-  - `Plan` model: added `stripe_price_id` to fillable; removed stub `subscriptions()` relationship
-  - `AppServiceProvider::boot()`: registered `Cashier::useCustomerModel(Tenant::class)`
-  - `bootstrap/app.php`: CSRF exclusion for `stripe/*` webhooks
-  - `RegisteredUserController`: new tenants get `trial_ends_at = now()->addDays(14)` (14-day generic trial)
-  - Deleted `Subscription` model and `SubscriptionController` stubs; removed stub routes from web.php
+- **Plan 03: Seat Sync & Webhooks** (2026-02-28) — Phase 2, Plan 03
+  - `TenantController::syncSeatCount()`: private helper with `subscribed('default')` guard; calls `updateQuantity($count)` via Cashier
+  - Wired to `accept()` — seat count synced when invitation accepted
+  - Wired to `removeMember()` — seat count synced when member removed
+  - Created `app/Listeners/StripeEventListener.php`: handles `invoice.payment_succeeded` (logs amount) and `invoice.payment_failed` (logs attempt_count)
+  - Registered `StripeEventListener` against `WebhookReceived` in `AppServiceProvider::boot()` via `Event::listen()`
 
 ## Previous Completed Work
 
@@ -64,6 +60,8 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 ## What's Next
 
 Phase 2, Plan 02: BillingController — Stripe Checkout session, billing portal, subscription management endpoints.
+Phase 2, Plan 04: Webhook handler — deeper webhook handling (subscription.deleted, dunning).
+Phase 2, Plan 05: Subscription enforcement middleware — blocks non-subscribed tenants.
 
 ## Key Decisions (Accumulated)
 
@@ -83,4 +81,4 @@ Phase 2, Plan 02: BillingController — Stripe Checkout session, billing portal,
 _Add notes here during active work sessions._
 
 ---
-*Last updated: 2026-02-28 after Phase 2 Plan 01 (cashier-foundation) — complete*
+*Last updated: 2026-02-28 after Phase 2 Plan 03 (seat-sync-webhooks) — complete*

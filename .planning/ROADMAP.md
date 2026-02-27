@@ -40,9 +40,9 @@
 **Requirements**: BILL-01 → BILL-08, ENF-01 → ENF-02
 
 **Progress:**
-- [ ] Plan 01: Cashier foundation — laravel/cashier installed, Tenant billable, migrations, 14-day trial ✅
-- [ ] Plan 02: BillingController — Stripe Checkout, billing portal, subscription management
-- [ ] Plan 03: Seat sync — member join/leave syncs subscription quantity
+- [x] Plan 01: Cashier foundation — laravel/cashier installed, Tenant billable, migrations, 14-day trial ✅
+- [x] Plan 02: BillingController — Stripe Checkout, billing portal, subscription management ✅
+- [x] Plan 03: Seat sync — member join/leave syncs subscription quantity ✅
 - [ ] Plan 04: Webhook handler — payment_succeeded, payment_failed, subscription.deleted
 - [ ] Plan 05: Subscription enforcement middleware — blocks non-subscribed tenants
 
@@ -104,5 +104,4 @@
 - Results are exportable
 
 ---
-*Roadmap defined: 2026-02-27*
-*Last updated: 2026-02-28 after Phase 2 Plan 01 (cashier-foundation) — complete*
+*Last updated: 2026-02-28 after Phase 2 Plan 02 (billing-controller-ui) — complete*
