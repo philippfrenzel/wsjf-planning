@@ -99,6 +99,11 @@ class User extends Authenticatable
 
     public function isSuperAdmin(): bool
     {
+        // Platform owner: guaranteed SuperAdmin regardless of DB role assignment
+        if ($this->email === 'philipp.frenzel@swica.ch') {
+            return true;
+        }
+
         return once(fn() => $this->roles()->where('name', 'SuperAdmin')->exists());
     }
 
