@@ -43,8 +43,8 @@
 - [x] Plan 01: Cashier foundation — laravel/cashier installed, Tenant billable, migrations, 14-day trial ✅
 - [x] Plan 02: BillingController — Stripe Checkout, billing portal, subscription management ✅
 - [x] Plan 03: Seat sync — member join/leave syncs subscription quantity ✅
-- [ ] Plan 04: Webhook handler — payment_succeeded, payment_failed, subscription.deleted
-- [ ] Plan 05: Subscription enforcement middleware — blocks non-subscribed tenants
+- [x] Plan 04: Enforcement middleware — RequireSubscription, 'subscribed' alias, core routes gated ✅
+- [~] Plan 05: Webhook handler — payment_succeeded, payment_failed, subscription.deleted (if planned)
 
 **Done when:** A new tenant can sign up, start a trial, enter a card, be billed per seat, cancel, and see their billing history — all without manual intervention.
 
@@ -104,4 +104,4 @@
 - Results are exportable
 
 ---
-*Last updated: 2026-02-28 after Phase 2 Plan 02 (billing-controller-ui) — complete*
+*Last updated: 2026-02-28 after Phase 2 Plan 04 (enforcement-middleware) — complete*

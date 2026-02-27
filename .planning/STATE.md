@@ -10,19 +10,18 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 ## Current Status
 
 **Phase:** 2 of 4
-**Phase status:** In progress — Plans 01 and 03 complete
+**Phase status:** In progress — Plans 01, 02, 03, 04 complete; awaiting Task 3 human-verify checkpoint
 **Milestone:** v1.0 (Sellable SaaS)
 
 ## What Was Just Done
 
-- **Plan 02: BillingController UI** (2026-02-28) — Phase 2, Plan 02
-  - Created `BillingController` with `index`, `checkout`, `success`, `portal` methods
-  - `index()` resolves billingStatus (active/trial/inactive/no_tenant), computes trialDaysLeft, returns Inertia response
-  - `checkout()` calls `$tenant->newSubscription('default', config('services.stripe.price_id'))->checkout([...])`
-  - `portal()` calls `$tenant->redirectToBillingPortal(route('dashboard'))`
-  - Added 4 billing routes under `auth+verified` middleware (NOT subscribed)
-  - Added Stripe env stubs to `.env.example` and `stripe` key to `config/services.php`
-  - Created `resources/js/pages/billing/index.tsx` — status badge, trial countdown, upgrade prompt alert, checkout/portal buttons
+- **Plan 04: Enforcement Middleware** (2026-02-28) — Phase 2, Plan 04
+  - Created `RequireSubscription` middleware: SuperAdmin bypass, allows subscribed/onGenericTrial/onGracePeriod, denies others
+  - HTML denied requests redirect to `billing.index` with `upgrade_prompt` session flash
+  - JSON denied requests return 402
+  - Registered `'subscribed'` alias in `bootstrap/app.php`
+  - Consolidated all core routes (dashboard, votes, estimations, projects, plannings, features, commitments) into `['auth', 'verified', 'subscribed']` group
+  - Admin route group updated to include `'subscribed'`; billing, tenants, auth routes remain ungated
 
 ## Previous Completed Work
 
@@ -68,9 +67,8 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Phase 2, Plan 04: Webhook handler — payment_succeeded, payment_failed, subscription.deleted events.
-Phase 2, Plan 04: Webhook handler — deeper webhook handling (subscription.deleted, dunning).
-Phase 2, Plan 05: Subscription enforcement middleware — blocks non-subscribed tenants.
+Phase 2, Plan 05 (if exists): Any remaining billing/webhook plans.
+Phase 3: WSJF Formula Completion (Job Size Voting).
 
 ## Key Decisions (Accumulated)
 
