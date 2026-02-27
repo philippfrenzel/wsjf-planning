@@ -10,7 +10,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 ## Current Status
 
 **Phase:** 1 of 4
-**Phase status:** In progress — Plans 01 and 02 complete
+**Phase status:** In progress — Plans 01, 02, and 04 complete
 **Milestone:** v1.0 (Sellable SaaS)
 
 ## What Was Just Done
@@ -29,9 +29,21 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
   - `TenantInvitation::acceptFor()` rewritten with race-safe atomic DB update-check and `role='Voter'` assignment
   - `RegisteredUserController::store()` processes invitation token from session post-login and patches `role='Admin'` for new tenant owners
 
+- **Plan 04: Policy Role Enforcement** (2026-02-27)
+  - FeaturePolicy, PlanningPolicy, CommitmentPolicy: create/update/delete require Admin|Planner
+  - VotePolicy: create allows Admin|Planner|Voter; update/delete require Admin|Planner
+  - view/viewAny methods unchanged — any tenant member can read
+  - No SuperAdmin checks added (Gate::before handles this)
+
+- **Plan 03: RequireRole Middleware** (2026-02-27)
+  - Created `RequireRole` middleware: SuperAdmin bypass, per-tenant role check via `hasRoleInTenant()`
+  - Registered `'role'` alias in `bootstrap/app.php`
+  - Gated `plannings.admin`, `plannings.set-creator`, and `/admin/users` routes with `role:Admin` middleware
+  - Removed inline `roles()->where('name','admin')` checks from `PlanningController`
+
 ## What's Next
 
-Run Plan 03: RequireRole middleware — gate routes based on tenant role.
+Run Plan 04: Policy updates — update existing Laravel policies to check tenant roles.
 
 ## Key Decisions (Accumulated)
 
@@ -48,4 +60,4 @@ Run Plan 03: RequireRole middleware — gate routes based on tenant role.
 _Add notes here during active work sessions._
 
 ---
-*Last updated: 2026-02-27 after Plan 01 (role foundation) execution*
+*Last updated: 2026-02-27 after Plan 04 (policy role enforcement) execution*

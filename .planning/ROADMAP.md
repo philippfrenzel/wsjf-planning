@@ -15,13 +15,15 @@
 **Progress:**
 - [x] Plan 01: Role foundation — migration, User helpers, Gate bypass, TenantScope bypass ✅
 - [x] Plan 02: Invitation flow — email dispatch, Voter role on accept, registration token handling ✅
+- [x] Plan 04: Policy role enforcement — FeaturePolicy, PlanningPolicy, VotePolicy, CommitmentPolicy updated ✅
+- [x] Plan 03: RequireRole middleware — `role:Admin` alias registered, admin routes gated, inline checks removed ✅
 
 **Deliverables:**
 - End-to-end invitation flow: invite by email → signed URL → accept → join tenant with Voter role ✅
 - `TenantInvitation` model fully wired (expiry, status, acceptance) ✅
 - Roles middleware + policy updates: `RequireRole` middleware, all existing policies updated to check roles
 - Tenant management page: members list, role change, remove member, pending invitations
-- Admin-only routes (`adminPlannings`, `setCreator`) properly gated on Admin role
+- Admin-only routes (`adminPlannings`, `setCreator`) properly gated on Admin role ✅
 - SuperAdmin global access (exempt from tenant scoping)
 
 **Done when:** A user can be invited, accept, log in, and be restricted to exactly what their role allows — across Features, Plannings, Projects, Votes, and Comments.
@@ -106,4 +108,4 @@
 
 ---
 *Roadmap defined: 2026-02-27*
-*Last updated: 2026-02-27 after Plan 01 (role foundation) execution*
+*Last updated: 2026-02-27 after Plan 04 (policy role enforcement) execution*
