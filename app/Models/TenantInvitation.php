@@ -39,15 +39,25 @@ class TenantInvitation extends Model
     public function acceptFor(User $user): void
     {
         DB::transaction(function () use ($user) {
+            // Atomic accept — prevents race condition on double-click
+            $updated = DB::table('tenant_invitations')
+                ->where('id', $this->id)
+                ->whereNull('accepted_at')
+                ->update(['accepted_at' => now()]);
+
+            if ($updated === 0) {
+                return; // Already accepted by a concurrent request — safe to exit
+            }
+
             $user->tenants()->syncWithoutDetaching([$this->tenant_id]);
 
-            $this->forceFill([
-                'accepted_at' => now(),
-            ])->save();
+            // INV-05: Assign Voter role in the tenant_user pivot
+            DB::table('tenant_user')
+                ->where('tenant_id', $this->tenant_id)
+                ->where('user_id', $user->id)
+                ->update(['role' => 'Voter']);
 
-            $user->forceFill([
-                'current_tenant_id' => $this->tenant_id,
-            ])->save();
+            $user->forceFill(['current_tenant_id' => $this->tenant_id])->save();
         });
     }
 }

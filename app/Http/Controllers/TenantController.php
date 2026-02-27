@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\TenantInvitationMail;
 use App\Models\Tenant;
 use App\Models\TenantInvitation;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -79,13 +81,15 @@ class TenantController extends Controller
         }
 
         $token = Str::uuid()->toString();
-        TenantInvitation::create([
+        $invitation = TenantInvitation::create([
             'tenant_id' => $tenant->id,
             'email' => $request->email,
             'inviter_id' => $user->id,
             'token' => $token,
             'expires_at' => now()->addDays(7),
         ]);
+
+        Mail::queue(new TenantInvitationMail($invitation));
 
         return back()->with('success', 'Einladung erstellt. Token: ' . $token);
     }
