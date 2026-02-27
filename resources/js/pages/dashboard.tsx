@@ -10,8 +10,6 @@ import {
     Cell,
     LabelList,
     Legend,
-    Pie,
-    PieChart,
     ResponsiveContainer,
     Tooltip as ReTooltip,
     XAxis,
@@ -51,7 +49,7 @@ export default function Dashboard() {
         activePlanningsCount,
         visibleFeatureCount,
         validPlannings,
-        featureStatus = [],
+        featureStatusByPlanning = [],
         committedByPlanning = [],
         featureAging = [],
     } = usePage().props as {
@@ -59,7 +57,7 @@ export default function Dashboard() {
         activePlanningsCount: number;
         visibleFeatureCount: number;
         validPlannings: { id: number; title: string }[];
-        featureStatus: FeatureStatusDatum[];
+        featureStatusByPlanning: { planning_id: number; planning: string; 'in-planning': number; approved: number; implemented: number; rejected: number }[];
         committedByPlanning: CommittedDatum[];
         featureAging: FeatureAgingDatum[];
         wsjfCoverage: { planning: string; planning_id: number; rated: number; open: number; total: number }[];
@@ -96,41 +94,23 @@ export default function Dashboard() {
 
             {/* Charts row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Feature Status Pie */}
-                <Card title="Features nach Status">
+                {/* Feature Status per Planning stacked bar */}
+                <Card title="Feature-Entwicklung über Plannings">
                     <div className="h-[240px]">
-                        {featureStatus.length === 0 ? (
+                        {featureStatusByPlanning.length === 0 ? (
                             <p className="text-sm text-slate-400">Keine Daten</p>
                         ) : (
                             <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={featureStatus}
-                                        dataKey="count"
-                                        nameKey="status"
-                                        innerRadius={55}
-                                        outerRadius={80}
-                                        paddingAngle={2}
-                                        label={(entry: any) => {
-                                            const total = featureStatus.reduce((a, x) => a + (x.count ?? 0), 0);
-                                            const pct = total ? Math.round(((entry?.count ?? 0) / total) * 100) : 0;
-                                            return pct >= 5 ? `${pct}%` : '';
-                                        }}
-                                        labelLine={false}
-                                    >
-                                        {featureStatus.map((_, i) => (
-                                            <Cell key={i} fill={COLORS[i % COLORS.length]}
-                                                onClick={() => { window.location.href = route('features.index') + `?status=${encodeURIComponent(featureStatus[i].status)}`; }}
-                                                style={{ cursor: 'pointer' }} />
-                                        ))}
-                                    </Pie>
-                                    <Legend formatter={(v) => STATUS_LABELS[v as string] ?? v} />
-                                    <ReTooltip formatter={(value: any, _n, p: any) => {
-                                        const total = featureStatus.reduce((a, x) => a + (x.count ?? 0), 0);
-                                        const pct = total ? Math.round((Number(value) / total) * 100) : 0;
-                                        return [`${value} (${pct}%)`, STATUS_LABELS[p?.payload?.status] ?? p?.payload?.status];
-                                    }} />
-                                </PieChart>
+                                <BarChart data={featureStatusByPlanning} barSize={28}>
+                                    <XAxis dataKey="planning" tick={{ fontSize: 10 }} interval={0} angle={-20} textAnchor="end" height={40} />
+                                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                                    <ReTooltip formatter={(value: any, name: any) => [value, STATUS_LABELS[name] ?? name]} />
+                                    <Legend formatter={(v) => STATUS_LABELS[v] ?? v} />
+                                    <Bar dataKey="in-planning" stackId="a" fill="#e0e7ff" name="in-planning" />
+                                    <Bar dataKey="approved"    stackId="a" fill="#6366f1" name="approved" />
+                                    <Bar dataKey="implemented" stackId="a" fill="#22c55e" name="implemented" radius={[4,4,0,0]} />
+                                    <Bar dataKey="rejected"    stackId="a" fill="#fca5a5" name="rejected" />
+                                </BarChart>
                             </ResponsiveContainer>
                         )}
                     </div>
@@ -245,8 +225,6 @@ import {
     Cell,
     LabelList,
     Legend,
-    Pie,
-    PieChart,
     ResponsiveContainer,
     Tooltip as ReTooltip,
     XAxis,

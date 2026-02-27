@@ -34,17 +34,27 @@ class DashboardController extends Controller
         })->get(['id', 'title']);
 
         // KPIs für Charts
-        // 1) Feature-Status Verteilung
-        $featureStatus = Feature::selectRaw("COALESCE(status, 'in-planning') as status, COUNT(*) as count")
-            ->groupBy('status')
-            ->get()
-            ->map(function ($row) {
-                return [
-                    'status' => $row->status,
-                    'count' => (int) $row->count,
-                ];
-            })
+        // 1) Feature-Entwicklung über Plannings (letzte 8 Plannings, Status-Breakdown)
+        $planningsForStatus = Planning::orderByDesc('created_at')
+            ->take(8)
+            ->get(['id', 'title'])
+            ->reverse()
             ->values();
+
+        $statusKeys = ['in-planning', 'approved', 'implemented', 'rejected'];
+
+        $featureStatusByPlanning = $planningsForStatus->map(function ($planning) use ($statusKeys) {
+            $counts = Feature::whereHas('plannings', fn($q) => $q->where('plannings.id', $planning->id))
+                ->selectRaw("COALESCE(status, 'in-planning') as status, COUNT(*) as count")
+                ->groupBy('status')
+                ->pluck('count', 'status');
+
+            $row = ['planning_id' => $planning->id, 'planning' => $planning->title];
+            foreach ($statusKeys as $s) {
+                $row[$s] = (int)($counts[$s] ?? 0);
+            }
+            return $row;
+        })->values();
 
         // 2) Commitments je Planning (accepted + completed)
         $committedByPlanningRaw = Commitment::select('planning_id')
@@ -173,8 +183,7 @@ class DashboardController extends Controller
             'activePlanningsCount' => $activePlanningsCount,
             'visibleFeatureCount' => $visibleFeatureCount,
             'validPlannings' => $validPlannings,
-            // Charts
-            'featureStatus' => $featureStatus,
+            'featureStatusByPlanning' => $featureStatusByPlanning,
             'committedByPlanning' => $committedByPlanning,
             'featureAging' => $featureAging,
             'wsjfCoverage' => $wsjfCoverage,
