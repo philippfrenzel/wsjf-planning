@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Tenant;
+use App\Models\TenantInvitation;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
@@ -60,6 +62,23 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        // Process pending invitation token stored in session by the accept route
+        if ($token = $request->session()->pull('tenant_invitation_token')) {
+            $inv = TenantInvitation::where('token', $token)
+                ->whereNull('accepted_at')
+                ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                ->first();
+            if ($inv && $inv->email === $user->email) {
+                $inv->acceptFor($user);
+            }
+        }
+
+        // ROLE-01/03: ensure the owner of any newly created tenant is assigned Admin role
+        DB::table('tenant_user')
+            ->where('user_id', $user->id)
+            ->whereNull('role')
+            ->update(['role' => 'Admin']);
 
         return redirect(route('dashboard', absolute: false));
     }
