@@ -21,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+        $middleware->alias([
+            'role' => \App\Http\Middleware\RequireRole::class,
+        ]);
+
         if (env('APP_ENV') == 'local') {
             $middleware->trustProxies(at: '*');
         }
