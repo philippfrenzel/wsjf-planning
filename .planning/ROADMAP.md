@@ -17,6 +17,7 @@
 - [x] Plan 02: Invitation flow — email dispatch, Voter role on accept, registration token handling ✅
 - [x] Plan 04: Policy role enforcement — FeaturePolicy, PlanningPolicy, VotePolicy, CommitmentPolicy updated ✅
 - [x] Plan 03: RequireRole middleware — `role:Admin` alias registered, admin routes gated, inline checks removed ✅
+- [~] Plan 05: Tenant management UI — Tasks 1 & 2 complete; awaiting Task 3 checkpoint (human-verify)
 
 **Deliverables:**
 - End-to-end invitation flow: invite by email → signed URL → accept → join tenant with Voter role ✅
@@ -108,4 +109,4 @@
 
 ---
 *Roadmap defined: 2026-02-27*
-*Last updated: 2026-02-27 after Plan 04 (policy role enforcement) execution*
+*Last updated: 2026-02-27 after Plan 05 (tenant management UI) Tasks 1 & 2 — checkpoint pending*

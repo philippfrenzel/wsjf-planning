@@ -41,9 +41,17 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
   - Gated `plannings.admin`, `plannings.set-creator`, and `/admin/users` routes with `role:Admin` middleware
   - Removed inline `roles()->where('name','admin')` checks from `PlanningController`
 
+- **Plan 05: Tenant Management UI** (2026-02-27)
+  - `TenantController`: added `updateMemberRole()`, `removeMember()`, `update()` methods; fixed `withPivot('role')` in `index()`
+  - `HandleInertiaRequests`: added `currentRole` and `isSuperAdmin` to shared auth props
+  - `routes/web.php`: moved invite/revoke into role:Admin group; added 3 new tenant management routes
+  - `tenants/index.tsx`: Members tab with role badges + role-change + remove; Settings tab with name edit, seat count, subscription placeholder; admin-gated UI controls
+  - `types/index.d.ts`: `Auth` interface updated with `currentRole` and `isSuperAdmin`
+  - **Awaiting:** Task 3 human verification checkpoint
+
 ## What's Next
 
-Run Plan 05: Tenant management page — members list, role change, remove member, pending invitations.
+Checkpoint Task 3: Manual verification of tenant management UI (Admin vs Voter/Planner views). After approval, Phase 1 is complete.
 
 ## Key Decisions (Accumulated)
 
@@ -60,4 +68,4 @@ Run Plan 05: Tenant management page — members list, role change, remove member
 _Add notes here during active work sessions._
 
 ---
-*Last updated: 2026-02-27 after Plan 04 (policy role enforcement) execution*
+*Last updated: 2026-02-27 after Plan 05 Tasks 1 & 2 — awaiting Task 3 human-verify checkpoint*
