@@ -27,7 +27,8 @@ Route::get('/impressum', function () {
     return Inertia::render('legal/impressum');
 })->name('imprint');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// Core feature routes — require active subscription or trial (ENF-01)
+Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     // Dashboard-Route auf den neuen DashboardController umleiten
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
@@ -60,9 +61,39 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('estimation-components/{id}/archive', [EstimationComponentController::class, 'archive'])->name('estimation-components.archive');
     Route::put('estimation-components/{id}/activate', [EstimationComponentController::class, 'activate'])->name('estimation-components.activate');
 
+    Route::resource('projects', ProjectController::class);
+    Route::resource('plannings', PlanningController::class);
+    Route::get('features/board', [FeatureController::class, 'board'])->name('features.board');
+    Route::post('features/{feature}/status', [FeatureController::class, 'updateStatus'])->name('features.status.update');
+    Route::get('features/lineage', [FeatureController::class, 'lineage'])->name('features.lineage');
+    Route::resource('features', FeatureController::class);
+    Route::get('api/features/state-history', [FeatureStateHistoryController::class, 'index'])
+        ->name('api.features.state-history');
+    // Feature-Abhängigkeiten
+    Route::post('features/{feature}/dependencies', [FeatureDependencyController::class, 'store'])->name('features.dependencies.store');
+    Route::delete('features/{feature}/dependencies/{dependency}', [FeatureDependencyController::class, 'destroy'])->name('features.dependencies.destroy');
+    // Feature-Import (projektbezogen)
+    Route::get('projects/{project}/features/import', [FeatureImportController::class, 'create'])->name('projects.features.import');
+    Route::post('projects/{project}/features/import', [FeatureImportController::class, 'store'])->name('projects.features.import.store');
+    Route::resources([
+        'votes' => VoteController::class,
+        'commitments' => CommitmentController::class,
+    ]);
+
+    // Zusätzliche Commitment-Routen
+    Route::get('plannings/{planning}/commitments', [CommitmentController::class, 'planningCommitments'])
+        ->name('plannings.commitments');
+
+    // API-Route zum Laden von Features für ein Planning
+    Route::post('api/planning-features', [CommitmentController::class, 'getFeaturesForPlanning'])
+        ->name('api.planning-features');
+
+    Route::post('plannings/{planning}/recalculate-commonvotes', [PlanningController::class, 'recalculateCommonVotes'])
+        ->name('plannings.recalculate-commonvotes');
 });
 
-Route::middleware(['auth', 'verified', 'role:Admin'])->group(function () {
+// Admin-only routes — SuperAdmin bypasses RequireSubscription before role check runs
+Route::middleware(['auth', 'verified', 'role:Admin', 'subscribed'])->group(function () {
     Route::get('plannings/admin', [PlanningController::class, 'adminPlannings'])->name('plannings.admin');
     Route::post('plannings/{planning}/set-creator', [PlanningController::class, 'setCreator'])->name('plannings.set-creator');
     Route::post('tenants/{tenant}/invite', [TenantController::class, 'invite'])->name('tenants.invite');
@@ -72,40 +103,7 @@ Route::middleware(['auth', 'verified', 'role:Admin'])->group(function () {
     Route::patch('tenants/{tenant}', [TenantController::class, 'update'])->name('tenants.update');
 });
 
-Route::resource('projects', ProjectController::class);
-Route::resource('plannings', PlanningController::class)->middleware(['auth', 'verified']);
-Route::get('features/board', [FeatureController::class, 'board'])->name('features.board');
-Route::post('features/{feature}/status', [FeatureController::class, 'updateStatus'])->name('features.status.update');
-Route::get('features/lineage', [FeatureController::class, 'lineage'])->name('features.lineage');
-Route::resource('features', FeatureController::class);
-Route::get('api/features/state-history', [FeatureStateHistoryController::class, 'index'])
-    ->name('api.features.state-history');
-// Feature-Abhängigkeiten
-Route::post('features/{feature}/dependencies', [FeatureDependencyController::class, 'store'])->name('features.dependencies.store');
-Route::delete('features/{feature}/dependencies/{dependency}', [FeatureDependencyController::class, 'destroy'])->name('features.dependencies.destroy');
-// Feature-Import (projektbezogen)
-Route::get('projects/{project}/features/import', [FeatureImportController::class, 'create'])->name('projects.features.import');
-Route::post('projects/{project}/features/import', [FeatureImportController::class, 'store'])->name('projects.features.import.store');
-Route::resources([
-    'votes' => VoteController::class,
-    'commitments' => CommitmentController::class,
-]);
-
-// Zusätzliche Commitment-Routen
-Route::get('plannings/{planning}/commitments', [CommitmentController::class, 'planningCommitments'])
-    ->name('plannings.commitments');
-
-// API-Route zum Laden von Features für ein Planning
-Route::post('api/planning-features', [CommitmentController::class, 'getFeaturesForPlanning'])
-    ->name('api.planning-features');
-
-//Route::group(['middleware' => ['role:admin']], function () {
 Route::get('/admin/users', [UserController::class, 'index'])->name('users.index')->middleware(['auth', 'role:Admin']);
-// Weitere Admin-Routen...
-//});
-
-Route::post('plannings/{planning}/recalculate-commonvotes', [PlanningController::class, 'recalculateCommonVotes'])
-    ->name('plannings.recalculate-commonvotes');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('plans', PlanController::class)->only(['index', 'create', 'store']);
