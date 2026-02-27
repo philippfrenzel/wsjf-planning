@@ -10,7 +10,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 ## Current Status
 
 **Phase:** 1 of 4
-**Phase status:** In progress — Plans 01, 02, and 04 complete
+**Phase status:** In progress — Plans 01, 02, 03, and 04 complete
 **Milestone:** v1.0 (Sellable SaaS)
 
 ## What Was Just Done
@@ -43,7 +43,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Run Plan 04: Policy updates — update existing Laravel policies to check tenant roles.
+Run Plan 05: Tenant management page — members list, role change, remove member, pending invitations.
 
 ## Key Decisions (Accumulated)
 
