@@ -11,6 +11,7 @@ use App\Policies\FeaturePolicy;
 use App\Policies\CommitmentPolicy;
 use App\Policies\VotePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -29,5 +30,12 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
+
+        Gate::before(function (\App\Models\User $user, string $ability): ?bool {
+            if ($user->isSuperAdmin()) {
+                return true; // SuperAdmin bypasses all policy checks
+            }
+            return null; // null = let policy decide normally
+        });
     }
 }

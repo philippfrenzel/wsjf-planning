@@ -12,6 +12,12 @@ class TenantScope implements Scope
 {
     public function apply(Builder $builder, Model $model): void
     {
+        // SuperAdmin sees data across all tenants — no filter applied
+        $user = Auth::user();
+        if ($user && $user->isSuperAdmin()) {
+            return;
+        }
+
         // Qualifizierter Spaltenname
         $column = $model->getTable() . '.tenant_id';
 
