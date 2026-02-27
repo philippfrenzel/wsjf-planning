@@ -67,11 +67,8 @@ class PlanningController extends Controller
 
     public function show(Planning $planning)
     {
-        // Setze die Parameter für die Commonvotes-Relation
-        request()->merge([
-            'planning_id' => $planning->id,
-            'user_id' => $planning->created_by,
-        ]);
+        $planningId = $planning->id;
+        $creatorId = $planning->created_by;
 
         // IDs der dem Planning zugeordneten Stakeholder (Stammdaten)
         $stakeholderIds = $planning->stakeholders()->pluck('users.id');
@@ -85,22 +82,26 @@ class PlanningController extends Controller
                     ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
             },
             'features.project:id,name,jira_base_uri',
-            'features.votes' => function ($query) use ($planning, $stakeholderIds) {
-                $query->where('planning_id', $planning->id)
-                    // Nur Stimmen von als Stakeholder (Stammdaten) zugeordneten Nutzern berücksichtigen
-                    ->whereIn('user_id', $stakeholderIds)
-                    // Den Planning-Ersteller (Creator) aus der Individual-Übersicht ausblenden
-                    ->whereHas('user', function ($subQuery) use ($planning) {
-                        $subQuery->where('id', '!=', $planning->created_by);
-                    });
+            'features.votes' => function ($query) use ($planningId, $stakeholderIds) {
+                $query->where('planning_id', $planningId)
+                    ->whereIn('user_id', $stakeholderIds);
             },
             'features.votes.user:id,name',
-            'features.commonvotes',
-            'features.commitments' => function ($query) use ($planning) {
-                $query->where('planning_id', $planning->id);
+            'features.commitments' => function ($query) use ($planningId) {
+                $query->where('planning_id', $planningId);
             },
             'features.commitments.user:id,name',
         ]);
+
+        // Attach common votes per feature using the scoped method (no request coupling)
+        if ($creatorId) {
+            foreach ($planning->features as $feature) {
+                $feature->setRelation(
+                    'commonvotes',
+                    $feature->commonVotesForPlanning($planningId, $creatorId)->get()
+                );
+            }
+        }
 
         // Stakeholder (User) mit ihrer Stimmenanzahl in der aktuellen Planning-Session laden
         $stakeholders = User::select('users.id', 'users.name', 'users.email')
@@ -189,10 +190,7 @@ class PlanningController extends Controller
     public function adminPlannings()
     {
         $this->authorize('viewAny', Planning::class);
-        // Nur Admins erlauben
-        if (!Auth::check()) { //  || !auth()->user()->roles()->where('name', 'admin')->exists()
-            abort(403);
-        }
+
         $plannings = Planning::with(['project:id,name', 'creator:id,name', 'owner:id,name', 'deputy:id,name'])->get();
         $tenantId = Auth::user()->current_tenant_id;
         $users = User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']);
@@ -208,9 +206,7 @@ class PlanningController extends Controller
     public function setCreator(Request $request, Planning $planning)
     {
         $this->authorize('update', $planning);
-        if (!Auth::check()) { // || !auth()->user()->roles()->where('name', 'admin')->exists()
-            abort(403);
-        }
+
         $request->validate([
             'created_by' => 'required|exists:users,id',
         ]);

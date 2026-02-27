@@ -60,7 +60,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('estimation-components/{id}/archive', [EstimationComponentController::class, 'archive'])->name('estimation-components.archive');
     Route::put('estimation-components/{id}/activate', [EstimationComponentController::class, 'activate'])->name('estimation-components.activate');
 
-    // Admin: Plannings-Übersicht und Ersteller setzen
+});
+
+Route::middleware(['auth', 'verified', 'role:Admin'])->group(function () {
     Route::get('plannings/admin', [PlanningController::class, 'adminPlannings'])->name('plannings.admin');
     Route::post('plannings/{planning}/set-creator', [PlanningController::class, 'setCreator'])->name('plannings.set-creator');
 });
@@ -93,7 +95,7 @@ Route::post('api/planning-features', [CommitmentController::class, 'getFeaturesF
     ->name('api.planning-features');
 
 //Route::group(['middleware' => ['role:admin']], function () {
-Route::get('/admin/users', [UserController::class, 'index'])->name('users.index');
+Route::get('/admin/users', [UserController::class, 'index'])->name('users.index')->middleware(['auth', 'role:Admin']);
 // Weitere Admin-Routen...
 //});
 
