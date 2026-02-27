@@ -10,6 +10,8 @@ export interface Auth {
     user: User;
     tenants?: TenantInfo[];
     currentTenant?: TenantInfo | null;
+    currentRole?: string | null;
+    isSuperAdmin?: boolean;
 }
 
 export interface BreadcrumbItem {
