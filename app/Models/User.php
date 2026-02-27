@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 // Do not add Tenant global scope here to avoid auth recursion
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Concerns\SoftDeletesWithUser;
 
@@ -94,5 +95,34 @@ class User extends Authenticatable
     public function currentTenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class, 'current_tenant_id');
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return once(fn() => $this->roles()->where('name', 'SuperAdmin')->exists());
+    }
+
+    public function hasRoleInTenant(string $role, ?int $tenantId): bool
+    {
+        if (!$tenantId) {
+            return false;
+        }
+        return DB::table('tenant_user')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $this->id)
+            ->where('role', $role)
+            ->exists();
+    }
+
+    public function currentTenantRole(): ?string
+    {
+        $tenantId = $this->current_tenant_id;
+        if (!$tenantId) {
+            return null;
+        }
+        return DB::table('tenant_user')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $this->id)
+            ->value('role');
     }
 }
