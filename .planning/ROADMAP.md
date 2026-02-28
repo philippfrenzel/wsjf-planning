@@ -147,7 +147,11 @@
 5. Planner sees a live stakeholder vote count ("X of Y voted") per feature on the planning session page
 6. Planner can download a prioritized CSV export of session results from the session results view
 
-**Plans:** TBD
+**Plans:** 1/2 plans executed
+
+Plans:
+- [ ] 05-01-foundation-infrastructure-PLAN.md — Install deps, fix NProgress duplication, wire flash→toast pipeline, mount global Toaster + ConfirmDialogProvider
+- [ ] 05-02-ux-feature-delivery-PLAN.md — One-click session start (UX-01), vote progress indicator (UX-03), CSV export smoke-test (UX-04)
 
 ---
 
@@ -224,7 +228,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 5. Foundation & Phase 4 Completion | 0/? | Not started | - |
+| 5. Foundation & Phase 4 Completion | 1/2 | In Progress|  |
 | 6. Feedback Completeness | 0/? | Not started | - |
 | 7. Empty States & Visual Polish | 0/? | Not started | - |
 | 8. Workflow Progress | 0/? | Not started | - |

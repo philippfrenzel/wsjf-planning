@@ -10,20 +10,20 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 ## Current Status
 
 **Phase:** Phase 5 — Foundation & Phase 4 Completion
-**Plan:** Not started
-**Status:** Roadmap created — ready to plan Phase 5
+**Plan:** Plan 01 complete → Plan 02 next
+**Status:** Plan 01 executed — ready for Plan 02
 **Milestone:** v3.0 (Polish & UX)
-**Last activity:** 2025-07-14 — v3.0 roadmap created (Phases 5–9)
+**Last activity:** 2026-02-28 — Phase 5 Plan 01: Foundation Infrastructure complete
 
 ## What Was Just Done
 
-- **v3.0 Roadmap created** (2025-07-14) — Phases 5–9 defined for the Polish & UX milestone
-  - Phase 5: Foundation + Phase 4 Completion (FOUND-01→04, UX-01, UX-03, UX-04)
-  - Phase 6: Feedback Completeness (FEED-01→03)
-  - Phase 7: Empty States & Visual Polish (POLISH-01→04)
-  - Phase 8: Workflow Progress (PROG-01→03)
-  - Phase 9: Onboarding (ONBOARD-01)
-  - All 18 v3.0 requirements mapped — 0 orphans
+- **Phase 5, Plan 01: Foundation Infrastructure** (2026-02-28) — FOUND-01→04 complete
+  - Installed `sonner` npm + 3 shadcn components (sonner.tsx, alert-dialog.tsx, progress.tsx)
+  - Fixed NProgress duplication in `app.tsx`: removed `progress:` key from `createInertiaApp`
+  - Wired flash→toast pipeline: `HandleInertiaRequests::share()` flash key → `SharedData.flash` type → `useFlashToast` hook
+  - Mounted `<Toaster position="bottom-right" richColors />` and `<ConfirmDialogProvider>` in `app-header-layout.tsx`
+  - Removed ad-hoc `props.success` Dialog modals from `votes/session.tsx` and `votes/card-session.tsx`
+  - Restored custom button variants (success, info, cancel) after shadcn CLI overwrite
 
 ## Previous Completed Work
 
@@ -69,8 +69,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Phase 5, Plan 01: Execute foundation work — install `sonner`, `motion`, `driver.js`, `zod`; add shadcn `sonner`, `alert-dialog`, `progress` components; fix NProgress duplication in `app.tsx`; wire `HandleInertiaRequests` flash share; mount `<Toaster>` + `<ConfirmDialogProvider>` in `app-header-layout.tsx`.
-Phase 5, Plan 02: Deliver Phase 4 UX features — one-click session start (UX-01), vote progress indicator (UX-03), CSV export (UX-04).
+Phase 5, Plan 02: Deliver Phase 4 UX features — one-click session start (UX-01), vote progress indicator (UX-03), CSV export verification (UX-04).
 
 ## Key Decisions (Accumulated)
 
@@ -79,6 +78,9 @@ Phase 5, Plan 02: Deliver Phase 4 UX features — one-click session start (UX-01
 - New tenant owner `role='Admin'` assigned via `whereNull('role')` patch immediately after registration login
 - Cashier billable model is `Tenant` (not `User`) — `Cashier::useCustomerModel(Tenant::class)` in AppServiceProvider
 - CSRF exclusion for `stripe/*` registered in bootstrap/app.php
+- **[05-01]** Toaster placed outside AppShell but inside ConfirmDialogProvider — sibling pattern avoids z-index issues
+- **[05-01]** Lazy closures in HandleInertiaRequests flash share() ensure session read at response time (not middleware boot)
+- **[05-01]** useFlashToast called once at layout level only — prevents duplicate toast firing on page component re-renders
 
 ## Open Questions / Blockers
 
@@ -93,4 +95,4 @@ Phase 5, Plan 02: Deliver Phase 4 UX features — one-click session start (UX-01
 _Add notes here during active work sessions._
 
 ---
-*Last updated: 2025-07-14 after v3.0 roadmap creation — Phases 5–9 defined, ready to plan Phase 5*
+*Last updated: 2026-02-28 after Phase 5 Plan 01: Foundation Infrastructure complete (FOUND-01→04)*
