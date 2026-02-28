@@ -90,6 +90,9 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
 
     Route::post('plannings/{planning}/recalculate-commonvotes', [PlanningController::class, 'recalculateCommonVotes'])
         ->name('plannings.recalculate-commonvotes');
+
+    Route::get('plannings/{planning}/export-csv', [PlanningController::class, 'exportCsv'])
+        ->name('plannings.export-csv');
 });
 
 // Admin-only routes — SuperAdmin bypasses RequireSubscription before role check runs

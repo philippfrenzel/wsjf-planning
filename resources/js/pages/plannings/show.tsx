@@ -253,7 +253,15 @@ export default function Show({ planning, stakeholders }: ShowProps) {
                                 <FeaturesTable features={planning.features} />
                             </TabsContent>
                             <TabsContent value="wsjf-ranking">
-                                <div className="mt-4 rounded-md border">
+                                <div className="mb-3 flex justify-end">
+                                    <a
+                                        href={route('plannings.export-csv', planning.id)}
+                                        className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+                                    >
+                                        ↓ Export CSV
+                                    </a>
+                                </div>
+                                <div className="mt-1 rounded-md border">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>

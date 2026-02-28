@@ -9,16 +9,16 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## Current Status
 
-**Phase:** 3 of 4
-**Phase status:** Planning complete — 3 plans written (01-job-size-vote-type, 02-voting-session-ui, 03-wsjf-ranking-display); ready to execute
-**Milestone:** v2.0 (WSJF Formula Complete)
+**Phase:** 4 of 4
+**Phase status:** Planning complete — 3 plans written (01-one-click-session-start, 02-voting-progress-indicator, 03-csv-export); ready to execute
+**Milestone:** v3.0 (Planning Session UX & Export)
 
 ## What Was Just Done
 
-- **Phase 3 Planning** (2026-03-01) — Plans 01, 02, 03 written for WSJF Formula Completion
-  - Plan 01: `01-job-size-vote-type-PLAN.md` — DB enum migration (SQLite-guarded), StoreVoteRequest/UpdateVoteRequest Fibonacci validation, all 5 VoteController `$types` arrays updated
-  - Plan 02: `02-voting-session-ui-PLAN.md` — Fibonacci button-group picker in session.tsx and card-session.tsx; ensureUniqueValues skipped for JobSize
-  - Plan 03: `03-wsjf-ranking-display-PLAN.md` — CommonVotesTable adds JobSize + WSJF Score columns; plannings/show.tsx gets third "WSJF Ranking" tab with frontend sort
+- **Phase 4 Planning** (2026-03-01) — Plans 01, 02, 03 written for Planning Session UX & Export
+  - Plan 01: `01-one-click-session-start-PLAN.md` — `quickStart()` action on PlanningController, POST route, "Start Planning Session" button on projects/show.tsx; auto-attaches features + stakeholders
+  - Plan 02: `02-voting-progress-indicator-PLAN.md` — `VoteProgressCard` component (30s polling + manual refresh), wired into plannings/show.tsx; per-feature "X of 4 voted" badge in session.tsx
+  - Plan 03: `03-csv-export-PLAN.md` — `exportCsv()` action using `fputcsv` + `streamDownload`, GET route, "Export CSV" anchor on WSJF Ranking tab
 
 ## Previous Completed Work
 
@@ -64,9 +64,9 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Phase 3, Plan 01: Execute `01-job-size-vote-type-PLAN.md` — migration + validation + controller whitelist.
-Phase 3, Plan 02: Execute `02-voting-session-ui-PLAN.md` — Fibonacci picker in session pages.
-Phase 3, Plan 03: Execute `03-wsjf-ranking-display-PLAN.md` — WSJF Ranking tab on planning show page.
+Phase 4, Plan 01: Execute `01-one-click-session-start-PLAN.md` — quickStart route + controller action + button on project show page.
+Phase 4, Plan 02: Execute `02-voting-progress-indicator-PLAN.md` — VoteProgressCard component + per-feature completion badge.
+Phase 4, Plan 03: Execute `03-csv-export-PLAN.md` — exportCsv controller action + route + Export CSV button.
 
 ## Key Decisions (Accumulated)
 
@@ -86,4 +86,4 @@ Phase 3, Plan 03: Execute `03-wsjf-ranking-display-PLAN.md` — WSJF Ranking tab
 _Add notes here during active work sessions._
 
 ---
-*Last updated: 2026-03-01 after Phase 3 planning complete — 3 plans ready to execute*
+*Last updated: 2026-03-01 after Phase 4 planning complete — 3 plans ready to execute*

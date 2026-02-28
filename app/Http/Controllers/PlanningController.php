@@ -185,6 +185,79 @@ class PlanningController extends Controller
     }
 
     /**
+     * Export the prioritized WSJF backlog for a planning as a CSV download.
+     */
+    public function exportCsv(Planning $planning)
+    {
+        $this->authorize('view', $planning);
+
+        $creatorId = $planning->created_by;
+
+        $planning->load([
+            'features' => function ($query) use ($planning) {
+                $query->where('project_id', $planning->project_id)
+                    ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
+            },
+        ]);
+
+        // Attach common votes (same pattern as show())
+        if ($creatorId) {
+            foreach ($planning->features as $feature) {
+                $feature->setRelation(
+                    'commonvotes',
+                    $feature->commonVotesForPlanning($planning->id, $creatorId)->get()
+                );
+            }
+        }
+
+        // Compute WSJF score for each feature
+        $rows = $planning->features->map(function ($feature) {
+            $commonvotes = $feature->commonvotes ?? collect();
+            $bv = $commonvotes->firstWhere('type', 'BusinessValue')?->value;
+            $tc = $commonvotes->firstWhere('type', 'TimeCriticality')?->value;
+            $rr = $commonvotes->firstWhere('type', 'RiskOpportunity')?->value;
+            $js = $commonvotes->firstWhere('type', 'JobSize')?->value;
+            $score = ($bv && $tc && $rr && $js && $js > 0) ? ($bv + $tc + $rr) / $js : null;
+
+            return [
+                'jira_key' => $feature->jira_key,
+                'name'     => $feature->name,
+                'bv'       => $bv,
+                'tc'       => $tc,
+                'rr'       => $rr,
+                'js'       => $js,
+                'score'    => $score,
+            ];
+        })->sortByDesc('score')->values();
+
+        $filename = 'wsjf-' . $planning->id . '-' . date('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($rows) {
+            $handle = fopen('php://output', 'w');
+
+            // UTF-8 BOM for Excel compatibility
+            fputs($handle, "\xEF\xBB\xBF");
+
+            fputcsv($handle, ['Rank', 'Jira Key', 'Feature', 'Business Value', 'Time Criticality', 'Risk Reduction', 'Job Size', 'WSJF Score']);
+
+            foreach ($rows as $index => $row) {
+                fputcsv($handle, [
+                    $row['score'] !== null ? $index + 1 : '',
+                    $row['jira_key'],
+                    $row['name'],
+                    $row['bv'] ?? '',
+                    $row['tc'] ?? '',
+                    $row['rr'] ?? '',
+                    $row['js'] ?? '',
+                    $row['score'] !== null ? number_format($row['score'], 2) : '',
+                ]);
+            }
+
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
      * Admin-Übersicht: Plannings und Ersteller ändern
      */
     public function adminPlannings()
