@@ -5,22 +5,25 @@
 See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 **Core value:** Teams can run a complete WSJF planning session without friction, in a single sitting.
-**Current focus:** Phase 2 — Stripe Subscription & Per-Seat Billing
+**Current focus:** Phase 5 — Foundation & Phase 4 Completion (v3.0 milestone)
 
 ## Current Status
 
-**Phase:** Not started (defining requirements)
-**Plan:** —
-**Status:** Defining requirements
+**Phase:** Phase 5 — Foundation & Phase 4 Completion
+**Plan:** Not started
+**Status:** Roadmap created — ready to plan Phase 5
 **Milestone:** v3.0 (Polish & UX)
-**Last activity:** 2026-02-28 — Milestone v3.0 started
+**Last activity:** 2025-07-14 — v3.0 roadmap created (Phases 5–9)
 
 ## What Was Just Done
 
-- **Phase 4 Planning** (2026-03-01) — Plans 01, 02, 03 written for Planning Session UX & Export
-  - Plan 01: `01-one-click-session-start-PLAN.md` — `quickStart()` action on PlanningController, POST route, "Start Planning Session" button on projects/show.tsx; auto-attaches features + stakeholders
-  - Plan 02: `02-voting-progress-indicator-PLAN.md` — `VoteProgressCard` component (30s polling + manual refresh), wired into plannings/show.tsx; per-feature "X of 4 voted" badge in session.tsx
-  - Plan 03: `03-csv-export-PLAN.md` — `exportCsv()` action using `fputcsv` + `streamDownload`, GET route, "Export CSV" anchor on WSJF Ranking tab
+- **v3.0 Roadmap created** (2025-07-14) — Phases 5–9 defined for the Polish & UX milestone
+  - Phase 5: Foundation + Phase 4 Completion (FOUND-01→04, UX-01, UX-03, UX-04)
+  - Phase 6: Feedback Completeness (FEED-01→03)
+  - Phase 7: Empty States & Visual Polish (POLISH-01→04)
+  - Phase 8: Workflow Progress (PROG-01→03)
+  - Phase 9: Onboarding (ONBOARD-01)
+  - All 18 v3.0 requirements mapped — 0 orphans
 
 ## Previous Completed Work
 
@@ -66,9 +69,8 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Phase 4, Plan 01: Execute `01-one-click-session-start-PLAN.md` — quickStart route + controller action + button on project show page.
-Phase 4, Plan 02: Execute `02-voting-progress-indicator-PLAN.md` — VoteProgressCard component + per-feature completion badge.
-Phase 4, Plan 03: Execute `03-csv-export-PLAN.md` — exportCsv controller action + route + Export CSV button.
+Phase 5, Plan 01: Execute foundation work — install `sonner`, `motion`, `driver.js`, `zod`; add shadcn `sonner`, `alert-dialog`, `progress` components; fix NProgress duplication in `app.tsx`; wire `HandleInertiaRequests` flash share; mount `<Toaster>` + `<ConfirmDialogProvider>` in `app-header-layout.tsx`.
+Phase 5, Plan 02: Deliver Phase 4 UX features — one-click session start (UX-01), vote progress indicator (UX-03), CSV export (UX-04).
 
 ## Key Decisions (Accumulated)
 
@@ -80,12 +82,15 @@ Phase 4, Plan 03: Execute `03-csv-export-PLAN.md` — exportCsv controller actio
 
 ## Open Questions / Blockers
 
+- **Vote completeness formula (Phase 8):** Confirm `stakeholders_count × features_count` vs. actual vote rows is the right formula given polymorphic vote types — check against DB schema before scoping Phase 8 plans
+- **Onboarding persistence (Phase 9):** Decision needed — localStorage flag (simple, loses on new device) vs. DB flag (accurate cross-device); defer until Phase 8 is stable
+- **Zod scope (Phase 6):** Identify which specific forms warrant Zod pre-validation vs. Inertia-only error display — only multi-step or expensive round-trip forms
 - PHP binary broken on host (libicu version mismatch) — runtime verification done with PHP 8.3 (`/opt/homebrew/opt/php@8.3/bin/php`)
-- Stripe API keys not yet configured (needed for Plan 02)
+- Stripe API keys not yet configured (needed for billing features)
 
 ## Session Notes
 
 _Add notes here during active work sessions._
 
 ---
-*Last updated: 2026-03-01 after Phase 4 planning complete — 3 plans ready to execute*
+*Last updated: 2025-07-14 after v3.0 roadmap creation — Phases 5–9 defined, ready to plan Phase 5*

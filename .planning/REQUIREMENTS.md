@@ -136,10 +136,33 @@
 | BILL-08 | Phase 2 | Pending |
 | ENF-01 | Phase 2 | Pending |
 | ENF-02 | Phase 2 | Pending |
+| UX-01 | Phase 5 | Pending |
+| UX-03 | Phase 5 | Pending |
+| UX-04 | Phase 5 | Pending |
+| FOUND-01 | Phase 5 | Pending |
+| FOUND-02 | Phase 5 | Pending |
+| FOUND-03 | Phase 5 | Pending |
+| FOUND-04 | Phase 5 | Pending |
+| FEED-01 | Phase 6 | Pending |
+| FEED-02 | Phase 6 | Pending |
+| FEED-03 | Phase 6 | Pending |
+| POLISH-01 | Phase 7 | Pending |
+| POLISH-02 | Phase 7 | Pending |
+| POLISH-03 | Phase 7 | Pending |
+| POLISH-04 | Phase 7 | Pending |
+| PROG-01 | Phase 8 | Pending |
+| PROG-02 | Phase 8 | Pending |
+| PROG-03 | Phase 8 | Pending |
+| ONBOARD-01 | Phase 9 | Pending |
 
 **Coverage:**
 - v1 requirements: 26 total
 - Mapped to phases: 26
+- Unmapped: 0 ✓
+
+**v3.0 Coverage:**
+- v3.0 requirements: 18 total (FOUND-01→04, UX-01, UX-03, UX-04, FEED-01→03, POLISH-01→04, PROG-01→03, ONBOARD-01)
+- Mapped to phases: 18
 - Unmapped: 0 ✓
 
 ---

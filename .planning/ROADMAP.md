@@ -105,3 +105,130 @@
 
 ---
 *Last updated: 2026-02-28 after Phase 2 Plan 04 (enforcement-middleware) — complete*
+
+---
+
+## Milestone: v3.0 — Polish & UX
+
+**Goal:** Complete Phase 4 execution and systematically polish every workflow and UI surface across the app so that teams can run a full WSJF session without friction.
+
+**Phases:** 5 + 6 + 7 + 8 + 9
+
+**Definition of Done:**
+- Phase 4 features (one-click session start, vote progress, CSV export) are live
+- Every destructive action uses a proper confirmation dialog; every form communicates loading and validation state
+- No blank screens anywhere; every major list has an empty state
+- Planners can see session readiness and vote progress at a glance
+- New tenant owners are guided through onboarding before reaching the dashboard
+
+### Phases
+
+- [ ] **Phase 5: Foundation & Phase 4 Completion** — Wire centralized feedback infrastructure; deliver UX-01, UX-03, UX-04
+- [ ] **Phase 6: Feedback Completeness** — Confirmation dialogs, form processing states, consistent validation
+- [ ] **Phase 7: Empty States & Visual Polish** — Empty states on all major screens, autosave indicator, page transitions, board loading
+- [ ] **Phase 8: Workflow Progress** — Vote completion bar, session readiness checklist, role-gated tooltips
+- [ ] **Phase 9: Onboarding** — 3-step post-registration wizard for new tenant owners
+
+### Phase Details
+
+#### Phase 5: Foundation & Phase 4 Completion
+
+**Goal:** The app has deduplicated loading infrastructure, a working toast/flash pipeline, centralized confirmation dialogs, and Phase 4's UX features (one-click session start, vote progress indicator, CSV export) delivered.
+
+**Depends on:** Phase 4
+
+**Requirements:** FOUND-01, FOUND-02, FOUND-03, FOUND-04, UX-01, UX-03, UX-04
+
+**Success Criteria** (what must be TRUE when this phase completes):
+1. Navigating between any two pages shows exactly one NProgress bar — no duplicate or conflicting spinners
+2. After any server-side create / update / delete action, a toast notification appears in the corner carrying the Laravel flash message
+3. A global `<Toaster>` and `<ConfirmDialogProvider>` are present in the app shell — no page needs to mount them independently
+4. Planner can create a voting session from a project page with a single button click (no multi-step form required)
+5. Planner sees a live stakeholder vote count ("X of Y voted") per feature on the planning session page
+6. Planner can download a prioritized CSV export of session results from the session results view
+
+**Plans:** TBD
+
+---
+
+#### Phase 6: Feedback Completeness
+
+**Goal:** Every destructive action requires explicit confirmation; every form communicates submission state; every validation error appears inline next to the offending field.
+
+**Depends on:** Phase 5
+
+**Requirements:** FEED-01, FEED-02, FEED-03
+
+**Success Criteria** (what must be TRUE when this phase completes):
+1. Clicking Delete / Remove on any entity (feature, project, member, planning, invitation) opens an `AlertDialog` — `window.confirm()` is gone from the entire codebase
+2. Clicking any form submit button disables it and shows a spinner icon while the HTTP request is in flight
+3. Submitting any form with invalid data shows field-level error messages directly beneath each invalid input, consistently styled via `InputError`
+
+**Plans:** TBD
+
+---
+
+#### Phase 7: Empty States & Visual Polish
+
+**Goal:** No major list screen shows a blank or near-blank state; the vote session auto-save communicates its status visually; page navigation has a subtle fade-in; the feature board gives loading feedback on drag.
+
+**Depends on:** Phase 6
+
+**Requirements:** POLISH-01, POLISH-02, POLISH-03, POLISH-04
+
+**Success Criteria** (what must be TRUE when this phase completes):
+1. Every major list screen (features, plannings, projects, members, vote session) shows a meaningful empty state — icon, descriptive message, and a role-appropriate call-to-action — when the list is empty
+2. During vote session auto-save, an inline icon trio (Loader2 → CheckCircle2 → AlertCircle) replaces the raw "Speichern…" text to communicate saving / saved / error state
+3. Navigating to any page produces a subtle CSS fade-in on the page content area (no flash of unstyled content)
+4. Dragging a card on the feature board shows a visual loading state on that card while the status update request is in flight, then reflects the confirmed new state
+
+**Plans:** TBD
+
+---
+
+#### Phase 8: Workflow Progress
+
+**Goal:** Facilitators can see at a glance whether a planning session is ready to start and how voting is progressing; non-admin users understand why certain actions are disabled.
+
+**Depends on:** Phase 7
+
+**Requirements:** PROG-01, PROG-02, PROG-03
+
+**Success Criteria** (what must be TRUE when this phase completes):
+1. The planning session page shows a progress bar per feature with the exact count "X of Y stakeholders have voted" updating as votes are cast
+2. The session setup page shows a readiness checklist with clear ✓ / ✗ indicators for: features attached, stakeholders assigned, and session ready to start
+3. Hovering or focusing any disabled role-gated button shows a tooltip that names the required role or explains why the action is unavailable
+
+**Plans:** TBD
+
+---
+
+#### Phase 9: Onboarding
+
+**Goal:** New tenant owners are guided through workspace setup immediately after registration so they arrive at a functional dashboard — not an empty one.
+
+**Depends on:** Phase 8
+
+**Requirements:** ONBOARD-01
+
+**Success Criteria** (what must be TRUE when this phase completes):
+1. Immediately after registration, a new tenant owner sees a 3-step wizard (workspace name → create first project → invite a member) before the main dashboard is shown
+2. After completing or explicitly dismissing the wizard, it never appears again for that user on any subsequent login or page load
+3. Skipping a wizard step is allowed — the user lands on the dashboard with whatever partial setup they completed, and can finish setup manually
+
+**Plans:** TBD
+
+---
+
+### Progress (v3.0)
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 5. Foundation & Phase 4 Completion | 0/? | Not started | - |
+| 6. Feedback Completeness | 0/? | Not started | - |
+| 7. Empty States & Visual Polish | 0/? | Not started | - |
+| 8. Workflow Progress | 0/? | Not started | - |
+| 9. Onboarding | 0/? | Not started | - |
+
+---
+*v3.0 roadmap added: 2025-07-14*
