@@ -5,8 +5,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
+import type { SharedData } from '@/types';
+import { usePage } from '@inertiajs/react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
+import { VoteProgressCard } from '@/components/VoteProgressCard';
 import PlanningDetailsCard from './components/PlanningDetailsCard';
 
 // Interface für Stakeholder anpassen (mit votes_count)
@@ -225,6 +228,9 @@ function getScoreBadgeClass(value: number): string {
 }
 
 export default function Show({ planning, stakeholders }: ShowProps) {
+    const { auth } = usePage<SharedData>().props;
+    const canManage = auth.currentRole === 'Admin' || auth.currentRole === 'Planner';
+
     // Breadcrumbs für die Planungs-Detailseite
     const breadcrumbs = [
         { title: 'Startseite', href: '/' },
@@ -240,6 +246,11 @@ export default function Show({ planning, stakeholders }: ShowProps) {
                         <CardTitle>{planning.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
+                        {canManage && (
+                            <div className="mb-6">
+                                <VoteProgressCard stakeholders={stakeholders} />
+                            </div>
+                        )}
                         <Tabs defaultValue="details" className="w-full">
                             <TabsList>
                                 <TabsTrigger value="details">Details & Common Vote</TabsTrigger>

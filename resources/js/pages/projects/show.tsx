@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import type { SharedData } from '@/types';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import React from 'react';
 
 type Project = {
     id: number;
@@ -16,7 +18,16 @@ type Project = {
 };
 
 export default function ProjectShow() {
-    const { project } = usePage<{ project: Project }>().props;
+    const { project } = usePage<{ project: Project } & SharedData>().props;
+    const { auth } = usePage<SharedData>().props;
+    const canManage = auth.currentRole === 'Admin' || auth.currentRole === 'Planner';
+
+    // Quick-start form — POSTs to projects.quick-start-planning
+    const quickStartForm = useForm({});
+    const handleQuickStart = (e: React.FormEvent) => {
+        e.preventDefault();
+        quickStartForm.post(route('projects.quick-start-planning', project.id));
+    };
 
     // Breadcrumbs definieren
     const breadcrumbs = [
@@ -34,7 +45,18 @@ export default function ProjectShow() {
                         <CardTitle className="text-xl font-semibold text-slate-900">{project.name}</CardTitle>
                         <CardDescription className="text-slate-600">Projektnummer: {project.project_number}</CardDescription>
                     </div>
-                    <div className="shrink-0">
+                    <div className="flex shrink-0 items-center gap-2">
+                        {canManage && (
+                            <form onSubmit={handleQuickStart}>
+                                <Button
+                                    type="submit"
+                                    disabled={quickStartForm.processing}
+                                    variant="default"
+                                >
+                                    {quickStartForm.processing ? 'Erstelle…' : 'Planungssession starten'}
+                                </Button>
+                            </form>
+                        )}
                         <Button asChild variant="outline">
                             <Link href={route('projects.features.import', project.id)}>Feature-Import</Link>
                         </Button>
