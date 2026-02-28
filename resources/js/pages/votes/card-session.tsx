@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { router } from '@inertiajs/react';
-import { usePage } from '@inertiajs/react';
 import { ArrowDownCircle, CheckCircle2, HelpCircle, MoveHorizontal } from 'lucide-react';
 
 // Typdefinitionen
@@ -452,7 +451,6 @@ const CategoryTabContent: React.FC<{
 };
 
 export default function CardVoteSession({ planning, features, types, existingVotes, user }: SessionProps) {
-    const { props } = usePage();
     const [draggingFeature, setDraggingFeature] = useState<Feature | null>(null);
 
     // Breadcrumbs definieren
@@ -480,9 +478,7 @@ export default function CardVoteSession({ planning, features, types, existingVot
     // Zustand für die aktuelle Kategorie
     const [activeCategory, setActiveCategory] = useState<string>(types[0]);
 
-    // Modal-Status für Erfolgsmeldungen
-    const [open, setOpen] = useState<boolean>(props.success !== undefined && props.success !== null);
-
+    // Modal-Status — removed ad-hoc success modal (now handled globally by useFlashToast)
     // Kategorisierte Features
     const [categorizedFeatures, setCategorizedFeatures] = useState<{
         [category: string]: {
@@ -794,9 +790,6 @@ export default function CardVoteSession({ planning, features, types, existingVot
         saveVotes();
     };
 
-    // Modal schließen
-    const handleCloseModal = () => setOpen(false);
-
     // Wechsel zwischen Kategorien
     const handleCategoryChange = (category: string) => {
         setActiveCategory(category);
@@ -849,19 +842,6 @@ export default function CardVoteSession({ planning, features, types, existingVot
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            {/* Erfolgsmeldung */}
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Erfolg</DialogTitle>
-                    </DialogHeader>
-                    <div>{props.success ? String(props.success) : 'Änderungen gespeichert'}</div>
-                    <DialogFooter>
-                        <Button onClick={handleCloseModal}>OK</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
             <div className="mx-auto mt-8 w-full px-4 md:px-10">
                 <Card className="mb-6">
                     <CardHeader>

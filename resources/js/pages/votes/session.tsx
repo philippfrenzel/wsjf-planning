@@ -8,7 +8,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { router } from '@inertiajs/react';
-import { usePage } from '@inertiajs/react';
 
 const FIBONACCI_VALUES = [1, 2, 3, 5, 8, 13, 20] as const;
 
@@ -41,8 +40,6 @@ interface SessionProps {
 }
 
 export default function VoteSession({ planning, features, types, existingVotes, user }: SessionProps) {
-    const { props } = usePage();
-
     // Breadcrumbs definieren
     const breadcrumbs = [
         { title: 'Startseite', href: '/' },
@@ -62,9 +59,6 @@ export default function VoteSession({ planning, features, types, existingVotes, 
     const initialLoad = useRef(true);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
-
-    // Modal-Status, wenn success-Message vorhanden
-    const [open, setOpen] = useState(!!props.success);
 
     // State für das aktuell ausgewählte Feature im Dialog
     const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
@@ -208,22 +202,9 @@ export default function VoteSession({ planning, features, types, existingVotes, 
         };
     }, [votes]);
 
-    // Modal schließen
-    const handleCloseModal = () => setOpen(false);
-
+    // Modal schließen — kept for feature-description dialog only
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Erfolg</DialogTitle>
-                    </DialogHeader>
-                    <div>{props.success}</div>
-                    <DialogFooter>
-                        <Button onClick={handleCloseModal}>OK</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
             {/* Feature-Beschreibung-Dialog */}
             <Dialog open={!!selectedFeature} onOpenChange={() => setSelectedFeature(null)}>
                 <DialogContent className="max-w-3xl">
