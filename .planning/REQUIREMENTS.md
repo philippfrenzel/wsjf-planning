@@ -62,6 +62,40 @@
 - **UX-03**: Real-time vote progress — planner sees how many stakeholders have voted
 - **UX-04**: Exported prioritized backlog (CSV/PDF) after session completes
 
+---
+
+## v3.0 — Polish & UX
+
+### Foundation & Infrastructure
+
+- [ ] **FOUND-01**: User benefits from sonner, alert-dialog, and progress shadcn components installed and available app-wide
+- [ ] **FOUND-02**: User experiences exactly one NProgress loading indicator per navigation (no duplicate spinner)
+- [ ] **FOUND-03**: User sees Laravel flash messages (success/error) surfaced as toast notifications via Inertia shared props
+- [ ] **FOUND-04**: A global Toaster and ConfirmDialogProvider are mounted at app shell level, requiring no per-page setup
+
+### Feedback Completeness
+
+- [ ] **FEED-01**: User is shown a proper confirmation dialog (not window.confirm()) before any destructive action (delete, remove member, cancel)
+- [ ] **FEED-02**: User sees form submission buttons enter a loading/processing state while the request is in flight
+- [ ] **FEED-03**: User sees inline validation errors displayed consistently via InputError on all form fields
+
+### Empty States & Visual Polish
+
+- [ ] **POLISH-01**: User sees a meaningful empty state (icon, message, call-to-action) on every major list screen (features, plannings, projects, members, votes)
+- [ ] **POLISH-02**: User sees an autosave indicator (saving / saved / error) in the vote session during debounced auto-save
+- [ ] **POLISH-03**: User experiences a subtle page content fade-in on navigation using CSS transitions
+- [ ] **POLISH-04**: User sees consistent loading feedback on the feature board (Kanban) when dragging changes a card's status
+
+### Workflow Progress
+
+- [ ] **PROG-01**: Planner sees a vote completion progress bar (X of Y stakeholders voted) per feature in the planning session
+- [ ] **PROG-02**: User sees a planning session readiness checklist (features attached, stakeholders assigned, ready to start) on the session setup page
+- [ ] **PROG-03**: Non-admin users see a tooltip on disabled role-gated action buttons explaining why the action is unavailable
+
+### Onboarding
+
+- [ ] **ONBOARD-01**: New tenant owner is guided through a 3-step post-registration wizard (workspace name → create first project → invite a member) before reaching the dashboard
+
 ## Out of Scope
 
 | Feature | Reason |
