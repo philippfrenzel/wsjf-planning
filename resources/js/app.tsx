@@ -40,9 +40,7 @@ createInertiaApp({
 
         root.render(<App {...props} />);
     },
-    progress: {
-        color: '#4B5563',
-    },
+    // progress: removed — handled by router.on('start'/'finish') above
 });
 
 // This will set light / dark mode on load...
