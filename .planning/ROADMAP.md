@@ -168,7 +168,15 @@ Plans:
 2. Clicking any form submit button disables it and shows a spinner icon while the HTTP request is in flight
 3. Submitting any form with invalid data shows field-level error messages directly beneath each invalid input, consistently styled via `InputError`
 
-**Plans:** TBD
+**Plans:** 6 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — FEED-01: Replace native confirm() in features/index, plannings/index, tenants/index
+- [ ] 06-02-PLAN.md — FEED-01: Guard unguarded deletes in projects/index, commitments, DependencyManager, users/index
+- [ ] 06-03-PLAN.md — FEED-02+03: Features domain — useForm migration + processing button + InputError (5 files)
+- [ ] 06-04-PLAN.md — FEED-02+03: Projects domain — useForm migration + processing button + InputError
+- [ ] 06-05-PLAN.md — FEED-02+03: Plannings domain — useForm migration + processing button + InputError
+- [ ] 06-06-PLAN.md — FEED-02+03: Vote sessions isSaving binding + commitments InputError + plans/create
 
 ---
 
@@ -229,7 +237,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 5. Foundation & Phase 4 Completion | 1/2 | In Progress|  |
-| 6. Feedback Completeness | 0/? | Not started | - |
+| 6. Feedback Completeness | 0/6 | Not started | - |
 | 7. Empty States & Visual Polish | 0/? | Not started | - |
 | 8. Workflow Progress | 0/? | Not started | - |
 | 9. Onboarding | 0/? | Not started | - |
