@@ -1,5 +1,20 @@
 # WSJF Planning Tool
 
+## Current Milestone: v3.0 — Polish & UX
+
+**Goal:** Complete Phase 4 execution and systematically polish every workflow and UI surface across the app.
+
+**Target features:**
+- Phase 4 execution: one-click session start, vote progress indicator, CSV export
+- Voting session flow polish (joining, casting votes, results)
+- Planning session setup polish (create, configure, manage)
+- Feature board and backlog management polish
+- Tenant/member management UI polish
+- Workflow gap fills: empty states, onboarding, confirmations, error states
+- Overall visual consistency
+
+---
+
 ## What This Is
 
 A multi-tenant SaaS application for agile teams to run lean PI Planning sessions using the Weighted Shortest Job First (WSJF) methodology. Teams create planning sessions, vote individually on Business Value, Time Criticality, and Risk/Opportunity per feature, and the system synthesizes a shared common score for prioritization.
@@ -26,14 +41,15 @@ Teams can run a complete WSJF planning session — from feature backlog through 
 - ✓ Feature board (Kanban by status) — v0
 - ✓ Role model data structure (roles table, Role model) — v0
 
-### Active
+### Active (v3.0 — Polish & UX)
 
-- [ ] Email invitation flow — users can invite teammates into their tenant via email link
-- [ ] Role system: SuperAdmin / Admin / Planner / Voter enforced across the app
-- [ ] Tenant management UI — owner can view members, revoke access, manage invitations
-- [ ] Stripe per-seat billing — subscription tied to number of active tenant members
-- [ ] Billing portal — users can manage subscription, view invoices, upgrade/downgrade seats
-- [ ] Subscription enforcement — features gated behind active subscription
+- [ ] Complete Phase 4 execution: one-click session start, vote progress indicator, CSV export
+- [ ] Polish voting session flow (joining, casting votes, results display)
+- [ ] Polish planning session setup (create, attach features/stakeholders)
+- [ ] Polish feature board and backlog management UI
+- [ ] Polish tenant/member management UI
+- [ ] Fill workflow gaps: empty states, guided onboarding, confirmations, error states
+- [ ] Overall visual consistency and design polish across the app
 
 ### Out of Scope (v1)
 

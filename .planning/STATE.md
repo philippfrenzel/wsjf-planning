@@ -9,9 +9,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## Current Status
 
-**Phase:** 4 of 4
-**Phase status:** Planning complete — 3 plans written (01-one-click-session-start, 02-voting-progress-indicator, 03-csv-export); ready to execute
-**Milestone:** v3.0 (Planning Session UX & Export)
+**Phase:** Not started (defining requirements)
+**Plan:** —
+**Status:** Defining requirements
+**Milestone:** v3.0 (Polish & UX)
+**Last activity:** 2026-02-28 — Milestone v3.0 started
 
 ## What Was Just Done
 
