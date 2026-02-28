@@ -46,6 +46,7 @@ export interface SharedData {
     locale: string;
     sidebarOpen: boolean;
     appVersion: AppVersion;
+    flash: { success?: string | null; error?: string | null };
     [key: string]: unknown;
 }
 
