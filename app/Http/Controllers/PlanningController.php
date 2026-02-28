@@ -13,6 +13,7 @@ use App\Services\PlanningService;
 use App\Services\VoteService;
 use App\Http\Requests\StorePlanningRequest;
 use App\Http\Requests\UpdatePlanningRequest;
+use Illuminate\Http\RedirectResponse;
 
 class PlanningController extends Controller
 {
@@ -63,6 +64,47 @@ class PlanningController extends Controller
         );
 
         return redirect()->route('plannings.index')->with('success', 'Planning erfolgreich erstellt.');
+    }
+
+    /**
+     * One-click session start: creates a Planning pre-populated with all project features
+     * and all tenant stakeholders, then redirects to plannings.edit for review.
+     */
+    public function quickStart(Project $project): RedirectResponse
+    {
+        // Security: verify project belongs to current tenant (belt-and-suspenders;
+        // global TenantScope on Project model also scopes the route model binding)
+        abort_if(
+            $project->tenant_id !== Auth::user()->current_tenant_id,
+            403,
+            'Unauthorized'
+        );
+
+        // Auto-generate title
+        $title = $project->name . ' — ' . now()->format('Y-m-d');
+
+        // Create the planning (status = 'open'; planner reviews before going live)
+        $planning = Planning::create([
+            'project_id' => $project->id,
+            'title'      => $title,
+            'status'     => 'open',
+            'created_by' => Auth::id(),
+        ]);
+
+        // Attach all project features via pivot
+        $featureIds = Feature::where('project_id', $project->id)->pluck('id');
+        $planning->features()->sync($featureIds);
+
+        // Attach all current-tenant users as stakeholders via pivot
+        $userIds = User::whereHas('tenants', function ($q) {
+            $q->where('tenants.id', Auth::user()->current_tenant_id);
+        })->pluck('id');
+        $planning->stakeholders()->sync($userIds);
+
+        // Redirect to edit so planner can review/trim before going live
+        return redirect()
+            ->route('plannings.edit', $planning->id)
+            ->with('success', 'Planungssession "' . $title . '" wurde erstellt. Bitte Teilnehmer und Features prüfen.');
     }
 
     public function show(Planning $planning)

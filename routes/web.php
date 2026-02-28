@@ -95,6 +95,12 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
         ->name('plannings.export-csv');
 });
 
+// Admin/Planner routes — one-click session start and other planner-level actions
+Route::middleware(['auth', 'verified', 'role:Admin|Planner', 'subscribed'])->group(function () {
+    Route::post('projects/{project}/quick-start-planning', [PlanningController::class, 'quickStart'])
+        ->name('projects.quick-start-planning');
+});
+
 // Admin-only routes — SuperAdmin bypasses RequireSubscription before role check runs
 Route::middleware(['auth', 'verified', 'role:Admin', 'subscribed'])->group(function () {
     Route::get('plannings/admin', [PlanningController::class, 'adminPlannings'])->name('plannings.admin');
