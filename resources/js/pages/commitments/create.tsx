@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { useForm } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
+import InputError from '@/components/input-error';
 import React, { useEffect, useState } from 'react';
 
 interface Planning {
@@ -133,7 +134,7 @@ export default function CreateCommitment({
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.planning_id && <p className="mt-1 text-sm text-red-600">{errors.planning_id}</p>}
+                                {errors.planning_id && <InputError message={errors.planning_id} className="mt-1" />}
                             </div>
 
                             {/* Feature */}
@@ -165,7 +166,7 @@ export default function CreateCommitment({
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.feature_id && <p className="mt-1 text-sm text-red-600">{errors.feature_id}</p>}
+                                {errors.feature_id && <InputError message={errors.feature_id} className="mt-1" />}
                             </div>
 
                             {/* Angemeldeter Benutzer wird automatisch im Backend verwendet */}
@@ -185,7 +186,7 @@ export default function CreateCommitment({
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.commitment_type && <p className="mt-1 text-sm text-red-600">{errors.commitment_type}</p>}
+                                {errors.commitment_type && <InputError message={errors.commitment_type} className="mt-1" />}
                             </div>
 
                             {/* Status */}
@@ -208,7 +209,7 @@ export default function CreateCommitment({
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status}</p>}
+                                {errors.status && <InputError message={errors.status} className="mt-1" />}
                             </div>
 
                             {/* Genereller Fehler */}

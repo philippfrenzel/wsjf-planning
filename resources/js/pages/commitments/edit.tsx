@@ -6,6 +6,7 @@ import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
 import { useForm } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
+import InputError from '@/components/input-error';
 import React from 'react';
 
 interface Planning {
@@ -115,7 +116,7 @@ export default function EditCommitment({
                                     {features.find((f) => f.id === Number(data.feature_id))?.name}
                                 </div>
                                 <input type="hidden" name="feature_id" value={data.feature_id} />
-                                {errors.feature_id && <p className="mt-1 text-sm text-red-600">{errors.feature_id}</p>}
+                                {errors.feature_id && <InputError message={errors.feature_id} className="mt-1" />}
                             </div>
 
                             {/* User - Read-Only */}
@@ -125,7 +126,7 @@ export default function EditCommitment({
                                     {users.find((u) => u.id === Number(data.user_id))?.name}
                                 </div>
                                 <input type="hidden" name="user_id" value={data.user_id} />
-                                {errors.user_id && <p className="mt-1 text-sm text-red-600">{errors.user_id}</p>}
+                                {errors.user_id && <InputError message={errors.user_id} className="mt-1" />}
                             </div>
 
                             {/* Commitment-Type */}
@@ -143,7 +144,7 @@ export default function EditCommitment({
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.commitment_type && <p className="mt-1 text-sm text-red-600">{errors.commitment_type}</p>}
+                                {errors.commitment_type && <InputError message={errors.commitment_type} className="mt-1" />}
                             </div>
 
                             {/* Status - Current Status Read-Only und Transitionen als Auswahlliste */}
@@ -182,7 +183,7 @@ export default function EditCommitment({
                                     <p className="text-muted-foreground mt-2 text-sm">Keine weiteren Status-Übergänge möglich.</p>
                                 )}
 
-                                {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status}</p>}
+                                {errors.status && <InputError message={errors.status} className="mt-1" />}
                             </div>
 
                             <div className="flex justify-end gap-2">
