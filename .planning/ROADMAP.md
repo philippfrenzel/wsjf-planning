@@ -194,7 +194,13 @@ Plans:
 3. Navigating to any page produces a subtle CSS fade-in on the page content area (no flash of unstyled content)
 4. Dragging a card on the feature board shows a visual loading state on that card while the status update request is in flight, then reflects the confirmed new state
 
-**Plans:** TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — EmptyState component + page fade-in (POLISH-01 infra, POLISH-03)
+- [ ] 07-02-PLAN.md — Empty states: features/index, plannings/index, projects/index (POLISH-01)
+- [ ] 07-03-PLAN.md — Empty states: tenants/members, votes/index, vote sessions + autosave icon trio (POLISH-01, POLISH-02)
+- [ ] 07-04-PLAN.md — Board drag loading state — loadingFeatureId + FeatureCard overlay (POLISH-04)
 
 ---
 
