@@ -1,3 +1,5 @@
+import { useConfirm } from '@/components/confirm-dialog-provider';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
@@ -58,7 +60,9 @@ export default function TenantsIndex() {
     const [viewingTenantId, setViewingTenantId] = useState<number | null>(currentTenantId);
     const [editingName, setEditingName] = useState<{ [tenantId: number]: string }>({});
 
-    const { data, setData, post, processing, reset } = useForm({ email: '' });
+    const { data, setData, post, processing, reset, errors } = useForm({ email: '' });
+
+    const confirm = useConfirm();
 
     const viewingTenant = tenants.find((t) => t.id === viewingTenantId);
     const viewingOwnedTenant = ownedTenants.find((t) => t.id === viewingTenantId);
@@ -81,10 +85,16 @@ export default function TenantsIndex() {
         });
     };
 
-    const revokeInvitation = (tenantId: number, invitationId: number) => {
+    const revokeInvitation = async (tenantId: number, invitationId: number) => {
+        const ok = await confirm({
+            title: 'Einladung zurückziehen',
+            description: 'Möchtest du diese Einladung wirklich zurückziehen?',
+            confirmLabel: 'Zurückziehen',
+            cancelLabel: 'Abbrechen',
+        });
+        if (!ok) return;
         router.delete(route('tenants.invitations.destroy', { tenant: tenantId, invitation: invitationId }), {
             preserveScroll: true,
-            onBefore: () => confirm('Möchtest du diese Einladung wirklich zurückziehen?'),
         });
     };
 
@@ -92,8 +102,14 @@ export default function TenantsIndex() {
         router.patch(route('tenants.members.update', { tenant: tenantId, user: memberId }), { role }, { preserveScroll: true });
     };
 
-    const removeMember = (tenantId: number, memberId: number) => {
-        if (!confirm('Mitglied wirklich entfernen?')) return;
+    const removeMember = async (tenantId: number, memberId: number) => {
+        const ok = await confirm({
+            title: 'Mitglied entfernen',
+            description: 'Möchten Sie dieses Mitglied wirklich aus dem Team entfernen?',
+            confirmLabel: 'Entfernen',
+            cancelLabel: 'Abbrechen',
+        });
+        if (!ok) return;
         router.delete(route('tenants.members.destroy', { tenant: tenantId, user: memberId }), { preserveScroll: true });
     };
 
@@ -206,7 +222,8 @@ export default function TenantsIndex() {
                                 <Mail className="h-4 w-4 text-slate-400" />
                                 <h2 className="text-sm font-semibold text-slate-900">Mitglied einladen</h2>
                             </div>
-                            <form onSubmit={invite} className="flex gap-2">
+                            <form onSubmit={invite} className="flex flex-col gap-2">
+                                <div className="flex gap-2">
                                 <Input
                                     type="email"
                                     placeholder="E-Mail-Adresse"
@@ -222,6 +239,8 @@ export default function TenantsIndex() {
                                 >
                                     Einladen
                                 </Button>
+                                </div>
+                                <InputError message={errors.email} className="mt-1" />
                             </form>
                             {pendingInvitations.length > 0 ? (
                                 <ul className="mt-4 space-y-1.5">
