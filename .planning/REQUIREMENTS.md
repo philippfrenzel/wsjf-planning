@@ -68,16 +68,16 @@
 
 ### Foundation & Infrastructure
 
-- [ ] **FOUND-01**: User benefits from sonner, alert-dialog, and progress shadcn components installed and available app-wide
-- [ ] **FOUND-02**: User experiences exactly one NProgress loading indicator per navigation (no duplicate spinner)
-- [ ] **FOUND-03**: User sees Laravel flash messages (success/error) surfaced as toast notifications via Inertia shared props
-- [ ] **FOUND-04**: A global Toaster and ConfirmDialogProvider are mounted at app shell level, requiring no per-page setup
+- [x] **FOUND-01**: User benefits from sonner, alert-dialog, and progress shadcn components installed and available app-wide
+- [x] **FOUND-02**: User experiences exactly one NProgress loading indicator per navigation (no duplicate spinner)
+- [x] **FOUND-03**: User sees Laravel flash messages (success/error) surfaced as toast notifications via Inertia shared props
+- [x] **FOUND-04**: A global Toaster and ConfirmDialogProvider are mounted at app shell level, requiring no per-page setup
 
 ### Feedback Completeness
 
-- [ ] **FEED-01**: User is shown a proper confirmation dialog (not window.confirm()) before any destructive action (delete, remove member, cancel)
+- [x] **FEED-01**: User is shown a proper confirmation dialog (not window.confirm()) before any destructive action (delete, remove member, cancel)
 - [ ] **FEED-02**: User sees form submission buttons enter a loading/processing state while the request is in flight
-- [ ] **FEED-03**: User sees inline validation errors displayed consistently via InputError on all form fields
+- [x] **FEED-03**: User sees inline validation errors displayed consistently via InputError on all form fields
 
 ### Empty States & Visual Polish
 
@@ -139,13 +139,13 @@
 | UX-01 | Phase 5 | Pending |
 | UX-03 | Phase 5 | Pending |
 | UX-04 | Phase 5 | Pending |
-| FOUND-01 | Phase 5 | Pending |
-| FOUND-02 | Phase 5 | Pending |
-| FOUND-03 | Phase 5 | Pending |
-| FOUND-04 | Phase 5 | Pending |
-| FEED-01 | Phase 6 | Pending |
+| FOUND-01 | Phase 5 | Complete |
+| FOUND-02 | Phase 5 | Complete |
+| FOUND-03 | Phase 5 | Complete |
+| FOUND-04 | Phase 5 | Complete |
+| FEED-01 | Phase 6 | Complete |
 | FEED-02 | Phase 6 | Pending |
-| FEED-03 | Phase 6 | Pending |
+| FEED-03 | Phase 6 | Complete |
 | POLISH-01 | Phase 7 | Pending |
 | POLISH-02 | Phase 7 | Pending |
 | POLISH-03 | Phase 7 | Pending |

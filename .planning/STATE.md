@@ -9,21 +9,18 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## Current Status
 
-**Phase:** Phase 5 — Foundation & Phase 4 Completion
+**Phase:** Phase 6 — Feedback Completeness
 **Plan:** Plan 01 complete → Plan 02 next
-**Status:** Milestone complete
+**Status:** In Progress
 **Milestone:** v3.0 (Polish & UX)
-**Last activity:** 2026-02-28 — Phase 5 Plan 01: Foundation Infrastructure complete
+**Last activity:** 2026-03-01 — Phase 6 Plan 01: Confirm Dialog Migration complete
 
 ## What Was Just Done
 
-- **Phase 5, Plan 01: Foundation Infrastructure** (2026-02-28) — FOUND-01→04 complete
-  - Installed `sonner` npm + 3 shadcn components (sonner.tsx, alert-dialog.tsx, progress.tsx)
-  - Fixed NProgress duplication in `app.tsx`: removed `progress:` key from `createInertiaApp`
-  - Wired flash→toast pipeline: `HandleInertiaRequests::share()` flash key → `SharedData.flash` type → `useFlashToast` hook
-  - Mounted `<Toaster position="bottom-right" richColors />` and `<ConfirmDialogProvider>` in `app-header-layout.tsx`
-  - Removed ad-hoc `props.success` Dialog modals from `votes/session.tsx` and `votes/card-session.tsx`
-  - Restored custom button variants (success, info, cancel) after shadcn CLI overwrite
+- **Phase 6, Plan 01: Confirm Dialog Migration** (2026-03-01) — FEED-01 (partial), FEED-03 (partial) complete
+  - features/index.tsx: `useConfirm` import + hook; `<form onSubmit>` delete replaced with async `<Button onClick>`
+  - plannings/index.tsx: same pattern for both table-view and card-view delete buttons
+  - tenants/index.tsx: `revokeInvitation` fixed (was broken `onBefore` async pitfall → now proper async onClick); `removeMember` made async; `InputError` added for email field; `errors` added to useForm destructuring
 
 ## Previous Completed Work
 
@@ -69,7 +66,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Phase 5, Plan 02: Deliver Phase 4 UX features — one-click session start (UX-01), vote progress indicator (UX-03), CSV export verification (UX-04).
+Phase 6, Plan 02: Remaining FEED-01 locations — projects/index.tsx (unguarded delete), commitments/index.tsx + show.tsx (Link method="delete" antipattern), DependencyManager.tsx, users/index.tsx (Dialog → useConfirm).
 
 ## Key Decisions (Accumulated)
 
@@ -78,9 +75,8 @@ Phase 5, Plan 02: Deliver Phase 4 UX features — one-click session start (UX-01
 - New tenant owner `role='Admin'` assigned via `whereNull('role')` patch immediately after registration login
 - Cashier billable model is `Tenant` (not `User`) — `Cashier::useCustomerModel(Tenant::class)` in AppServiceProvider
 - CSRF exclusion for `stripe/*` registered in bootstrap/app.php
-- **[05-01]** Toaster placed outside AppShell but inside ConfirmDialogProvider — sibling pattern avoids z-index issues
-- **[05-01]** Lazy closures in HandleInertiaRequests flash share() ensure session read at response time (not middleware boot)
-- **[05-01]** useFlashToast called once at layout level only — prevents duplicate toast firing on page component re-renders
+- **[06-01]** Single `const confirm = useConfirm()` per component serves all handlers — do not call useConfirm() inside individual handlers
+- **[06-01]** `onBefore` in Inertia router calls is synchronous — async `confirm()` Promise is ignored; always use async onClick pattern instead
 
 ## Open Questions / Blockers
 
