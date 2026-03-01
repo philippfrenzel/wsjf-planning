@@ -7,6 +7,7 @@ import '/resources/css/tiptap.css';
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import { ConfirmDialogProvider } from './components/confirm-dialog-provider';
 import { initializeTheme } from './hooks/use-appearance';
 import { initializeLocale } from './hooks/use-locale';
 
@@ -38,7 +39,11 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        root.render(<App {...props} />);
+        root.render(
+            <ConfirmDialogProvider>
+                <App {...props} />
+            </ConfirmDialogProvider>,
+        );
     },
     // progress: removed — handled by router.on('start'/'finish') above
 });
