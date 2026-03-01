@@ -1,3 +1,4 @@
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -5,10 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { router } from '@inertiajs/react';
-import { usePage } from '@inertiajs/react';
-import { Save, X } from 'lucide-react';
-import React, { useState } from 'react';
+import { useForm } from '@inertiajs/react';
+import { LoaderCircle, Save, X } from 'lucide-react';
+import React from 'react';
 
 // Beispiel: users als Prop (Inertia muss die User-Liste mitgeben)
 interface User {
@@ -21,8 +21,6 @@ interface CreateProps {
 }
 
 export default function Create({ users }: CreateProps) {
-    const { errors } = usePage().props as { errors: Record<string, string> };
-
     // Breadcrumbs definieren
     const breadcrumbs = [
         { title: 'Startseite', href: '/' },
@@ -30,7 +28,7 @@ export default function Create({ users }: CreateProps) {
         { title: 'Neues Projekt', href: '#' },
     ];
 
-    const [values, setValues] = useState({
+    const { data, setData, post, processing, errors } = useForm({
         project_number: '',
         name: '',
         description: '',
@@ -42,16 +40,16 @@ export default function Create({ users }: CreateProps) {
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setValues({ ...values, [e.target.name]: e.target.value });
+        setData(e.target.name as keyof typeof data, e.target.value);
     };
 
     const handleSelectChange = (field: string, value: string) => {
-        setValues({ ...values, [field]: value });
+        setData(field as keyof typeof data, value);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.post(route('projects.store'), values);
+        post(route('projects.store'));
     };
 
     return (
@@ -66,36 +64,36 @@ export default function Create({ users }: CreateProps) {
                             <div className="space-y-4">
                                 <div>
                                     <Label htmlFor="project_number">Projektnummer</Label>
-                                    <Input id="project_number" name="project_number" value={values.project_number} onChange={handleChange} required />
-                                    {errors.project_number && <p className="mt-1 text-sm text-red-600">{errors.project_number}</p>}
+                                    <Input id="project_number" name="project_number" value={data.project_number} onChange={handleChange} required />
+                                    <InputError message={errors.project_number} className="mt-1" />
                                 </div>
                                 <div>
                                     <Label htmlFor="name">Name</Label>
-                                    <Input id="name" name="name" value={values.name} onChange={handleChange} required />
-                                    {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+                                    <Input id="name" name="name" value={data.name} onChange={handleChange} required />
+                                    <InputError message={errors.name} className="mt-1" />
                                 </div>
                                 <div>
                                     <Label htmlFor="description">Beschreibung</Label>
-                                    <Textarea id="description" name="description" value={values.description} onChange={handleChange} />
-                                    {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+                                    <Textarea id="description" name="description" value={data.description} onChange={handleChange} />
+                                    <InputError message={errors.description} className="mt-1" />
                                 </div>
                                 <div>
                                     <Label htmlFor="jira_base_uri">JIRA Base URI</Label>
                                     <Input
                                         id="jira_base_uri"
                                         name="jira_base_uri"
-                                        value={values.jira_base_uri}
+                                        value={data.jira_base_uri}
                                         onChange={handleChange}
                                         placeholder="https://your-company.atlassian.net/browse/"
                                     />
-                                    {errors.jira_base_uri && <p className="mt-1 text-sm text-red-600">{errors.jira_base_uri}</p>}
+                                    <InputError message={errors.jira_base_uri} className="mt-1" />
                                 </div>
                             </div>
                             <div className="space-y-4">
                                 <div>
                                     <Label htmlFor="project_leader_id">Projektleiter</Label>
                                     <Select
-                                        value={values.project_leader_id}
+                                        value={data.project_leader_id}
                                         onValueChange={(value) => handleSelectChange('project_leader_id', value)}
                                     >
                                         <SelectTrigger id="project_leader_id">
@@ -109,11 +107,11 @@ export default function Create({ users }: CreateProps) {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.project_leader_id && <p className="mt-1 text-sm text-red-600">{errors.project_leader_id}</p>}
+                                    <InputError message={errors.project_leader_id} className="mt-1" />
                                 </div>
                                 <div>
                                     <Label htmlFor="deputy_leader_id">Stellvertretung Projektleiter</Label>
-                                    <Select value={values.deputy_leader_id} onValueChange={(value) => handleSelectChange('deputy_leader_id', value)}>
+                                    <Select value={data.deputy_leader_id} onValueChange={(value) => handleSelectChange('deputy_leader_id', value)}>
                                         <SelectTrigger id="deputy_leader_id">
                                             <SelectValue placeholder="Stellvertretung wählen" />
                                         </SelectTrigger>
@@ -125,17 +123,17 @@ export default function Create({ users }: CreateProps) {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.deputy_leader_id && <p className="mt-1 text-sm text-red-600">{errors.deputy_leader_id}</p>}
+                                    <InputError message={errors.deputy_leader_id} className="mt-1" />
                                 </div>
                                 <div>
                                     <Label htmlFor="start_date">Startdatum</Label>
-                                    <Input id="start_date" name="start_date" type="date" value={values.start_date} onChange={handleChange} />
-                                    {errors.start_date && <p className="mt-1 text-sm text-red-600">{errors.start_date}</p>}
+                                    <Input id="start_date" name="start_date" type="date" value={data.start_date} onChange={handleChange} />
+                                    <InputError message={errors.start_date} className="mt-1" />
                                 </div>
                                 <div>
                                     <Label htmlFor="end_date">Enddatum</Label>
-                                    <Input id="end_date" name="end_date" type="date" value={values.end_date} onChange={handleChange} />
-                                    {errors.end_date && <p className="mt-1 text-sm text-red-600">{errors.end_date}</p>}
+                                    <Input id="end_date" name="end_date" type="date" value={data.end_date} onChange={handleChange} />
+                                    <InputError message={errors.end_date} className="mt-1" />
                                 </div>
                             </div>
                         </div>
@@ -144,8 +142,8 @@ export default function Create({ users }: CreateProps) {
                                 <X />
                                 Abbrechen
                             </Button>
-                            <Button type="submit" variant="success">
-                                <Save />
+                            <Button type="submit" variant="success" disabled={processing}>
+                                {processing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save />}
                                 Speichern
                             </Button>
                         </div>
