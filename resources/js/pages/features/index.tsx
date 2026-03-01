@@ -680,12 +680,12 @@ export default function Index({ features }: IndexProps) {
                                         {/* Aktionen */}
                                         <TableCell className="flex justify-end gap-2">
                                             <Button asChild size="icon" variant="secondary">
-                                                <Link href={route('features.show', { feature: feature.id })}>
+                                                <Link href={route('features.show', feature.id)}>
                                                     <Eye className="h-4 w-4" />
                                                 </Link>
                                             </Button>
                                             <Button asChild size="icon" variant="cancel">
-                                                <Link href={route('features.edit', { feature: feature.id })}>
+                                                <Link href={route('features.edit', feature.id)}>
                                                     <Pencil className="h-4 w-4" />
                                                 </Link>
                                             </Button>
@@ -700,7 +700,7 @@ export default function Index({ features }: IndexProps) {
                                                         cancelLabel: 'Abbrechen',
                                                     });
                                                     if (!ok) return;
-                                                    router.delete(route('features.destroy', { feature: feature.id }));
+                                                    router.delete(route('features.destroy', feature.id));
                                                 }}
                                             >
                                                 <Trash2 className="h-4 w-4" />

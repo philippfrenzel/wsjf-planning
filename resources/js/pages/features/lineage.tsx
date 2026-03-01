@@ -18,7 +18,7 @@ interface LineageProps {
 // Custom node component for features
 function FeatureNode({ data }: { data: { label: string; jiraKey: string; featureId: number } }) {
     const handleClick = () => {
-        router.visit(route('features.show', { feature: data.featureId }));
+        router.visit(route('features.show', data.featureId));
     };
 
     return (

@@ -58,7 +58,7 @@ export default function DependencyList({ dependencies, dependents }: DependencyL
                                 <div className="flex items-center gap-2">
                                     <Badge className={typeBadgeClass(dep.type)}>{translateDepType(dep.type)}</Badge>
                                     {dep.related ? (
-                                        <Link href={route('features.show', { feature: dep.related.id })} className="text-blue-600 hover:underline">
+                                        <Link href={route('features.show', dep.related.id)} className="text-blue-600 hover:underline">
                                             {dep.related.jira_key} – {dep.related.name}
                                         </Link>
                                     ) : (
@@ -80,7 +80,7 @@ export default function DependencyList({ dependencies, dependents }: DependencyL
                                 <li key={`dep-${dep.id}`} className="flex items-center gap-2">
                                     <Badge variant="outline">{translateDepType(dep.type)}</Badge>
                                     {dep.feature ? (
-                                        <Link href={route('features.show', { feature: dep.feature.id })} className="text-blue-600 hover:underline">
+                                        <Link href={route('features.show', dep.feature.id)} className="text-blue-600 hover:underline">
                                             {dep.feature.jira_key} – {dep.feature.name}
                                         </Link>
                                     ) : (
