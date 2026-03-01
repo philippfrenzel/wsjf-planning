@@ -8,6 +8,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { router } from '@inertiajs/react';
+import { LoaderCircle } from 'lucide-react';
 
 const FIBONACCI_VALUES = [1, 2, 3, 5, 8, 13, 20] as const;
 
@@ -256,7 +257,10 @@ export default function VoteSession({ planning, features, types, existingVotes, 
                                     <Button variant="outline" onClick={handleSwitchToCards}>
                                         Zur Karten-Ansicht wechseln
                                     </Button>
-                                    <Button type="submit">Abstimmung speichern</Button>
+                                    <Button type="submit" disabled={isSaving}>
+                                        {isSaving && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                                        Abstimmung speichern
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -323,7 +327,10 @@ export default function VoteSession({ planning, features, types, existingVotes, 
                             <div className="mt-6 flex justify-end">
                                 <div className="flex items-center gap-3">
                                     <span className="text-muted-foreground text-xs">{isSaving ? 'Speichern...' : saveError || 'Autosave aktiv'}</span>
-                                    <Button type="submit">Abstimmung speichern</Button>
+                                    <Button type="submit" disabled={isSaving}>
+                                        {isSaving && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                                        Abstimmung speichern
+                                    </Button>
                                 </div>
                             </div>
                         </form>

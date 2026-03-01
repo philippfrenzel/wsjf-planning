@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { router } from '@inertiajs/react';
-import { ArrowDownCircle, CheckCircle2, HelpCircle, MoveHorizontal } from 'lucide-react';
+import { ArrowDownCircle, CheckCircle2, HelpCircle, LoaderCircle, MoveHorizontal } from 'lucide-react';
 
 // Typdefinitionen
 const FIBONACCI_VALUES = [1, 2, 3, 5, 8, 13, 20] as const;
@@ -860,8 +860,8 @@ export default function CardVoteSession({ planning, features, types, existingVot
                                     <MoveHorizontal className="mr-2 h-4 w-4" />
                                     Zur Tabellen-Ansicht
                                 </Button>
-                                <Button onClick={handleSubmit}>
-                                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                                <Button onClick={handleSubmit} disabled={isSaving}>
+                                    {isSaving ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                                     Abstimmung speichern
                                 </Button>
                             </div>
