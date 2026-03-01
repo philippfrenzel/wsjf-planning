@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import InputError from '@/components/input-error';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React from 'react';
@@ -150,7 +151,7 @@ const CommitmentModal: React.FC<CommitmentModalProps> = ({
                                 ))}
                             </SelectContent>
                         </Select>
-                        {errors.commitment_type && <p className="mt-1 text-sm text-red-600">{errors.commitment_type}</p>}
+                        {errors.commitment_type && <InputError message={errors.commitment_type} className="mt-1" />}
                     </div>
 
                     {isEditing && (
@@ -179,7 +180,7 @@ const CommitmentModal: React.FC<CommitmentModalProps> = ({
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status}</p>}
+                            {errors.status && <InputError message={errors.status} className="mt-1" />}
                         </div>
                     )}
 

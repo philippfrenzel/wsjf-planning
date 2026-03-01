@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { useForm } from '@inertiajs/react';
-import { Save, X } from 'lucide-react';
+import { LoaderCircle, Save, X } from 'lucide-react';
 import InputError from '@/components/input-error';
 import React, { useEffect, useState } from 'react';
 
@@ -225,7 +225,7 @@ export default function CreateCommitment({
                                     Abbrechen
                                 </Button>
                                 <Button type="submit" variant="success" disabled={processing}>
-                                    <Save />
+                                    {processing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save />}
                                     {processing ? 'Wird gespeichert...' : 'Commitment erstellen'}
                                 </Button>
                             </div>

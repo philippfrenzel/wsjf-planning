@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { Link, useForm } from '@inertiajs/react';
-import { Save, X } from 'lucide-react';
+import { LoaderCircle, Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 
 interface PageProps {
@@ -258,7 +258,7 @@ export default function Import({ project }: PageProps) {
                                     </Link>
                                 </Button>
                                 <Button type="submit" variant="success" disabled={processing || !data.file}>
-                                    <Save />
+                                    {processing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save />}
                                     Import starten
                                 </Button>
                             </div>

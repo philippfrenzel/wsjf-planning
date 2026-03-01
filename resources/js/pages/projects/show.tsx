@@ -1,3 +1,4 @@
+import { LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -53,6 +54,7 @@ export default function ProjectShow() {
                                     disabled={quickStartForm.processing}
                                     variant="default"
                                 >
+                                    {quickStartForm.processing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
                                     {quickStartForm.processing ? 'Erstelle…' : 'Planungssession starten'}
                                 </Button>
                             </form>

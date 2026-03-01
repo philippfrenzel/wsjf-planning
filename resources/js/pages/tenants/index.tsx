@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { type SharedData } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
-import { Check, Mail, Settings, UserMinus, Users, X } from 'lucide-react';
+import { Check, LoaderCircle, Mail, Settings, UserMinus, Users, X } from 'lucide-react';
 import { useState } from 'react';
 
 type Member = { id: number; name: string; email: string; pivot?: { role?: string | null } };
@@ -237,6 +237,7 @@ export default function TenantsIndex() {
                                     disabled={processing}
                                     className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
                                 >
+                                    {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                                     Einladen
                                 </Button>
                                 </div>
