@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Save, X } from 'lucide-react';
+import { LoaderCircle, Save, X } from 'lucide-react';
 import { FormEvent } from 'react';
 
 interface EstimationData {
@@ -26,6 +26,7 @@ interface EstimationDialogProps {
     onUnitChange: (value: string) => void;
     onNotesChange: (value: string) => void;
     onSubmit: (e: FormEvent) => void;
+    processing?: boolean;
 }
 
 export default function EstimationDialog({
@@ -39,6 +40,7 @@ export default function EstimationDialog({
     onUnitChange,
     onNotesChange,
     onSubmit,
+    processing,
 }: EstimationDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -121,7 +123,8 @@ export default function EstimationDialog({
                             <X />
                             Abbrechen
                         </Button>
-                        <Button type="submit" variant="success">
+                        <Button type="submit" variant="success" disabled={processing}>
+                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             <Save />
                             {isEditing ? 'Schätzung aktualisieren' : 'Schätzung speichern'}
                         </Button>

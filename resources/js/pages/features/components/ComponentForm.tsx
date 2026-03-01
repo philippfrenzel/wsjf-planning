@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Save } from 'lucide-react';
+import { LoaderCircle, Save } from 'lucide-react';
 import { FormEvent } from 'react';
 
 interface ComponentFormProps {
@@ -14,9 +14,10 @@ interface ComponentFormProps {
     onNameChange: (name: string) => void;
     onDescriptionChange: (description: string) => void;
     onSubmit: (e: FormEvent) => void;
+    processing?: boolean;
 }
 
-export default function ComponentForm({ componentData, onNameChange, onDescriptionChange, onSubmit }: ComponentFormProps) {
+export default function ComponentForm({ componentData, onNameChange, onDescriptionChange, onSubmit, processing }: ComponentFormProps) {
     return (
         <Card className="mb-6">
             <CardHeader>
@@ -33,7 +34,8 @@ export default function ComponentForm({ componentData, onNameChange, onDescripti
                         <Textarea id="description" value={componentData.description} onChange={(e) => onDescriptionChange(e.target.value)} rows={3} />
                     </div>
                     <div className="flex justify-end">
-                        <Button type="submit" variant="success">
+                        <Button type="submit" variant="success" disabled={processing}>
+                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             <Save />
                             Komponente erstellen
                         </Button>
