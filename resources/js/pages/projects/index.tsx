@@ -3,12 +3,13 @@ import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
 import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Eye, FolderOpen, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, FolderOpen, LayoutGrid, LayoutList, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 interface Project {
@@ -76,6 +77,7 @@ export default function Index({ projects, currentUserId }: IndexProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const userId = (usePage().props as any)?.auth?.user?.id ?? 'guest';
     const [itemsPerPage, setItemsPerPage] = useLocalStorage<number>(`tablePrefs:${userId}:projects.index:itemsPerPage`, 10);
+    const [viewMode, setViewMode] = useLocalStorage<'table' | 'card'>(`viewPrefs:${userId}:projects.index:viewMode`, 'table');
     const [paginatedProjects, setPaginatedProjects] = useState<Project[]>([]);
     const hasActiveFilters = Boolean(filters.projectNumber.trim() || filters.name.trim() || filters.leader.trim());
     const usesServerPagination = Boolean(!hasActiveFilters && pagination?.last_page && pagination.last_page > 1);
@@ -150,12 +152,22 @@ export default function Index({ projects, currentUserId }: IndexProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="mb-6 flex items-center justify-between p-5">
                 <h1 className="text-2xl font-bold">Projekte</h1>
-                <Button asChild>
-                    <Link href={route('projects.create')}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Neues Projekt erstellen
-                    </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                    <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'table' | 'card')}>
+                        <ToggleGroupItem value="table" aria-label="Tabellenansicht">
+                            <LayoutList className="h-4 w-4" />
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="card" aria-label="Kartenansicht">
+                            <LayoutGrid className="h-4 w-4" />
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                    <Button asChild>
+                        <Link href={route('projects.create')}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Neues Projekt erstellen
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             {/* Filter-Box */}
@@ -231,19 +243,116 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                     </div>
                 </div>
 
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Projektnummer</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Projektleiter</TableHead>
-                            <TableHead>Stellvertretung</TableHead>
-                            <TableHead className="text-right">Aktionen</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                {viewMode === 'table' ? (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>ID</TableHead>
+                                <TableHead>Projektnummer</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Projektleiter</TableHead>
+                                <TableHead>Stellvertretung</TableHead>
+                                <TableHead className="text-right">Aktionen</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {paginatedProjects.map((project) => {
+                                const canEdit =
+                                    project.created_by === currentUserId ||
+                                    project.project_leader?.id === currentUserId ||
+                                    project.deputy_leader?.id === currentUserId;
+
+                                return (
+                                    <TableRow key={project.id}>
+                                        <TableCell>{project.id}</TableCell>
+                                        <TableCell>{project.project_number}</TableCell>
+                                        <TableCell>{project.name}</TableCell>
+                                        <TableCell>
+                                            <WorkflowStateBadge statusDetails={project.status_details} defaultLabel="In Planung" />
+                                        </TableCell>
+                                        <TableCell>{project.project_leader ? project.project_leader.name : '-'}</TableCell>
+                                        <TableCell>{project.deputy_leader ? project.deputy_leader.name : '-'}</TableCell>
+                                        <TableCell className="flex justify-end gap-2">
+                                            <Button asChild size="icon" variant="outline">
+                                                <Link href={route('projects.show', project.id)}>
+                                                    <Eye className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                            <Button asChild size="icon" variant="outline">
+                                                <Link href={route('plannings.index', { project_id: project.id })}>
+                                                    <Vote className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                            {canEdit && (
+                                                <>
+                                                    <Button asChild size="icon" variant="outline">
+                                                        <Link href={route('projects.edit', project.id)}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                    <Button size="icon" variant="destructive" onClick={() => handleDeleteProject(project.id)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+
+                            {filteredProjects.length === 0 &&
+                                (hasActiveFilters ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="py-0">
+                                            <div className="flex flex-col items-center gap-2 py-8 text-center">
+                                                <Search className="h-8 w-8 text-slate-400" />
+                                                <p className="text-sm text-slate-500">Keine Projekte gefunden</p>
+                                                <button className="text-sm text-indigo-600 underline hover:text-indigo-800" onClick={resetFilters}>
+                                                    Filter zurücksetzen
+                                                </button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="py-0">
+                                            <EmptyState
+                                                icon={FolderOpen}
+                                                title="Noch keine Projekte"
+                                                description="Erstellen Sie Ihr erstes Projekt, um Features und Plannings zu verwalten."
+                                                action={{
+                                                    label: 'Neues Projekt erstellen',
+                                                    href: route('projects.create'),
+                                                }}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                        </TableBody>
+                    </Table>
+                ) : filteredProjects.length === 0 ? (
+                    hasActiveFilters ? (
+                        <div className="flex flex-col items-center gap-2 py-8 text-center">
+                            <Search className="h-8 w-8 text-slate-400" />
+                            <p className="text-sm text-slate-500">Keine Projekte gefunden</p>
+                            <button className="text-sm text-indigo-600 underline hover:text-indigo-800" onClick={resetFilters}>
+                                Filter zurücksetzen
+                            </button>
+                        </div>
+                    ) : (
+                        <EmptyState
+                            icon={FolderOpen}
+                            title="Noch keine Projekte"
+                            description="Erstellen Sie Ihr erstes Projekt, um Features und Plannings zu verwalten."
+                            action={{
+                                label: 'Neues Projekt erstellen',
+                                href: route('projects.create'),
+                            }}
+                        />
+                    )
+                ) : (
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {paginatedProjects.map((project) => {
                             const canEdit =
                                 project.created_by === currentUserId ||
@@ -251,78 +360,55 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                                 project.deputy_leader?.id === currentUserId;
 
                             return (
-                                <TableRow key={project.id}>
-                                    <TableCell>{project.id}</TableCell>
-                                    <TableCell>{project.project_number}</TableCell>
-                                    <TableCell>{project.name}</TableCell>
-                                    <TableCell>
-                                        <WorkflowStateBadge statusDetails={project.status_details} defaultLabel="In Planung" />
-                                    </TableCell>
-                                    <TableCell>{project.project_leader ? project.project_leader.name : '-'}</TableCell>
-                                    <TableCell>{project.deputy_leader ? project.deputy_leader.name : '-'}</TableCell>
-                                    <TableCell className="flex justify-end gap-2">
-                                        <Button asChild size="icon" variant="outline">
-                                            <Link href={route('projects.show', project.id)}>
-                                                <Eye className="h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                        <Button asChild size="icon" variant="outline">
-                                            <Link href={route('plannings.index', { project_id: project.id })}>
-                                                <Vote className="h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                        {canEdit && (
-                                            <>
-                                                <Button asChild size="icon" variant="outline">
-                                                    <Link href={route('projects.edit', project.id)}>
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                                <Button size="icon" variant="destructive" onClick={() => handleDeleteProject(project.id)}>
+                                <Card key={project.id}>
+                                    <CardHeader className="space-y-2">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <CardTitle className="text-base">{project.name}</CardTitle>
+                                            <WorkflowStateBadge statusDetails={project.status_details} defaultLabel="In Planung" />
+                                        </div>
+                                        <p className="text-muted-foreground text-xs">#{project.project_number}</p>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        <div className="text-sm">
+                                            <p>
+                                                <span className="text-muted-foreground">Projektleiter: </span>
+                                                {project.project_leader?.name ?? '-'}
+                                            </p>
+                                            <p>
+                                                <span className="text-muted-foreground">Stellvertretung: </span>
+                                                {project.deputy_leader?.name ?? '-'}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Button asChild size="icon" variant="outline">
+                                                <Link href={route('projects.show', project.id)}>
+                                                    <Eye className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                            <Button asChild size="icon" variant="outline">
+                                                <Link href={route('plannings.index', { project_id: project.id })}>
+                                                    <Vote className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                            {canEdit && (
+                                                <>
+                                                    <Button asChild size="icon" variant="outline">
+                                                        <Link href={route('projects.edit', project.id)}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                    <Button size="icon" variant="destructive" onClick={() => handleDeleteProject(project.id)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
-                                            </>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
+                                                </>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             );
                         })}
-
-                        {/* Anzeigen, wenn keine Ergebnisse gefunden wurden */}
-                        {filteredProjects.length === 0 && (
-                            hasActiveFilters ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="py-0">
-                                        <div className="flex flex-col items-center gap-2 py-8 text-center">
-                                            <Search className="h-8 w-8 text-slate-400" />
-                                            <p className="text-sm text-slate-500">Keine Projekte gefunden</p>
-                                            <button
-                                                className="text-sm text-indigo-600 underline hover:text-indigo-800"
-                                                onClick={resetFilters}
-                                            >
-                                                Filter zurücksetzen
-                                            </button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="py-0">
-                                        <EmptyState
-                                            icon={FolderOpen}
-                                            title="Noch keine Projekte"
-                                            description="Erstellen Sie Ihr erstes Projekt, um Features und Plannings zu verwalten."
-                                            action={{
-                                                label: 'Neues Projekt erstellen',
-                                                href: route('projects.create'),
-                                            }}
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        )}
-                    </TableBody>
-                </Table>
+                    </div>
+                )}
 
                 {/* Verbesserte Paginierungs-Navigation */}
                 {filteredProjects.length > 0 && (
