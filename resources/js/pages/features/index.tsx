@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { EmptyState } from '@/components/empty-state';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -13,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useConfirm } from '@/components/confirm-dialog-provider';
 import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
-import { ArrowDown, ArrowUp, Check, Eye, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Check, Eye, LayoutList, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 interface Feature {
@@ -76,6 +77,11 @@ export default function Index({ features }: IndexProps) {
         requester: '',
         statuses: initialFiltersProp.status ? [initialFiltersProp.status] : ([] as string[]),
     });
+    const hasActiveFilters = Object.entries(filters).some(([key, value]) =>
+        key === 'statuses' ? (value as string[]).length > 0 : value !== '',
+    );
+    const auth = (pageProps?.auth ?? {}) as { currentRole?: string };
+    const canCreate = auth?.currentRole === 'Admin' || auth?.currentRole === 'Planner';
 
     // Zustände für Popover
     const [projectPopoverOpen, setProjectPopoverOpen] = useState(false);
@@ -578,22 +584,40 @@ export default function Index({ features }: IndexProps) {
                         </TableHeader>
                         <TableBody>
                             {paginatedFeatures.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="py-8 text-center">
-                                        {/* Erhöhe colSpan auf 6, da wir eine Spalte hinzugefügt haben */}
-                                        <div className="flex flex-col items-center justify-center">
-                                            <Search className="text-muted-foreground mb-2 h-8 w-8" />
-                                            <p className="text-muted-foreground">Keine Features gefunden</p>
-                                            {Object.entries(filters).some(([key, value]) =>
-                                                key === 'statuses' ? (value as string[]).length > 0 : value !== '',
-                                            ) && (
-                                                <Button variant="link" onClick={resetFilters} className="mt-2">
+                                hasActiveFilters ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="py-0">
+                                            <div className="flex flex-col items-center gap-2 py-8 text-center">
+                                                <Search className="h-8 w-8 text-slate-400" />
+                                                <p className="text-sm text-slate-500">Keine Features gefunden</p>
+                                                <button
+                                                    className="text-sm text-indigo-600 underline hover:text-indigo-800"
+                                                    onClick={resetFilters}
+                                                >
                                                     Filter zurücksetzen
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
+                                                </button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="py-0">
+                                            <EmptyState
+                                                icon={LayoutList}
+                                                title="Noch keine Features"
+                                                description="Beginnen Sie mit dem Erstellen des ersten Features für dieses Projekt."
+                                                action={
+                                                    canCreate
+                                                        ? {
+                                                              label: 'Feature erstellen',
+                                                              href: route('features.create'),
+                                                          }
+                                                        : undefined
+                                                }
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                )
                             ) : (
                                 paginatedFeatures.map((feature) => (
                                     <TableRow key={feature.id}>
