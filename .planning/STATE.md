@@ -10,12 +10,21 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 ## Current Status
 
 **Phase:** Phase 6 — Feedback Completeness
-**Plan:** Plan 01 complete → Plan 02 next
+**Plan:** Plan 02 complete → Plan 03 next
 **Status:** In Progress
 **Milestone:** v3.0 (Polish & UX)
-**Last activity:** 2026-03-01 — Phase 6 Plan 01: Confirm Dialog Migration complete
+**Last activity:** 2026-03-01 — Phase 6 Plan 02: Confirmation Guards (unguarded actions) complete
 
 ## What Was Just Done
+
+- **Phase 6, Plan 02: Confirmation Guards (unguarded actions)** (2026-03-01) — FEED-01 complete
+  - projects/index.tsx: form-submit delete removed; `useConfirm` async `handleDeleteProject` added
+  - commitments/index.tsx: `<Link method="delete">` antipattern removed; `useConfirm` async handler added
+  - commitments/show.tsx: same `<Link method="delete">` fix
+  - DependencyManager.tsx: bare `router.delete` wrapped in async `handleRemoveDependency` with `useConfirm`
+  - users/index.tsx: Dialog + `isDeleteDialogOpen`/`userToDelete` state + `useForm().delete` replaced with single `useConfirm` async handler
+
+## Previous Completed Work
 
 - **Phase 6, Plan 01: Confirm Dialog Migration** (2026-03-01) — FEED-01 (partial), FEED-03 (partial) complete
   - features/index.tsx: `useConfirm` import + hook; `<form onSubmit>` delete replaced with async `<Button onClick>`
@@ -77,6 +86,8 @@ Phase 6, Plan 02: Remaining FEED-01 locations — projects/index.tsx (unguarded 
 - CSRF exclusion for `stripe/*` registered in bootstrap/app.php
 - **[06-01]** Single `const confirm = useConfirm()` per component serves all handlers — do not call useConfirm() inside individual handlers
 - **[06-01]** `onBefore` in Inertia router calls is synchronous — async `confirm()` Promise is ignored; always use async onClick pattern instead
+- **[06-02]** `<Link method="delete">` is incompatible with async dialogs — replaced with `<Button onClick={asyncHandler}>` + `router.delete()`
+- **[06-02]** Custom Dialog + local state boilerplate for destructive confirmation replaced by single `useConfirm()` call
 
 ## Open Questions / Blockers
 
@@ -91,4 +102,4 @@ Phase 6, Plan 02: Remaining FEED-01 locations — projects/index.tsx (unguarded 
 _Add notes here during active work sessions._
 
 ---
-*Last updated: 2026-02-28 after Phase 5 Plan 01: Foundation Infrastructure complete (FOUND-01→04)*
+*Last updated: 2026-03-01 after Phase 6 Plan 02: Confirmation Guards (unguarded actions) complete (FEED-01)*
