@@ -76,7 +76,7 @@
 ### Feedback Completeness
 
 - [x] **FEED-01**: User is shown a proper confirmation dialog (not window.confirm()) before any destructive action (delete, remove member, cancel)
-- [ ] **FEED-02**: User sees form submission buttons enter a loading/processing state while the request is in flight
+- [x] **FEED-02**: User sees form submission buttons enter a loading/processing state while the request is in flight
 - [x] **FEED-03**: User sees inline validation errors displayed consistently via InputError on all form fields
 
 ### Empty States & Visual Polish
@@ -144,7 +144,7 @@
 | FOUND-03 | Phase 5 | Complete |
 | FOUND-04 | Phase 5 | Complete |
 | FEED-01 | Phase 6 | Complete |
-| FEED-02 | Phase 6 | Pending |
+| FEED-02 | Phase 6 | Complete |
 | FEED-03 | Phase 6 | Complete |
 | POLISH-01 | Phase 7 | Pending |
 | POLISH-02 | Phase 7 | Pending |

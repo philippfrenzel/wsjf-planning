@@ -11,7 +11,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 **Phase:** Phase 6 — Feedback Completeness
 **Plan:** Plan 06 complete → Phase 6 complete
-**Status:** In Progress
+**Status:** Milestone complete
 **Milestone:** v3.0 (Polish & UX)
 **Last activity:** 2026-03-01 — Phase 6 Plan 06: Vote session isSaving binding + commitment InputError + plans/create useForm complete
 
