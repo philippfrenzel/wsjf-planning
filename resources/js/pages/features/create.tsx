@@ -1,13 +1,13 @@
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { router } from '@inertiajs/react';
-import { usePage } from '@inertiajs/react';
-import { Save, X } from 'lucide-react';
-import React, { useState } from 'react';
+import { useForm } from '@inertiajs/react';
+import { LoaderCircle, Save, X } from 'lucide-react';
+import React from 'react';
 // TipTap Imports statt ReactQuill
 import TextAlign from '@tiptap/extension-text-align';
 import { EditorContent, useEditor } from '@tiptap/react';
@@ -27,8 +27,7 @@ interface CreateProps {
 }
 
 export default function Create({ projects, users }: CreateProps) {
-    const { errors } = usePage().props as { errors: Record<string, string> };
-    const [values, setValues] = useState({
+    const { data, setData, post, processing, errors } = useForm({
         jira_key: '',
         name: '',
         description: '',
@@ -44,9 +43,9 @@ export default function Create({ projects, users }: CreateProps) {
                 types: ['heading', 'paragraph'],
             }),
         ],
-        content: values.description,
+        content: data.description,
         onUpdate: ({ editor }) => {
-            setValues((prev) => ({ ...prev, description: editor.getHTML() }));
+            setData('description', editor.getHTML());
         },
     });
 
@@ -174,16 +173,16 @@ export default function Create({ projects, users }: CreateProps) {
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setValues({ ...values, [e.target.name]: e.target.value });
+        setData(e.target.name as keyof typeof data, e.target.value);
     };
 
     const handleSelectChange = (field: string, value: string) => {
-        setValues({ ...values, [field]: value });
+        setData(field as keyof typeof data, value);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.post(route('features.store'), values);
+        post(route('features.store'));
     };
 
     return (
@@ -197,13 +196,13 @@ export default function Create({ projects, users }: CreateProps) {
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
                                 <Label htmlFor="jira_key">Jira Key</Label>
-                                <Input id="jira_key" name="jira_key" value={values.jira_key} onChange={handleChange} className="w-full" required />
-                                {errors.jira_key && <p className="mt-1 text-sm text-red-600">{errors.jira_key}</p>}
+                                <Input id="jira_key" name="jira_key" value={data.jira_key} onChange={handleChange} className="w-full" required />
+                                <InputError message={errors.jira_key} className="mt-1" />
                             </div>
                             <div>
                                 <Label htmlFor="name">Name</Label>
-                                <Input id="name" name="name" value={values.name} onChange={handleChange} className="w-full" required />
-                                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+                                <Input id="name" name="name" value={data.name} onChange={handleChange} className="w-full" required />
+                                <InputError message={errors.name} className="mt-1" />
                             </div>
                         </div>
 
@@ -213,13 +212,13 @@ export default function Create({ projects, users }: CreateProps) {
                                 {addToolbar()}
                                 <EditorContent editor={editor} className="min-h-[120px] bg-white" />
                             </div>
-                            {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+                            <InputError message={errors.description} className="mt-1" />
                         </div>
 
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
                                 <Label htmlFor="project_id">Projekt</Label>
-                                <Select value={values.project_id} onValueChange={(value) => handleSelectChange('project_id', value)}>
+                                <Select value={data.project_id} onValueChange={(value) => handleSelectChange('project_id', value)}>
                                     <SelectTrigger id="project_id" className="w-full">
                                         <SelectValue placeholder="Projekt wählen" />
                                     </SelectTrigger>
@@ -231,12 +230,12 @@ export default function Create({ projects, users }: CreateProps) {
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.project_id && <p className="mt-1 text-sm text-red-600">{errors.project_id}</p>}
+                                <InputError message={errors.project_id} className="mt-1" />
                             </div>
                             <div>
                                 <Label htmlFor="requester_id">Anforderer (optional)</Label>
                                 <Select
-                                    value={values.requester_id || 'none'}
+                                    value={data.requester_id || 'none'}
                                     onValueChange={(value) => handleSelectChange('requester_id', value === 'none' ? '' : value)}
                                 >
                                     <SelectTrigger id="requester_id" className="w-full">
@@ -251,7 +250,7 @@ export default function Create({ projects, users }: CreateProps) {
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.requester_id && <p className="mt-1 text-sm text-red-600">{errors.requester_id}</p>}
+                                <InputError message={errors.requester_id} className="mt-1" />
                             </div>
                         </div>
 
@@ -260,7 +259,8 @@ export default function Create({ projects, users }: CreateProps) {
                                 <X />
                                 Abbrechen
                             </Button>
-                            <Button type="submit" variant="success">
+                            <Button type="submit" variant="success" disabled={processing}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                                 <Save />
                                 Feature speichern
                             </Button>
