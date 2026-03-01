@@ -7,10 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { WorkflowStateBadge } from '@/components/workflow-state-badge';
+import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
-import { router } from '@inertiajs/react';
-import { usePage } from '@inertiajs/react';
-import { Save, X } from 'lucide-react';
+import { useForm } from '@inertiajs/react';
+import { LoaderCircle, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 interface Project {
@@ -80,15 +80,14 @@ export default function Edit({
     users,
     features = [], // Standardwert als leeres Array
 }: EditProps) {
-    const { errors } = usePage().props as { errors: Record<string, string> };
-    const [values, setValues] = useState({
+    const { data, setData, put, processing, errors, transform } = useForm({
         project_id: planning.project_id ? String(planning.project_id) : '',
         title: planning.title || '',
         description: planning.description || '',
         planned_at: formatDateForInput(planning.planned_at),
         executed_at: formatDateForInput(planning.executed_at),
-        owner_id: planning.owner_id ? String(planning.owner_id) : '', // Neu: Owner-ID
-        deputy_id: planning.deputy_id ? String(planning.deputy_id) : '', // Neu: Deputy-ID
+        owner_id: planning.owner_id ? String(planning.owner_id) : '',
+        deputy_id: planning.deputy_id ? String(planning.deputy_id) : '',
         status: planning.status_details?.value ?? 'in-planning',
         stakeholder_ids: planning.stakeholders ? planning.stakeholders.map((u) => String(u.id)) : [],
         feature_ids: planning.features
@@ -125,34 +124,34 @@ export default function Edit({
     );
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setValues({ ...values, [e.target.name]: e.target.value });
+        setData(e.target.name as 'title' | 'description' | 'planned_at' | 'executed_at', e.target.value);
     };
 
-    const handleSelectChange = (field: string, value: string) => {
-        setValues({ ...values, [field]: value });
+    const handleSelectChange = (field: 'project_id' | 'owner_id' | 'deputy_id' | 'status', value: string) => {
+        setData(field, value);
     };
 
     const handleStakeholderChange = (id: string) => {
-        setValues((prev) => ({
-            ...prev,
-            stakeholder_ids: prev.stakeholder_ids.includes(id) ? prev.stakeholder_ids.filter((sid) => sid !== id) : [...prev.stakeholder_ids, id],
-        }));
+        const newIds = data.stakeholder_ids.includes(id)
+            ? data.stakeholder_ids.filter((sid) => sid !== id)
+            : [...data.stakeholder_ids, id];
+        setData('stakeholder_ids', newIds);
     };
 
     const handleFeatureChange = (id: string) => {
-        setValues((prev) => ({
-            ...prev,
-            feature_ids: prev.feature_ids.includes(id) ? prev.feature_ids.filter((fid) => fid !== id) : [...prev.feature_ids, id],
-        }));
+        const newIds = data.feature_ids.includes(id)
+            ? data.feature_ids.filter((fid) => fid !== id)
+            : [...data.feature_ids, id];
+        setData('feature_ids', newIds);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.put(route('plannings.update', planning.id), {
-            ...values,
-            // Konvertiere "none" zu null für das Backend
-            deputy_id: values.deputy_id === 'none' ? null : values.deputy_id,
-        });
+        transform((d) => ({
+            ...d,
+            deputy_id: d.deputy_id === 'none' ? null : d.deputy_id,
+        }));
+        put(route('plannings.update', planning.id));
     };
 
     return (
@@ -169,8 +168,8 @@ export default function Edit({
                                 <X />
                                 Abbrechen
                             </Button>
-                            <Button type="submit" variant="success">
-                                <Save />
+                            <Button type="submit" variant="success" disabled={processing}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                                 Speichern
                             </Button>
                         </div>
@@ -185,7 +184,7 @@ export default function Edit({
                             <TabsContent value="stammdaten" className="space-y-4">
                                 <div>
                                     <Label htmlFor="status">Status</Label>
-                                    <Select value={values.status} onValueChange={(value) => handleSelectChange('status', value)}>
+                                    <Select value={data.status} onValueChange={(value) => handleSelectChange('status', value)}>
                                         <SelectTrigger id="status">
                                             <SelectValue placeholder="Status wählen" />
                                         </SelectTrigger>
@@ -197,12 +196,12 @@ export default function Edit({
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status}</p>}
+                                    {errors.status && <InputError message={errors.status} className="mt-1" />}
                                 </div>
 
                                 <div>
                                     <Label htmlFor="project_id">Projekt</Label>
-                                    <Select value={values.project_id} onValueChange={(value) => handleSelectChange('project_id', value)}>
+                                    <Select value={data.project_id} onValueChange={(value) => handleSelectChange('project_id', value)}>
                                         <SelectTrigger id="project_id">
                                             <SelectValue placeholder="Projekt wählen" />
                                         </SelectTrigger>
@@ -214,24 +213,24 @@ export default function Edit({
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.project_id && <p className="mt-1 text-sm text-red-600">{errors.project_id}</p>}
+                                    {errors.project_id && <InputError message={errors.project_id} className="mt-1" />}
                                 </div>
 
                                 <div>
                                     <Label htmlFor="title">Titel</Label>
-                                    <Input id="title" name="title" value={values.title} onChange={handleChange} required />
-                                    {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
+                                    <Input id="title" name="title" value={data.title} onChange={handleChange} required />
+                                    {errors.title && <InputError message={errors.title} className="mt-1" />}
                                 </div>
 
                                 <div>
                                     <Label htmlFor="description">Beschreibung</Label>
-                                    <Textarea id="description" name="description" value={values.description} onChange={handleChange} />
-                                    {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+                                    <Textarea id="description" name="description" value={data.description} onChange={handleChange} />
+                                    {errors.description && <InputError message={errors.description} className="mt-1" />}
                                 </div>
 
                                 <div>
                                     <Label htmlFor="owner_id">Hauptverantwortlicher</Label>
-                                    <Select value={values.owner_id} onValueChange={(value) => handleSelectChange('owner_id', value)}>
+                                    <Select value={data.owner_id} onValueChange={(value) => handleSelectChange('owner_id', value)}>
                                         <SelectTrigger id="owner_id">
                                             <SelectValue placeholder="Hauptverantwortlichen wählen" />
                                         </SelectTrigger>
@@ -243,12 +242,12 @@ export default function Edit({
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.owner_id && <p className="mt-1 text-sm text-red-600">{errors.owner_id}</p>}
+                                    {errors.owner_id && <InputError message={errors.owner_id} className="mt-1" />}
                                 </div>
 
                                 <div>
                                     <Label htmlFor="deputy_id">Stellvertreter</Label>
-                                    <Select value={values.deputy_id} onValueChange={(value) => handleSelectChange('deputy_id', value)}>
+                                    <Select value={data.deputy_id} onValueChange={(value) => handleSelectChange('deputy_id', value)}>
                                         <SelectTrigger id="deputy_id">
                                             <SelectValue placeholder="Stellvertreter wählen" />
                                         </SelectTrigger>
@@ -261,19 +260,19 @@ export default function Edit({
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.deputy_id && <p className="mt-1 text-sm text-red-600">{errors.deputy_id}</p>}
+                                    {errors.deputy_id && <InputError message={errors.deputy_id} className="mt-1" />}
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div>
                                         <Label htmlFor="planned_at">Geplant am</Label>
-                                        <Input id="planned_at" name="planned_at" type="date" value={values.planned_at} onChange={handleChange} />
-                                        {errors.planned_at && <p className="mt-1 text-sm text-red-600">{errors.planned_at}</p>}
+                                        <Input id="planned_at" name="planned_at" type="date" value={data.planned_at} onChange={handleChange} />
+                                        {errors.planned_at && <InputError message={errors.planned_at} className="mt-1" />}
                                     </div>
                                     <div>
                                         <Label htmlFor="executed_at">Durchgeführt am</Label>
-                                        <Input id="executed_at" name="executed_at" type="date" value={values.executed_at} onChange={handleChange} />
-                                        {errors.executed_at && <p className="mt-1 text-sm text-red-600">{errors.executed_at}</p>}
+                                        <Input id="executed_at" name="executed_at" type="date" value={data.executed_at} onChange={handleChange} />
+                                        {errors.executed_at && <InputError message={errors.executed_at} className="mt-1" />}
                                     </div>
                                 </div>
                             </TabsContent>
@@ -299,7 +298,7 @@ export default function Edit({
                                                                 <input
                                                                     type="checkbox"
                                                                     className="h-4 w-4"
-                                                                    checked={values.stakeholder_ids.includes(user.id.toString())}
+                                                                    checked={data.stakeholder_ids.includes(user.id.toString())}
                                                                     onChange={() => handleStakeholderChange(user.id.toString())}
                                                                 />
                                                             </TableCell>
@@ -311,7 +310,7 @@ export default function Edit({
                                             </Table>
                                         )}
                                     </div>
-                                    {errors.stakeholder_ids && <p className="mt-1 text-sm text-red-600">{errors.stakeholder_ids}</p>}
+                                    {errors.stakeholder_ids && <InputError message={errors.stakeholder_ids} className="mt-1" />}
                                 </div>
                             </TabsContent>
 
@@ -359,7 +358,7 @@ export default function Edit({
                                                                 <input
                                                                     type="checkbox"
                                                                     className="h-4 w-4"
-                                                                    checked={values.feature_ids.includes(feature.id.toString())}
+                                                                    checked={data.feature_ids.includes(feature.id.toString())}
                                                                     onChange={() => handleFeatureChange(feature.id.toString())}
                                                                 />
                                                             </TableCell>
@@ -374,7 +373,7 @@ export default function Edit({
                                             </Table>
                                         )}
                                     </div>
-                                    {errors.feature_ids && <p className="mt-1 text-sm text-red-600">{errors.feature_ids}</p>}
+                                    {errors.feature_ids && <InputError message={errors.feature_ids} className="mt-1" />}
                                 </div>
                             </TabsContent>
                         </Tabs>
@@ -384,8 +383,8 @@ export default function Edit({
                                 <X />
                                 Abbrechen
                             </Button>
-                            <Button type="submit" variant="success">
-                                <Save />
+                            <Button type="submit" variant="success" disabled={processing}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                                 Speichern
                             </Button>
                         </div>
