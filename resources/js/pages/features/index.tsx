@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
+import { useConfirm } from '@/components/confirm-dialog-provider';
 import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
 import { ArrowDown, ArrowUp, Check, Eye, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
@@ -89,6 +90,8 @@ export default function Index({ features }: IndexProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const userId = (usePage().props as any)?.auth?.user?.id ?? 'guest';
     const [itemsPerPage, setItemsPerPage] = useLocalStorage<number>(`tablePrefs:${userId}:features.index:itemsPerPage`, 10);
+
+    const confirm = useConfirm();
 
     // Extrahiere alle eindeutigen Projekte, Anforderer und Status für die Autovervollständigung
     const featureData = Array.isArray(features) ? features : features.data;
@@ -662,18 +665,22 @@ export default function Index({ features }: IndexProps) {
                                                     <Pencil className="h-4 w-4" />
                                                 </Link>
                                             </Button>
-                                            <form
-                                                onSubmit={(e) => {
-                                                    e.preventDefault();
-                                                    if (confirm('Sind Sie sicher, dass Sie dieses Feature löschen möchten?')) {
-                                                        router.delete(route('features.destroy', { feature: feature.id }));
-                                                    }
+                                            <Button
+                                                size="icon"
+                                                variant="destructive"
+                                                onClick={async () => {
+                                                    const ok = await confirm({
+                                                        title: 'Feature löschen',
+                                                        description: 'Möchten Sie dieses Feature wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+                                                        confirmLabel: 'Löschen',
+                                                        cancelLabel: 'Abbrechen',
+                                                    });
+                                                    if (!ok) return;
+                                                    router.delete(route('features.destroy', { feature: feature.id }));
                                                 }}
                                             >
-                                                <Button type="submit" size="icon" variant="destructive">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </form>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))

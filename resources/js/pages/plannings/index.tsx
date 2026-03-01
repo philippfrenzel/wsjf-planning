@@ -8,6 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
+import { useConfirm } from '@/components/confirm-dialog-provider';
 import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
 import { Check, ChevronLeft, ChevronRight, Eye, LayoutGrid, LayoutList, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
@@ -72,6 +73,8 @@ export default function Index({ plannings }: IndexProps) {
 
     // View mode state (table or card) with persistence
     const [viewMode, setViewMode] = useLocalStorage<'table' | 'card'>(`viewPrefs:${userId}:plannings.index:viewMode`, 'table');
+
+    const confirm = useConfirm();
 
     // Extrahiere alle eindeutigen Projekte für die Autovervollständigung
     const planningData = Array.isArray(plannings) ? plannings : plannings.data;
@@ -373,18 +376,22 @@ export default function Index({ plannings }: IndexProps) {
 
                                                 {/* Lösch-Button für Ersteller, Owner und Deputy */}
                                                 {canEditPlanning(planning) && (
-                                                    <form
-                                                        onSubmit={(e) => {
-                                                            e.preventDefault();
-                                                            if (confirm('Sind Sie sicher, dass Sie dieses Planning löschen möchten?')) {
-                                                                router.delete(route('plannings.destroy', planning));
-                                                            }
+                                                    <Button
+                                                        size="icon"
+                                                        variant="destructive"
+                                                        onClick={async () => {
+                                                            const ok = await confirm({
+                                                                title: 'Planning löschen',
+                                                                description: 'Möchten Sie dieses Planning wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+                                                                confirmLabel: 'Löschen',
+                                                                cancelLabel: 'Abbrechen',
+                                                            });
+                                                            if (!ok) return;
+                                                            router.delete(route('plannings.destroy', planning));
                                                         }}
                                                     >
-                                                        <Button type="submit" size="icon" variant="destructive">
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </form>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
                                                 )}
                                             </TableCell>
                                         </TableRow>
@@ -456,18 +463,22 @@ export default function Index({ plannings }: IndexProps) {
                                                     </Button>
                                                 )}
                                                 {canEditPlanning(planning) && (
-                                                    <form
-                                                        onSubmit={(e) => {
-                                                            e.preventDefault();
-                                                            if (confirm('Sind Sie sicher, dass Sie dieses Planning löschen möchten?')) {
-                                                                router.delete(route('plannings.destroy', planning));
-                                                            }
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={async () => {
+                                                            const ok = await confirm({
+                                                                title: 'Planning löschen',
+                                                                description: 'Möchten Sie dieses Planning wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+                                                                confirmLabel: 'Löschen',
+                                                                cancelLabel: 'Abbrechen',
+                                                            });
+                                                            if (!ok) return;
+                                                            router.delete(route('plannings.destroy', planning));
                                                         }}
                                                     >
-                                                        <Button type="submit" size="sm" variant="destructive">
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </form>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
                                                 )}
                                             </div>
                                         </CardContent>
