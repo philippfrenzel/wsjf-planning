@@ -1,7 +1,9 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { Vote } from 'lucide-react';
 
 interface VoteItem {
     id: number;
@@ -46,7 +48,15 @@ export default function Index({ votes }: PageProps) {
                     </CardHeader>
                     <CardContent>
                         {voteData.length === 0 ? (
-                            <div className="text-muted-foreground py-12 text-center">Keine Votes gefunden.</div>
+                            <EmptyState
+                                icon={Vote}
+                                title="Noch keine Votes"
+                                description="Sobald Abstimmungen durchgeführt wurden, erscheinen sie hier."
+                                action={{
+                                    label: 'Zu den Plannings',
+                                    href: route('plannings.index'),
+                                }}
+                            />
                         ) : (
                             <Table>
                                 <TableHeader>

@@ -1,11 +1,12 @@
 import { useConfirm } from '@/components/confirm-dialog-provider';
+import { EmptyState } from '@/components/empty-state';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { type SharedData } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
-import { Check, LoaderCircle, Mail, Settings, UserMinus, Users, X } from 'lucide-react';
+import { Check, LoaderCircle, Mail, Settings, UserMinus, Users, Users2, X } from 'lucide-react';
 import { useState } from 'react';
 
 type Member = { id: number; name: string; email: string; pivot?: { role?: string | null } };
@@ -168,7 +169,25 @@ export default function TenantsIndex() {
                             <span className="ml-auto text-xs text-slate-500">{members.length} Mitglieder</span>
                         </div>
                         {members.length === 0 ? (
-                            <div className="py-8 text-center text-sm text-slate-400">Keine Mitglieder gefunden</div>
+                            <EmptyState
+                                icon={Users2}
+                                title="Noch keine Teammitglieder"
+                                description={
+                                    isAdmin
+                                        ? 'Laden Sie Kolleginnen und Kollegen ein, um gemeinsam zu planen.'
+                                        : 'Es wurden noch keine Mitglieder zum Team hinzugefügt.'
+                                }
+                                action={
+                                    isAdmin
+                                        ? {
+                                              label: 'Mitglied einladen',
+                                              onClick: () => {
+                                                  document.querySelector<HTMLInputElement>('input[type="email"]')?.focus();
+                                              },
+                                          }
+                                        : undefined
+                                }
+                            />
                         ) : (
                             <ul className="space-y-3">
                                 {members.map((m) => {
