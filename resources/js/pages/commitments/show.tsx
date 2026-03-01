@@ -1,9 +1,10 @@
+import { useConfirm } from '@/components/confirm-dialog-provider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
 
 interface Planning {
@@ -73,7 +74,19 @@ function formatDate(dateString: string) {
 }
 
 export default function ShowCommitment({ commitment }: ShowCommitmentProps) {
+    const confirm = useConfirm();
     const commitmentType = getCommitmentTypeDetails(commitment.commitment_type);
+
+    const handleDeleteCommitment = async () => {
+        const ok = await confirm({
+            title: 'Commitment löschen',
+            description: 'Soll dieses Commitment wirklich gelöscht werden?',
+            confirmLabel: 'Löschen',
+            cancelLabel: 'Abbrechen',
+        });
+        if (!ok) return;
+        router.delete(route('commitments.destroy', commitment.id));
+    };
 
     return (
         <AppLayout
@@ -92,12 +105,10 @@ export default function ShowCommitment({ commitment }: ShowCommitmentProps) {
                                 Bearbeiten
                             </Button>
                         </Link>
-                        <Link href={route('commitments.destroy', commitment.id)} method="delete" as="button">
-                            <Button variant="destructive">
+                        <Button variant="destructive" onClick={handleDeleteCommitment}>
                                 <Trash2 />
                                 Löschen
                             </Button>
-                        </Link>
                     </div>
                 </div>
 

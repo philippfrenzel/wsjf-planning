@@ -1,3 +1,4 @@
+import { useConfirm } from '@/components/confirm-dialog-provider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -72,9 +73,21 @@ function getCommitmentTypeBadge(type: string) {
 }
 
 export default function CommitmentsIndex({ commitments, plannings, selectedPlanning }: CommitmentsIndexProps) {
+    const confirm = useConfirm();
     const commitmentData = Array.isArray(commitments) ? commitments : commitments.data;
     const pagination = Array.isArray(commitments) ? undefined : commitments.meta;
     const [planningFilter, setPlanningFilter] = useState<string>(selectedPlanning ? String(selectedPlanning) : 'all');
+
+    const handleDeleteCommitment = async (commitmentId: number) => {
+        const ok = await confirm({
+            title: 'Commitment löschen',
+            description: 'Soll dieses Commitment wirklich gelöscht werden?',
+            confirmLabel: 'Löschen',
+            cancelLabel: 'Abbrechen',
+        });
+        if (!ok) return;
+        router.delete(route('commitments.destroy', commitmentId));
+    };
 
     const handlePlanningChange = (value: string) => {
         setPlanningFilter(value);
@@ -155,17 +168,10 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
                                                         Bearbeiten
                                                     </Button>
                                                 </Link>
-                                                <Link
-                                                    href={route('commitments.destroy', commitment.id)}
-                                                    method="delete"
-                                                    as="button"
-                                                    className="btn-sm btn-outline-danger"
-                                                >
-                                                    <Button size="sm" variant="destructive">
-                                                        <Trash2 />
+                                                <Button size="sm" variant="destructive" onClick={() => handleDeleteCommitment(commitment.id)}>
+                                                        <Trash2 className="h-4 w-4" />
                                                         Löschen
                                                     </Button>
-                                                </Link>
                                             </TableCell>
                                         </TableRow>
                                     ))}

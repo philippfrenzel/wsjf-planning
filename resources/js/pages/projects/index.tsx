@@ -1,3 +1,4 @@
+import { useConfirm } from '@/components/confirm-dialog-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -39,11 +40,24 @@ type Paginated<T> = {
 };
 
 export default function Index({ projects, currentUserId }: IndexProps) {
+    const confirm = useConfirm();
+
     // Breadcrumbs definieren
     const breadcrumbs = [
         { title: 'Startseite', href: '/' },
         { title: 'Projekte', href: '#' },
     ];
+
+    const handleDeleteProject = async (projectId: number) => {
+        const ok = await confirm({
+            title: 'Projekt löschen',
+            description: 'Möchten Sie dieses Projekt wirklich löschen? Alle zugehörigen Daten werden entfernt.',
+            confirmLabel: 'Löschen',
+            cancelLabel: 'Abbrechen',
+        });
+        if (!ok) return;
+        router.delete(route('projects.destroy', { project: projectId }));
+    };
 
     // Filter-Zustand
     const [filters, setFilters] = useState({
@@ -263,16 +277,9 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                                                         <Pencil className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
-                                                <form
-                                                    onSubmit={(e) => {
-                                                        e.preventDefault();
-                                                        router.delete(route('projects.destroy', project.id));
-                                                    }}
-                                                >
-                                                    <Button type="submit" size="icon" variant="destructive">
+                                                <Button size="icon" variant="destructive" onClick={() => handleDeleteProject(project.id)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
-                                                </form>
                                             </>
                                         )}
                                     </TableCell>
