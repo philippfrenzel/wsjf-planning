@@ -1,13 +1,13 @@
+import { useConfirm } from '@/components/confirm-dialog-provider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Eye, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { Eye, MoreHorizontal, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface Role {
@@ -27,20 +27,18 @@ interface UsersIndexProps {
 }
 
 export default function Index({ users }: UsersIndexProps) {
+    const confirm = useConfirm();
     const [searchTerm, setSearchTerm] = useState('');
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
-    const { delete: destroy } = useForm();
-
-    const handleDelete = (user: User) => {
-        destroy(route('users.destroy', user.id));
-        setIsDeleteDialogOpen(false);
-    };
-
-    const confirmDelete = (user: User) => {
-        setUserToDelete(user);
-        setIsDeleteDialogOpen(true);
+    const handleDeleteUser = async (userId: number, userName: string) => {
+        const ok = await confirm({
+            title: 'Benutzer löschen',
+            description: `Möchten Sie den Benutzer "${userName}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+            confirmLabel: 'Löschen',
+            cancelLabel: 'Abbrechen',
+        });
+        if (!ok) return;
+        router.delete(route('users.destroy', { user: userId }));
     };
 
     // Filtere Benutzer basierend auf Suchbegriff
@@ -140,7 +138,7 @@ export default function Index({ users }: UsersIndexProps) {
                                                                 <span>Bearbeiten</span>
                                                             </Link>
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem className="text-destructive" onClick={() => confirmDelete(user)}>
+                                                        <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteUser(user.id, user.name)}>
                                                             <Trash2 className="mr-2 h-4 w-4" />
                                                             <span>Löschen</span>
                                                         </DropdownMenuItem>
@@ -156,28 +154,6 @@ export default function Index({ users }: UsersIndexProps) {
                 </Card>
             </div>
 
-            {/* Bestätigungsdialog für das Löschen */}
-            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Benutzer löschen</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <p>Möchtest du den Benutzer "{userToDelete?.name}" wirklich löschen?</p>
-                        <p className="text-muted-foreground mt-2">Diese Aktion kann nicht rückgängig gemacht werden.</p>
-                    </div>
-                    <div className="flex justify-end gap-3">
-                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-                            <X />
-                            Abbrechen
-                        </Button>
-                        <Button variant="destructive" onClick={() => userToDelete && handleDelete(userToDelete)}>
-                            <Trash2 />
-                            Löschen
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </AppLayout>
     );
 }

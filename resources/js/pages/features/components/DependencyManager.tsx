@@ -1,3 +1,4 @@
+import { useConfirm } from '@/components/confirm-dialog-provider';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Label } from '@/components/ui/label';
@@ -21,6 +22,7 @@ interface DependencyManagerProps {
 }
 
 export default function DependencyManager({ featureId, options, initialItems }: DependencyManagerProps) {
+    const confirm = useConfirm();
     const [items, setItems] = useState<DependencyItem[]>(initialItems || []);
     const [type, setType] = useState<'ermoeglicht' | 'verhindert' | 'bedingt' | 'ersetzt' | 'ignore'>('ermoeglicht');
     const [relatedId, setRelatedId] = useState<string>('');
@@ -32,7 +34,14 @@ export default function DependencyManager({ featureId, options, initialItems }: 
         router.post(route('features.dependencies.store', featureId), { related_feature_id: Number(relatedId), type });
     };
 
-    const remove = (depId: number) => {
+    const handleRemoveDependency = async (depId: number) => {
+        const ok = await confirm({
+            title: 'Abhängigkeit entfernen',
+            description: 'Möchten Sie diese Abhängigkeit wirklich entfernen?',
+            confirmLabel: 'Entfernen',
+            cancelLabel: 'Abbrechen',
+        });
+        if (!ok) return;
         router.delete(route('features.dependencies.destroy', { feature: featureId, dependency: depId }));
     };
 
@@ -105,7 +114,7 @@ export default function DependencyManager({ featureId, options, initialItems }: 
                                 <TableCell className="capitalize">{dep.type}</TableCell>
                                 <TableCell>{dep.related ? `${dep.related.jira_key} — ${dep.related.name}` : '-'}</TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="destructive" size="sm" onClick={() => remove(dep.id)}>
+                                    <Button variant="destructive" size="sm" onClick={() => handleRemoveDependency(dep.id)}>
                                         Entfernen
                                     </Button>
                                 </TableCell>
