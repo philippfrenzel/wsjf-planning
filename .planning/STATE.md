@@ -5,17 +5,25 @@
 See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 **Core value:** Teams can run a complete WSJF planning session without friction, in a single sitting.
-**Current focus:** Phase 5 — Foundation & Phase 4 Completion (v3.0 milestone)
+**Current focus:** Phase 7 — Empty States & Visual Polish (v3.0 milestone)
 
 ## Current Status
 
-**Phase:** Phase 6 — Feedback Completeness
-**Plan:** Plan 06 complete → Phase 6 complete
+**Phase:** Phase 7 — Empty States & Visual Polish
+**Plan:** Plan 04 complete → Phase 7 complete
 **Status:** Milestone complete
 **Milestone:** v3.0 (Polish & UX)
-**Last activity:** 2026-03-01 — Phase 6 Plan 06: Vote session isSaving binding + commitment InputError + plans/create useForm complete
+**Last activity:** 2026-03-01 — Phase 7 complete (Plans 07-01 through 07-04): shared EmptyState rollout, autosave icon polish, and board card loading overlay
 
 ## What Was Just Done
+
+- **Phase 7 complete (2026-03-01) — Empty States & Visual Polish** (POLISH-01, POLISH-02, POLISH-03, POLISH-04)
+  - Added shared `EmptyState` component (`resources/js/components/empty-state.tsx`) with icon/title/description + CTA (`href`/`onClick`) contract
+  - Added route-keyed fade animation wrapper in `app-header-layout.tsx` (`key={url}` + `animate-in fade-in-0 duration-300`)
+  - Applied true-empty vs filter-empty states to `features/index.tsx`, `plannings/index.tsx` (table+card), and `projects/index.tsx`
+  - Applied empty states to `tenants/index.tsx`, `votes/index.tsx`, `votes/session.tsx`, and `votes/card-session.tsx`
+  - Added autosave icon trio (`Loader2`/`CheckCircle2`/`AlertCircle`) + timed success reset in vote session pages
+  - Added per-card loading overlay in `features/board.tsx` via `loadingFeatureId` during status persistence
 
 - **Phase 6, Plan 07: Gap-Closure — Comments.tsx confirm() + Hooks isSaving + show.tsx guards** (2026-03-01) — FEED-01, FEED-02 gap-closure
   - Comments.tsx: native confirm() replaced with useConfirm() async pattern (title/description/labels)
@@ -85,7 +93,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Phase 6 complete. All FEED-01/FEED-02/FEED-03 items addressed across 7 plans (including gap-closure plan 07). Ready for Phase 7 or next milestone work.
+Phase 7 complete. Empty-state coverage and visual-save feedback polish are in place across targeted list and voting screens. Ready for next milestone/phase planning.
 
 ## Key Decisions (Accumulated)
 
@@ -102,6 +110,10 @@ Phase 6 complete. All FEED-01/FEED-02/FEED-03 items addressed across 7 plans (in
 - **[06-04]** `setData(e.target.name as keyof typeof data, value)` used in generic handleChange — type-safe useForm pattern for dynamic field name handlers
 - **[06-03]** `useForm` errors used directly (not `usePage().props.errors`) — useForm manages its own error bag from server validation responses
 - **[06-03]** Optional `processing?: boolean` prop on dialog components — undefined = not disabled, fully backward-compatible
+- **[07-01]** Shared `EmptyState` centralizes icon/title/description/action rendering and keeps CTA behavior consistent (`href` → Link, handler → Button)
+- **[07-01]** Route-keying content wrapper (`key={url}`) is the minimal way to replay page-enter animations on each Inertia navigation
+- **[07-03]** Vote autosave status should be icon-first with timed success reset to avoid stale "saved" signals after subsequent edits
+- **[07-04]** Board drag persistence feedback should be scoped per-card (`loadingFeatureId`) instead of blocking entire lanes or board
 
 ## Open Questions / Blockers
 
@@ -122,4 +134,4 @@ _Add notes here during active work sessions._
   - **[06-07]** isSaving state owned by each hook alongside the router.delete/post/put calls — co-located loading state; hooks return isSaving for parent to thread to dialog processing props
 
 ---
-*Last updated: 2026-03-01 after Phase 6 Plan 07: Gap-closure — Comments.tsx confirm() + Hooks isSaving + show.tsx guards (FEED-01, FEED-02)*
+*Last updated: 2026-03-01 after Phase 7 complete (Plans 07-01 to 07-04)*

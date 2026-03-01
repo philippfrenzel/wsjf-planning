@@ -81,10 +81,10 @@
 
 ### Empty States & Visual Polish
 
-- [ ] **POLISH-01**: User sees a meaningful empty state (icon, message, call-to-action) on every major list screen (features, plannings, projects, members, votes)
-- [ ] **POLISH-02**: User sees an autosave indicator (saving / saved / error) in the vote session during debounced auto-save
-- [ ] **POLISH-03**: User experiences a subtle page content fade-in on navigation using CSS transitions
-- [ ] **POLISH-04**: User sees consistent loading feedback on the feature board (Kanban) when dragging changes a card's status
+- [x] **POLISH-01**: User sees a meaningful empty state (icon, message, call-to-action) on every major list screen (features, plannings, projects, members, votes)
+- [x] **POLISH-02**: User sees an autosave indicator (saving / saved / error) in the vote session during debounced auto-save
+- [x] **POLISH-03**: User experiences a subtle page content fade-in on navigation using CSS transitions
+- [x] **POLISH-04**: User sees consistent loading feedback on the feature board (Kanban) when dragging changes a card's status
 
 ### Workflow Progress
 
@@ -146,10 +146,10 @@
 | FEED-01 | Phase 6 | Complete |
 | FEED-02 | Phase 6 | Complete |
 | FEED-03 | Phase 6 | Complete |
-| POLISH-01 | Phase 7 | Pending |
-| POLISH-02 | Phase 7 | Pending |
-| POLISH-03 | Phase 7 | Pending |
-| POLISH-04 | Phase 7 | Pending |
+| POLISH-01 | Phase 7 | Complete |
+| POLISH-02 | Phase 7 | Complete |
+| POLISH-03 | Phase 7 | Complete |
+| POLISH-04 | Phase 7 | Complete |
 | PROG-01 | Phase 8 | Pending |
 | PROG-02 | Phase 8 | Pending |
 | PROG-03 | Phase 8 | Pending |
