@@ -17,10 +17,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What Was Just Done
 
-- **Phase 6, Plan 05: Plannings Domain useForm Migration** (2026-03-01) — FEED-02, FEED-03 (plannings domain)
-  - plannings/create.tsx: useState + router.post → useForm + transform(); 1 submit button disabled={processing} + LoaderCircle; 8 InputError replacements
-  - plannings/edit.tsx: useState + router.put → useForm + transform(); BOTH submit buttons (top + bottom) disabled={processing} + LoaderCircle; 10 InputError replacements (status, project_id, title, description, owner_id, deputy_id, planned_at, executed_at, stakeholder_ids, feature_ids)
-  - Array fields (stakeholder_ids, feature_ids) use setData('field', newArray) toggle pattern; string[] preserved to match checkbox value pattern
+- **Phase 6, Plan 07: Gap-Closure — Comments.tsx confirm() + Hooks isSaving + show.tsx guards** (2026-03-01) — FEED-01, FEED-02 gap-closure
+  - Comments.tsx: native confirm() replaced with useConfirm() async pattern (title/description/labels)
+  - useEstimationManagement.ts: confirm() guard removed; isSaving state added with setIsSaving(true/false) in handleDeleteEstimation and handleEstimationSubmit; isSaving returned
+  - useComponentManagement.ts: confirm() guard removed from archiveComponent; isSaving state added in handleComponentSubmit, handleEditComponentSubmit, archiveComponent; isSaving returned
+  - features/show.tsx: useConfirm imported; isSaving aliased as componentIsSaving/estimationIsSaving; handleArchiveWithConfirm + handleDeleteEstimationWithConfirm async wrappers; EstimationDialog gets processing={estimationIsSaving}; EditComponentDialog gets processing={componentIsSaving}
 
 - **Phase 6, Plan 06: Vote session isSaving binding + Commitment InputError + plans/create useForm** (2026-03-01) — FEED-02, FEED-03 complete
   - votes/session.tsx: added `disabled={isSaving}` + LoaderCircle to both submit buttons (header + form footer)
@@ -84,7 +85,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Phase 6 complete. All FEED-01/FEED-02/FEED-03 items addressed across 6 plans. Ready for Phase 7 or next milestone work.
+Phase 6 complete. All FEED-01/FEED-02/FEED-03 items addressed across 7 plans (including gap-closure plan 07). Ready for Phase 7 or next milestone work.
 
 ## Key Decisions (Accumulated)
 
@@ -117,5 +118,8 @@ _Add notes here during active work sessions._
   - **[06-06]** Vote session pages use local `isSaving` state (not `useForm`) — bind `disabled={isSaving}` directly without migration; save flow uses custom timer/navigation logic incompatible with `useForm`
   - **[06-06]** plans/create.tsx wrapped each Input in a `<div>` to allow InputError placement below each field
 
+  - **[06-07]** Confirm guards belong at the call site (component/show.tsx), not in custom hooks — hooks run outside ConfirmDialogProvider React context and cannot call useConfirm()
+  - **[06-07]** isSaving state owned by each hook alongside the router.delete/post/put calls — co-located loading state; hooks return isSaving for parent to thread to dialog processing props
+
 ---
-*Last updated: 2026-03-01 after Phase 6 Plan 06: Vote session isSaving binding + Commitment InputError + plans/create useForm complete (FEED-02, FEED-03)*
+*Last updated: 2026-03-01 after Phase 6 Plan 07: Gap-closure — Comments.tsx confirm() + Hooks isSaving + show.tsx guards (FEED-01, FEED-02)*
