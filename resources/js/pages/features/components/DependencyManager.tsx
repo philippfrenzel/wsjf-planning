@@ -61,13 +61,15 @@ export default function DependencyManager({ featureId, options, initialItems }: 
                     <Label>Feature</Label>
                     <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
-                            <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-                                {relatedId
-                                    ? (() => {
-                                          const sel = options.find((o) => String(o.id) === String(relatedId));
-                                          return sel ? `${sel.jira_key} — ${sel.name}` : '— Feature wählen —';
-                                      })()
-                                    : '— Feature wählen —'}
+                            <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between gap-2">
+                                <span className="min-w-0 flex-1 break-words text-left whitespace-normal">
+                                    {relatedId
+                                        ? (() => {
+                                              const sel = options.find((o) => String(o.id) === String(relatedId));
+                                              return sel ? `${sel.jira_key} — ${sel.name}` : '— Feature wählen —';
+                                          })()
+                                        : '— Feature wählen —'}
+                                </span>
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
@@ -111,8 +113,10 @@ export default function DependencyManager({ featureId, options, initialItems }: 
                     <TableBody>
                         {(items && items.length > 0 ? items : initialItems).map((dep) => (
                             <TableRow key={dep.id}>
-                                <TableCell className="capitalize">{dep.type}</TableCell>
-                                <TableCell>{dep.related ? `${dep.related.jira_key} — ${dep.related.name}` : '-'}</TableCell>
+                                <TableCell className="capitalize whitespace-normal">{dep.type}</TableCell>
+                                <TableCell className="max-w-0 break-words whitespace-normal">
+                                    {dep.related ? `${dep.related.jira_key} — ${dep.related.name}` : '-'}
+                                </TableCell>
                                 <TableCell className="text-right">
                                     <Button variant="destructive" size="sm" onClick={() => handleRemoveDependency(dep.id)}>
                                         Entfernen

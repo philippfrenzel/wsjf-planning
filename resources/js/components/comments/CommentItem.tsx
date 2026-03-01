@@ -65,9 +65,9 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
                         <AvatarFallback>{comment.user.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
 
-                    <div className="flex-1 space-y-2">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
+                    <div className="min-w-0 flex-1 space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="min-w-0 flex flex-wrap items-center gap-2">
                                 <span className="text-sm font-semibold">{comment.user.name}</span>
                                 <span className="text-muted-foreground text-xs">{formatDate(comment.created_at)}</span>
                                 {comment.created_at !== comment.updated_at && <span className="text-muted-foreground text-xs">(bearbeitet)</span>}
@@ -106,7 +106,7 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-foreground text-sm whitespace-pre-wrap">{comment.body}</div>
+                            <div className="text-foreground text-sm break-words whitespace-pre-wrap">{comment.body}</div>
                         )}
 
                         {!isEditing && canReply && (
