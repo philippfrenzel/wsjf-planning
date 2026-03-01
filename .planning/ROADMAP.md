@@ -168,7 +168,7 @@ Plans:
 2. Clicking any form submit button disables it and shows a spinner icon while the HTTP request is in flight
 3. Submitting any form with invalid data shows field-level error messages directly beneath each invalid input, consistently styled via `InputError`
 
-**Plans:** 6 plans
+**Plans:** 5/7 plans executed
 
 Plans:
 - [ ] 06-01-PLAN.md — FEED-01: Replace native confirm() in features/index, plannings/index, tenants/index
@@ -237,7 +237,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 5. Foundation & Phase 4 Completion | 1/2 | In Progress|  |
-| 6. Feedback Completeness | 0/6 | Not started | - |
+| 6. Feedback Completeness | 5/7 | In Progress|  |
 | 7. Empty States & Visual Polish | 0/? | Not started | - |
 | 8. Workflow Progress | 0/? | Not started | - |
 | 9. Onboarding | 0/? | Not started | - |

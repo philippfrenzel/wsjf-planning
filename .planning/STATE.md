@@ -10,19 +10,19 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 ## Current Status
 
 **Phase:** Phase 6 — Feedback Completeness
-**Plan:** Plan 02 complete → Plan 03 next
+**Plan:** Plan 06 complete → Phase 6 complete
 **Status:** In Progress
 **Milestone:** v3.0 (Polish & UX)
-**Last activity:** 2026-03-01 — Phase 6 Plan 02: Confirmation Guards (unguarded actions) complete
+**Last activity:** 2026-03-01 — Phase 6 Plan 06: Vote session isSaving binding + commitment InputError + plans/create useForm complete
 
 ## What Was Just Done
 
-- **Phase 6, Plan 02: Confirmation Guards (unguarded actions)** (2026-03-01) — FEED-01 complete
-  - projects/index.tsx: form-submit delete removed; `useConfirm` async `handleDeleteProject` added
-  - commitments/index.tsx: `<Link method="delete">` antipattern removed; `useConfirm` async handler added
-  - commitments/show.tsx: same `<Link method="delete">` fix
-  - DependencyManager.tsx: bare `router.delete` wrapped in async `handleRemoveDependency` with `useConfirm`
-  - users/index.tsx: Dialog + `isDeleteDialogOpen`/`userToDelete` state + `useForm().delete` replaced with single `useConfirm` async handler
+- **Phase 6, Plan 06: Vote session isSaving binding + Commitment InputError + plans/create useForm** (2026-03-01) — FEED-02, FEED-03 complete
+  - votes/session.tsx: added `disabled={isSaving}` + LoaderCircle to both submit buttons (header + form footer)
+  - votes/card-session.tsx: added `disabled={isSaving}` + LoaderCircle (icon swap) to save button
+  - commitments/create.tsx: 4 raw `<p>` error elements replaced with `<InputError>` (planning_id, feature_id, commitment_type, status)
+  - commitments/edit.tsx: 4 raw `<p>` error elements replaced with `<InputError>` (feature_id, user_id, commitment_type, status)
+  - plans/create.tsx: `useState+router.post` → `useForm+post`; `disabled={processing}` on button; 3 InputError elements added
 
 ## Previous Completed Work
 
@@ -75,7 +75,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What's Next
 
-Phase 6, Plan 02: Remaining FEED-01 locations — projects/index.tsx (unguarded delete), commitments/index.tsx + show.tsx (Link method="delete" antipattern), DependencyManager.tsx, users/index.tsx (Dialog → useConfirm).
+Phase 6 complete. All FEED-01/FEED-02/FEED-03 items addressed across 6 plans. Ready for Phase 7 or next milestone work.
 
 ## Key Decisions (Accumulated)
 
@@ -101,5 +101,8 @@ Phase 6, Plan 02: Remaining FEED-01 locations — projects/index.tsx (unguarded 
 
 _Add notes here during active work sessions._
 
+  - **[06-06]** Vote session pages use local `isSaving` state (not `useForm`) — bind `disabled={isSaving}` directly without migration; save flow uses custom timer/navigation logic incompatible with `useForm`
+  - **[06-06]** plans/create.tsx wrapped each Input in a `<div>` to allow InputError placement below each field
+
 ---
-*Last updated: 2026-03-01 after Phase 6 Plan 02: Confirmation Guards (unguarded actions) complete (FEED-01)*
+*Last updated: 2026-03-01 after Phase 6 Plan 06: Vote session isSaving binding + Commitment InputError + plans/create useForm complete (FEED-02, FEED-03)*
