@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { EmptyState } from '@/components/empty-state';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -11,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { useConfirm } from '@/components/confirm-dialog-provider';
 import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
-import { Check, ChevronLeft, ChevronRight, Eye, LayoutGrid, LayoutList, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
+import { CalendarX2, Check, ChevronLeft, ChevronRight, Eye, LayoutGrid, LayoutList, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 interface Planning {
@@ -41,6 +42,7 @@ type Paginated<T> = {
 interface IndexProps {
     plannings: Planning[] | Paginated<Planning>;
     auth: {
+        currentRole?: string;
         user: {
             id: number;
         };
@@ -62,6 +64,8 @@ export default function Index({ plannings }: IndexProps) {
         title: '',
         project: '',
     });
+    const hasActiveFilters = Object.values(filters).some((f) => f !== '');
+    const canCreate = auth?.currentRole === 'Admin' || auth?.currentRole === 'Planner';
 
     // Zustand für Projekt-Popover
     const [projectPopoverOpen, setProjectPopoverOpen] = useState(false);
@@ -327,19 +331,40 @@ export default function Index({ plannings }: IndexProps) {
                             </TableHeader>
                             <TableBody>
                                 {paginatedPlannings.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={8} className="py-8 text-center">
-                                            <div className="flex flex-col items-center justify-center">
-                                                <Search className="text-muted-foreground mb-2 h-8 w-8" />
-                                                <p className="text-muted-foreground">Keine Plannings gefunden</p>
-                                                {Object.values(filters).some((f) => f !== '') && (
-                                                    <Button variant="link" onClick={resetFilters} className="mt-2">
+                                    hasActiveFilters ? (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="py-0">
+                                                <div className="flex flex-col items-center gap-2 py-8 text-center">
+                                                    <Search className="h-8 w-8 text-slate-400" />
+                                                    <p className="text-sm text-slate-500">Keine Plannings gefunden</p>
+                                                    <button
+                                                        className="text-sm text-indigo-600 underline hover:text-indigo-800"
+                                                        onClick={() => setFilters({ title: '', project: '' })}
+                                                    >
                                                         Filter zurücksetzen
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
+                                                    </button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="py-0">
+                                                <EmptyState
+                                                    icon={CalendarX2}
+                                                    title="Noch keine Planning-Sessions"
+                                                    description="Erstellen Sie die erste Planning-Session, um mit dem Abstimmen zu beginnen."
+                                                    action={
+                                                        canCreate
+                                                            ? {
+                                                                  label: 'Planning erstellen',
+                                                                  href: route('plannings.create'),
+                                                              }
+                                                            : undefined
+                                                    }
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    )
                                 ) : (
                                     paginatedPlannings.map((planning) => (
                                         <TableRow key={planning.id}>
@@ -402,17 +427,34 @@ export default function Index({ plannings }: IndexProps) {
                     ) : (
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {paginatedPlannings.length === 0 ? (
-                                <div className="col-span-full py-8 text-center">
-                                    <div className="flex flex-col items-center justify-center">
-                                        <Search className="text-muted-foreground mb-2 h-8 w-8" />
-                                        <p className="text-muted-foreground">Keine Plannings gefunden</p>
-                                        {Object.values(filters).some((f) => f !== '') && (
-                                            <Button variant="link" onClick={resetFilters} className="mt-2">
-                                                Filter zurücksetzen
-                                            </Button>
-                                        )}
+                                hasActiveFilters ? (
+                                    <div className="col-span-full flex flex-col items-center gap-2 py-8 text-center">
+                                        <Search className="h-8 w-8 text-slate-400" />
+                                        <p className="text-sm text-slate-500">Keine Plannings gefunden</p>
+                                        <button
+                                            className="text-sm text-indigo-600 underline hover:text-indigo-800"
+                                            onClick={() => setFilters({ title: '', project: '' })}
+                                        >
+                                            Filter zurücksetzen
+                                        </button>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="col-span-full">
+                                        <EmptyState
+                                            icon={CalendarX2}
+                                            title="Noch keine Planning-Sessions"
+                                            description="Erstellen Sie die erste Planning-Session, um mit dem Abstimmen zu beginnen."
+                                            action={
+                                                canCreate
+                                                    ? {
+                                                          label: 'Planning erstellen',
+                                                          href: route('plannings.create'),
+                                                      }
+                                                    : undefined
+                                            }
+                                        />
+                                    </div>
+                                )
                             ) : (
                                 paginatedPlannings.map((planning) => (
                                     <Card key={planning.id} className="flex flex-col">

@@ -1,4 +1,5 @@
 import { useConfirm } from '@/components/confirm-dialog-provider';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -7,7 +8,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
 import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Eye, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, FolderOpen, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 interface Project {
@@ -289,11 +290,36 @@ export default function Index({ projects, currentUserId }: IndexProps) {
 
                         {/* Anzeigen, wenn keine Ergebnisse gefunden wurden */}
                         {filteredProjects.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={7} className="text-muted-foreground py-8 text-center">
-                                    Keine Projekte gefunden, die den Filterkriterien entsprechen.
-                                </TableCell>
-                            </TableRow>
+                            hasActiveFilters ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="py-0">
+                                        <div className="flex flex-col items-center gap-2 py-8 text-center">
+                                            <Search className="h-8 w-8 text-slate-400" />
+                                            <p className="text-sm text-slate-500">Keine Projekte gefunden</p>
+                                            <button
+                                                className="text-sm text-indigo-600 underline hover:text-indigo-800"
+                                                onClick={resetFilters}
+                                            >
+                                                Filter zurücksetzen
+                                            </button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="py-0">
+                                        <EmptyState
+                                            icon={FolderOpen}
+                                            title="Noch keine Projekte"
+                                            description="Erstellen Sie Ihr erstes Projekt, um Features und Plannings zu verwalten."
+                                            action={{
+                                                label: 'Neues Projekt erstellen',
+                                                href: route('projects.create'),
+                                            }}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            )
                         )}
                     </TableBody>
                 </Table>
