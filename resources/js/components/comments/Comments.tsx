@@ -1,4 +1,5 @@
 import axios from '@/bootstrap';
+import { useConfirm } from '@/components/confirm-dialog-provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +14,7 @@ interface CommentsProps {
 }
 
 export function Comments({ entity, initialComments = [] }: CommentsProps) {
+    const confirm = useConfirm();
     const [comments, setComments] = useState<Comment[]>(initialComments);
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(false);
@@ -90,7 +92,13 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
     };
 
     const handleDelete = async (commentId: number) => {
-        if (!confirm('Möchten Sie diesen Kommentar wirklich löschen?')) return;
+        const ok = await confirm({
+            title: 'Kommentar löschen',
+            description: 'Möchten Sie diesen Kommentar wirklich löschen?',
+            confirmLabel: 'Löschen',
+            cancelLabel: 'Abbrechen',
+        });
+        if (!ok) return;
 
         try {
             await axios.delete(`/comments/${commentId}`);
