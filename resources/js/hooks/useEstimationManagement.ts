@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 export function useEstimationManagement(featureId: number) {
+    const [isSaving, setIsSaving] = useState(false);
     const [estimationDialogOpen, setEstimationDialogOpen] = useState(false);
     const [selectedComponentId, setSelectedComponentId] = useState<number | null>(null);
     const [editingEstimationId, setEditingEstimationId] = useState<number | null>(null);
@@ -43,21 +44,22 @@ export function useEstimationManagement(featureId: number) {
     };
 
     const handleDeleteEstimation = (componentId: number, estimationId: number) => {
-        if (confirm('Sind Sie sicher, dass Sie diese Schätzung löschen möchten?')) {
-            router.delete(route('estimations.destroy', estimationId), {
-                onSuccess: () => {
-                    // Verwende eine vollständige Navigation zurück zum Feature statt reload
-                    router.visit(route('features.show', featureId), {
-                        preserveState: false,
-                        preserveScroll: false,
-                    });
-                },
-                onError: (errors) => {
-                    console.error('Fehler beim Löschen:', errors);
-                    alert('Beim Löschen der Schätzung ist ein Fehler aufgetreten.');
-                },
-            });
-        }
+        setIsSaving(true);
+        router.delete(route('estimations.destroy', estimationId), {
+            onSuccess: () => {
+                setIsSaving(false);
+                // Verwende eine vollständige Navigation zurück zum Feature statt reload
+                router.visit(route('features.show', featureId), {
+                    preserveState: false,
+                    preserveScroll: false,
+                });
+            },
+            onError: (errors) => {
+                setIsSaving(false);
+                console.error('Fehler beim Löschen:', errors);
+                alert('Beim Löschen der Schätzung ist ein Fehler aufgetreten.');
+            },
+        });
     };
 
     const handleEstimationSubmit = (e: React.FormEvent) => {
@@ -75,6 +77,7 @@ export function useEstimationManagement(featureId: number) {
 
         const options = {
             onSuccess: () => {
+                setIsSaving(false);
                 // Dialog schließen und Formular zurücksetzen
                 setEstimationDialogOpen(false);
                 setEditingEstimationId(null);
@@ -94,11 +97,13 @@ export function useEstimationManagement(featureId: number) {
                 });
             },
             onError: (errors: object) => {
+                setIsSaving(false);
                 console.error('Fehler beim Speichern:', errors);
                 alert('Beim Speichern der Schätzung ist ein Fehler aufgetreten.');
             },
         };
 
+        setIsSaving(true);
         if (isEditing && editingEstimationId) {
             // Update vorhandene Schätzung
             router.put(route('estimations.update', editingEstimationId), data, options);
@@ -113,6 +118,7 @@ export function useEstimationManagement(featureId: number) {
     };
 
     return {
+        isSaving,
         estimationDialogOpen,
         selectedComponentId,
         estimationData,

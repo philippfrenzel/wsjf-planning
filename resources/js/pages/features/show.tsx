@@ -16,6 +16,7 @@ import FeatureDetails from './components/FeatureDetails';
 import FeatureHeader from './components/FeatureHeader';
 
 import { Comments } from '@/components/comments';
+import { useConfirm } from '@/components/confirm-dialog-provider';
 import { useComponentManagement } from '@/hooks/useComponentManagement';
 import { useEstimationManagement } from '@/hooks/useEstimationManagement';
 import { Edit2 } from 'lucide-react';
@@ -108,6 +109,7 @@ export default function Show({ feature, auth }: ShowProps) {
         setComponentData,
         setEditComponentData,
         setEditComponentDialogOpen,
+        isSaving: componentIsSaving,
     } = useComponentManagement(feature.id);
 
     // Verwaltung der Schätzungen mit dem Custom Hook
@@ -121,7 +123,32 @@ export default function Show({ feature, auth }: ShowProps) {
         handleDeleteEstimation,
         setEstimationDialogOpen,
         updateEstimationData,
+        isSaving: estimationIsSaving,
     } = useEstimationManagement(feature.id);
+
+    const confirm = useConfirm();
+
+    const handleArchiveWithConfirm = async (componentId: number) => {
+        const ok = await confirm({
+            title: 'Komponente archivieren',
+            description: 'Möchten Sie diese Komponente wirklich archivieren? Sie können sie später wieder aktivieren.',
+            confirmLabel: 'Archivieren',
+            cancelLabel: 'Abbrechen',
+        });
+        if (!ok) return;
+        archiveComponent(componentId);
+    };
+
+    const handleDeleteEstimationWithConfirm = async (componentId: number, estimationId: number) => {
+        const ok = await confirm({
+            title: 'Schätzung löschen',
+            description: 'Sind Sie sicher, dass Sie diese Schätzung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+            confirmLabel: 'Löschen',
+            cancelLabel: 'Abbrechen',
+        });
+        if (!ok) return;
+        handleDeleteEstimation(componentId, estimationId);
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -243,11 +270,11 @@ export default function Show({ feature, auth }: ShowProps) {
                                                         key={component.id}
                                                         component={component}
                                                         onEdit={openEditComponentDialog}
-                                                        onArchive={archiveComponent}
+                                                        onArchive={handleArchiveWithConfirm}
                                                         onActivate={activateComponent}
                                                         onAddEstimation={openEstimationDialog}
                                                         onEditEstimation={openEditEstimationDialog}
-                                                        onDeleteEstimation={handleDeleteEstimation}
+                                                        onDeleteEstimation={handleDeleteEstimationWithConfirm}
                                                     />
                                                 ))}
                                         </div>
@@ -272,6 +299,7 @@ export default function Show({ feature, auth }: ShowProps) {
                     onUnitChange={(value) => updateEstimationData('unit', value)}
                     onNotesChange={(value) => updateEstimationData('notes', value)}
                     onSubmit={handleEstimationSubmit}
+                    processing={estimationIsSaving}
                 />
 
                 {/* Dialog zum Bearbeiten einer Komponente */}
@@ -282,6 +310,7 @@ export default function Show({ feature, auth }: ShowProps) {
                     onNameChange={(name) => setEditComponentData({ ...editComponentData, name })}
                     onDescriptionChange={(description) => setEditComponentData({ ...editComponentData, description })}
                     onSubmit={handleEditComponentSubmit}
+                    processing={componentIsSaving}
                 />
             </div>
         </AppLayout>

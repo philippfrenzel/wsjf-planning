@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 export function useComponentManagement(featureId: number) {
+    const [isSaving, setIsSaving] = useState(false);
     const [showComponentForm, setShowComponentForm] = useState(false);
     const [componentData, setComponentData] = useState({
         name: '',
@@ -24,6 +25,7 @@ export function useComponentManagement(featureId: number) {
     const handleComponentSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        setIsSaving(true);
         router.post(
             route('estimation-components.store'),
             {
@@ -34,10 +36,12 @@ export function useComponentManagement(featureId: number) {
             },
             {
                 onSuccess: () => {
+                    setIsSaving(false);
                     setComponentData({ name: '', description: '' });
                     setShowComponentForm(false);
                 },
                 onError: (errors) => {
+                    setIsSaving(false);
                     console.error('Fehler beim Speichern der Komponente:', errors);
                     alert('Beim Speichern der Komponente ist ein Fehler aufgetreten.');
                 },
@@ -59,6 +63,7 @@ export function useComponentManagement(featureId: number) {
 
         if (!editingComponent) return;
 
+        setIsSaving(true);
         router.put(
             route('estimation-components.update', editingComponent.id),
             {
@@ -68,6 +73,7 @@ export function useComponentManagement(featureId: number) {
             },
             {
                 onSuccess: () => {
+                    setIsSaving(false);
                     setEditComponentDialogOpen(false);
                     setEditingComponent(null);
 
@@ -77,6 +83,7 @@ export function useComponentManagement(featureId: number) {
                     });
                 },
                 onError: (errors) => {
+                    setIsSaving(false);
                     console.error('Fehler beim Aktualisieren der Komponente:', errors);
                     alert('Beim Aktualisieren der Komponente ist ein Fehler aufgetreten.');
                 },
@@ -85,17 +92,19 @@ export function useComponentManagement(featureId: number) {
     };
 
     const archiveComponent = (componentId: number) => {
-        if (confirm('Möchten Sie diese Komponente wirklich archivieren?')) {
-            router.put(
-                route('estimation-components.archive', componentId),
-                {},
-                {
-                    onSuccess: () => {
-                        // Optional: Meldung anzeigen
-                    },
+        setIsSaving(true);
+        router.put(
+            route('estimation-components.archive', componentId),
+            {},
+            {
+                onSuccess: () => {
+                    setIsSaving(false);
                 },
-            );
-        }
+                onError: () => {
+                    setIsSaving(false);
+                },
+            },
+        );
     };
 
     const activateComponent = (componentId: number) => {
@@ -126,6 +135,7 @@ export function useComponentManagement(featureId: number) {
     };
 
     return {
+        isSaving,
         showComponentForm,
         componentData,
         editComponentDialogOpen,
