@@ -26,6 +26,10 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## Previous Completed Work
 
+- **Phase 6, Plan 04: Projects Domain useForm Migration** (2026-03-01) — FEED-02, FEED-03 complete
+  - projects/create.tsx: useState + router.post → useForm; submit button disabled={processing} + LoaderCircle; 8 InputError replacements
+  - projects/edit.tsx: useState + router.put → useForm; BOTH submit buttons disabled={processing} + LoaderCircle; 9 InputError replacements
+
 - **Phase 6, Plan 01: Confirm Dialog Migration** (2026-03-01) — FEED-01 (partial), FEED-03 (partial) complete
   - features/index.tsx: `useConfirm` import + hook; `<form onSubmit>` delete replaced with async `<Button onClick>`
   - plannings/index.tsx: same pattern for both table-view and card-view delete buttons
@@ -88,6 +92,10 @@ Phase 6 complete. All FEED-01/FEED-02/FEED-03 items addressed across 6 plans. Re
 - **[06-01]** `onBefore` in Inertia router calls is synchronous — async `confirm()` Promise is ignored; always use async onClick pattern instead
 - **[06-02]** `<Link method="delete">` is incompatible with async dialogs — replaced with `<Button onClick={asyncHandler}>` + `router.delete()`
 - **[06-02]** Custom Dialog + local state boilerplate for destructive confirmation replaced by single `useConfirm()` call
+- **[06-04]** Save icon swapped for LoaderCircle when processing (not both simultaneously) — cleaner than showing both icons
+- **[06-04]** `setData(e.target.name as keyof typeof data, value)` used in generic handleChange — type-safe useForm pattern for dynamic field name handlers
+- **[06-03]** `useForm` errors used directly (not `usePage().props.errors`) — useForm manages its own error bag from server validation responses
+- **[06-03]** Optional `processing?: boolean` prop on dialog components — undefined = not disabled, fully backward-compatible
 
 ## Open Questions / Blockers
 
