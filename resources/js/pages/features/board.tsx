@@ -16,6 +16,7 @@ import {
     useSensors,
 } from '@dnd-kit/core';
 import { Link } from '@inertiajs/react';
+import { Loader2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 interface Feature {
@@ -75,7 +76,7 @@ function LaneColumn({ lane, children, highlight }: { lane: Lane; children: React
     );
 }
 
-function FeatureCard({ feature }: { feature: Feature }) {
+function FeatureCard({ feature, isLoading }: { feature: Feature; isLoading?: boolean }) {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: String(feature.id),
         data: feature,
@@ -85,7 +86,12 @@ function FeatureCard({ feature }: { feature: Feature }) {
     const cardStyle = isDragging ? { opacity: 0.4, cursor: 'grabbing' } : { cursor: 'grab' };
 
     return (
-        <div ref={setNodeRef} style={cardStyle} className="w-full touch-manipulation">
+        <div ref={setNodeRef} style={cardStyle} className="relative w-full touch-manipulation">
+            {isLoading && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/70">
+                    <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
+                </div>
+            )}
             <Card
                 {...attributes}
                 {...listeners}
@@ -154,6 +160,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
     const [laneState, setLaneState] = useState(lanes);
     const [activeFeatureId, setActiveFeatureId] = useState<number | null>(null);
     const [overLaneKey, setOverLaneKey] = useState<string | null>(null);
+    const [loadingFeatureId, setLoadingFeatureId] = useState<number | null>(null);
     const [selectedStatus, setSelectedStatus] = useState<string | null>(filters.status || null);
     const [selectedProjectId, setSelectedProjectId] = useState<number | null>(filters.project_id || null);
     const [selectedPlanningId, setSelectedPlanningId] = useState<number | null>(filters.planning_id || null);
@@ -212,6 +219,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
 
         // Aktualisiere lokalen State sofort für responsive UI
         setLaneState(newLaneState);
+        setLoadingFeatureId(feature.id);
 
         // Status-Update an Backend senden - verwende den neuen Status aus newLaneState
         // Verwende axios statt Inertia für API-Anfragen
@@ -220,9 +228,10 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
                 status: newLaneState[targetLaneIdx].key,
             })
             .then(() => {
-                // Erfolgreiche Aktualisierung - nichts zu tun, State ist bereits aktualisiert
+                setLoadingFeatureId(null);
             })
             .catch(() => {
+                setLoadingFeatureId(null);
                 // Bei Fehler den State zurücksetzen
                 setLaneState(laneState);
             });
@@ -354,7 +363,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
                             <LaneColumn key={lane.key} lane={lane} highlight={overLaneKey === lane.key || selectedStatus === lane.key}>
                                 {lane.features.map((feature: Feature) => (
                                     <div key={feature.id} className="mb-2">
-                                        <FeatureCard feature={feature} />
+                                        <FeatureCard feature={feature} isLoading={loadingFeatureId === feature.id} />
                                     </div>
                                 ))}
                             </LaneColumn>
