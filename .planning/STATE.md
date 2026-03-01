@@ -17,6 +17,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 ## What Was Just Done
 
+- **Phase 6, Plan 05: Plannings Domain useForm Migration** (2026-03-01) — FEED-02, FEED-03 (plannings domain)
+  - plannings/create.tsx: useState + router.post → useForm + transform(); 1 submit button disabled={processing} + LoaderCircle; 8 InputError replacements
+  - plannings/edit.tsx: useState + router.put → useForm + transform(); BOTH submit buttons (top + bottom) disabled={processing} + LoaderCircle; 10 InputError replacements (status, project_id, title, description, owner_id, deputy_id, planned_at, executed_at, stakeholder_ids, feature_ids)
+  - Array fields (stakeholder_ids, feature_ids) use setData('field', newArray) toggle pattern; string[] preserved to match checkbox value pattern
+
 - **Phase 6, Plan 06: Vote session isSaving binding + Commitment InputError + plans/create useForm** (2026-03-01) — FEED-02, FEED-03 complete
   - votes/session.tsx: added `disabled={isSaving}` + LoaderCircle to both submit buttons (header + form footer)
   - votes/card-session.tsx: added `disabled={isSaving}` + LoaderCircle (icon swap) to save button
