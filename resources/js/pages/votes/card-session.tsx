@@ -8,10 +8,11 @@ import DOMPurify from 'dompurify';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/empty-state';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { router } from '@inertiajs/react';
-import { ArrowDownCircle, CheckCircle2, HelpCircle, LoaderCircle, MoveHorizontal } from 'lucide-react';
+import { AlertCircle, ArrowDownCircle, CheckCircle2, HelpCircle, Loader2, MoveHorizontal, PackageSearch } from 'lucide-react';
 
 // Typdefinitionen
 const FIBONACCI_VALUES = [1, 2, 3, 5, 8, 13, 20] as const;
@@ -474,6 +475,8 @@ export default function CardVoteSession({ planning, features, types, existingVot
     const initialLoad = useRef(true);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [saveSuccess, setSaveSuccess] = useState(false);
+    const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Zustand für die aktuelle Kategorie
     const [activeCategory, setActiveCategory] = useState<string>(types[0]);
@@ -759,6 +762,7 @@ export default function CardVoteSession({ planning, features, types, existingVot
     const saveVotes = (next?: () => void) => {
         setIsSaving(true);
         setSaveError(null);
+        setSaveSuccess(false);
 
         router.post(
             route('votes.session.store', planning.id),
@@ -769,12 +773,17 @@ export default function CardVoteSession({ planning, features, types, existingVot
                 replace: !next, // Only replace if not navigating
                 onSuccess: () => {
                     setIsSaving(false);
+                    setSaveSuccess(true);
+                    setSaveError(null);
+                    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+                    successTimerRef.current = setTimeout(() => setSaveSuccess(false), 2000);
                     if (next) {
                         next();
                     }
                 },
                 onError: () => {
                     setIsSaving(false);
+                    setSaveSuccess(false);
                     setSaveError('Speichern fehlgeschlagen – bitte erneut versuchen.');
                 },
             },
@@ -803,6 +812,7 @@ export default function CardVoteSession({ planning, features, types, existingVot
         }
         setIsSaving(true);
         setSaveError(null);
+        setSaveSuccess(false);
 
         router.post(
             route('votes.session.store', planning.id),
@@ -812,9 +822,14 @@ export default function CardVoteSession({ planning, features, types, existingVot
                 preserveState: false,
                 onSuccess: () => {
                     setIsSaving(false);
+                    setSaveSuccess(true);
+                    setSaveError(null);
+                    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+                    successTimerRef.current = setTimeout(() => setSaveSuccess(false), 2000);
                 },
                 onError: () => {
                     setIsSaving(false);
+                    setSaveSuccess(false);
                     setSaveError('Speichern fehlgeschlagen – bitte erneut versuchen.');
                 },
             },
@@ -840,6 +855,12 @@ export default function CardVoteSession({ planning, features, types, existingVot
         };
     }, [votes]);
 
+    useEffect(() => {
+        return () => {
+            if (successTimerRef.current) clearTimeout(successTimerRef.current);
+        };
+    }, []);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="mx-auto mt-8 w-full px-4 md:px-10">
@@ -853,15 +874,20 @@ export default function CardVoteSession({ planning, features, types, existingVot
                                 <CardDescription>Angemeldet als: {user.name}</CardDescription>
                             </div>
                             <div className="flex space-x-2">
-                                <div className="text-muted-foreground flex items-center px-2 text-xs">
-                                    {isSaving ? 'Speichern...' : saveError || 'Autosave aktiv'}
-                                </div>
+                                <span className="flex items-center gap-1.5 px-2">
+                                    {isSaving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                                    {!isSaving && saveSuccess && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                                    {!isSaving && !saveSuccess && saveError && <AlertCircle className="h-4 w-4 text-red-500" />}
+                                    <span className="text-xs text-muted-foreground">
+                                        {isSaving ? 'Speichern…' : saveSuccess ? 'Gespeichert' : saveError ? 'Fehler' : 'Autosave aktiv'}
+                                    </span>
+                                </span>
                                 <Button variant="outline" onClick={switchToStandardView}>
                                     <MoveHorizontal className="mr-2 h-4 w-4" />
                                     Zur Tabellen-Ansicht
                                 </Button>
                                 <Button onClick={handleSubmit} disabled={isSaving}>
-                                    {isSaving ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                                     Abstimmung speichern
                                 </Button>
                             </div>
@@ -881,7 +907,17 @@ export default function CardVoteSession({ planning, features, types, existingVot
 
                         {types.map((type) => (
                             <TabsContent key={type} value={type} className="mt-0">
-                                {type === 'JobSize' ? (
+                                {features.length === 0 ? (
+                                    <EmptyState
+                                        icon={PackageSearch}
+                                        title="Keine Features zur Abstimmung"
+                                        description="Dieser Planning-Session wurden noch keine Features zugewiesen."
+                                        action={{
+                                            label: 'Zum Planning zurück',
+                                            href: route('plannings.show', planning.id),
+                                        }}
+                                    />
+                                ) : type === 'JobSize' ? (
                                     <div className="space-y-3">
                                         {features.map((feature) => (
                                             <div key={feature.id} className="flex items-center justify-between rounded-lg border p-3">

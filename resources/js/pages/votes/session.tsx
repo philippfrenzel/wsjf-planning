@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/empty-state';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import DOMPurify from 'dompurify';
@@ -8,7 +9,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { router } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, LoaderCircle, PackageSearch } from 'lucide-react';
 
 const FIBONACCI_VALUES = [1, 2, 3, 5, 8, 13, 20] as const;
 
@@ -60,6 +61,8 @@ export default function VoteSession({ planning, features, types, existingVotes, 
     const initialLoad = useRef(true);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [saveSuccess, setSaveSuccess] = useState(false);
+    const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // State für das aktuell ausgewählte Feature im Dialog
     const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
@@ -128,6 +131,7 @@ export default function VoteSession({ planning, features, types, existingVotes, 
     const saveVotes = (next?: () => void) => {
         setIsSaving(true);
         setSaveError(null);
+        setSaveSuccess(false);
 
         router.post(
             route('votes.session.store', planning.id),
@@ -138,12 +142,17 @@ export default function VoteSession({ planning, features, types, existingVotes, 
                 replace: !next, // Only replace if not navigating
                 onSuccess: () => {
                     setIsSaving(false);
+                    setSaveSuccess(true);
+                    setSaveError(null);
+                    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+                    successTimerRef.current = setTimeout(() => setSaveSuccess(false), 2000);
                     if (next) {
                         next();
                     }
                 },
                 onError: () => {
                     setIsSaving(false);
+                    setSaveSuccess(false);
                     setSaveError('Speichern fehlgeschlagen – bitte erneut versuchen.');
                 },
             },
@@ -166,6 +175,7 @@ export default function VoteSession({ planning, features, types, existingVotes, 
         }
         setIsSaving(true);
         setSaveError(null);
+        setSaveSuccess(false);
 
         router.post(
             route('votes.session.store', planning.id),
@@ -175,14 +185,25 @@ export default function VoteSession({ planning, features, types, existingVotes, 
                 preserveState: false,
                 onSuccess: () => {
                     setIsSaving(false);
+                    setSaveSuccess(true);
+                    setSaveError(null);
+                    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+                    successTimerRef.current = setTimeout(() => setSaveSuccess(false), 2000);
                 },
                 onError: () => {
                     setIsSaving(false);
+                    setSaveSuccess(false);
                     setSaveError('Speichern fehlgeschlagen – bitte erneut versuchen.');
                 },
             },
         );
     };
+
+    useEffect(() => {
+        return () => {
+            if (successTimerRef.current) clearTimeout(successTimerRef.current);
+        };
+    }, []);
 
     useEffect(() => {
         if (initialLoad.current) {
@@ -252,7 +273,14 @@ export default function VoteSession({ planning, features, types, existingVotes, 
                                 <div className="text-muted-foreground text-sm">Angemeldet als: {user.name}</div>
                             </div>
                             <div className="flex flex-col items-end gap-2">
-                                <div className="text-muted-foreground h-4 text-xs">{isSaving ? 'Speichern...' : saveError || ''}</div>
+                                <span className="flex items-center gap-1.5">
+                                    {isSaving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                                    {!isSaving && saveSuccess && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                                    {!isSaving && !saveSuccess && saveError && <AlertCircle className="h-4 w-4 text-red-500" />}
+                                    <span className="text-xs text-muted-foreground">
+                                        {isSaving ? 'Speichern…' : saveSuccess ? 'Gespeichert' : saveError ? 'Fehler' : ''}
+                                    </span>
+                                </span>
                                 <div className="flex gap-2">
                                     <Button variant="outline" onClick={handleSwitchToCards}>
                                         Zur Karten-Ansicht wechseln
@@ -277,56 +305,79 @@ export default function VoteSession({ planning, features, types, existingVotes, 
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {features.map((feature) => (
-                                        <TableRow key={feature.id}>
-                                            <TableCell>
-                                                <div>
-                                                    <span
-                                                        className="cursor-pointer font-medium underline decoration-dotted"
-                                                        onClick={() => setSelectedFeature(selectedFeature?.id === feature.id ? null : feature)}
-                                                    >
-                                                        {feature.jira_key}
-                                                    </span>
-                                                    <div className="text-muted-foreground text-xs">{feature.name}</div>
-                                                </div>
+                                    {features.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={types.length + 1} className="py-0">
+                                                <EmptyState
+                                                    icon={PackageSearch}
+                                                    title="Keine Features zur Abstimmung"
+                                                    description="Dieser Planning-Session wurden noch keine Features zugewiesen."
+                                                    action={{
+                                                        label: 'Zum Planning zurück',
+                                                        href: route('plannings.show', planning.id),
+                                                    }}
+                                                />
                                             </TableCell>
-                                            {types.map((type) => (
-                                                <TableCell key={type}>
-                                                    {type === 'JobSize' ? (
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {FIBONACCI_VALUES.map((fib) => (
-                                                                <Button
-                                                                    key={fib}
-                                                                    type="button"
-                                                                    variant={votes[`${feature.id}_JobSize`] === String(fib) ? 'default' : 'outline'}
-                                                                    size="sm"
-                                                                    className="h-7 w-9 p-0 text-xs"
-                                                                    onClick={() => handleChange(feature.id, 'JobSize', String(fib))}
-                                                                >
-                                                                    {fib}
-                                                                </Button>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <Input
-                                                            type="number"
-                                                            step="any"
-                                                            min="0"
-                                                            name={`vote_${feature.id}_${type}`}
-                                                            value={votes[`${feature.id}_${type}`] || ''}
-                                                            onChange={(e) => handleChange(feature.id, type, e.target.value)}
-                                                            placeholder="Wert"
-                                                        />
-                                                    )}
-                                                </TableCell>
-                                            ))}
                                         </TableRow>
-                                    ))}
+                                    ) : (
+                                        features.map((feature) => (
+                                            <TableRow key={feature.id}>
+                                                <TableCell>
+                                                    <div>
+                                                        <span
+                                                            className="cursor-pointer font-medium underline decoration-dotted"
+                                                            onClick={() => setSelectedFeature(selectedFeature?.id === feature.id ? null : feature)}
+                                                        >
+                                                            {feature.jira_key}
+                                                        </span>
+                                                        <div className="text-muted-foreground text-xs">{feature.name}</div>
+                                                    </div>
+                                                </TableCell>
+                                                {types.map((type) => (
+                                                    <TableCell key={type}>
+                                                        {type === 'JobSize' ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {FIBONACCI_VALUES.map((fib) => (
+                                                                    <Button
+                                                                        key={fib}
+                                                                        type="button"
+                                                                        variant={votes[`${feature.id}_JobSize`] === String(fib) ? 'default' : 'outline'}
+                                                                        size="sm"
+                                                                        className="h-7 w-9 p-0 text-xs"
+                                                                        onClick={() => handleChange(feature.id, 'JobSize', String(fib))}
+                                                                    >
+                                                                        {fib}
+                                                                    </Button>
+                                                                ))}
+                                                            </div>
+                                                        ) : (
+                                                            <Input
+                                                                type="number"
+                                                                step="any"
+                                                                min="0"
+                                                                name={`vote_${feature.id}_${type}`}
+                                                                value={votes[`${feature.id}_${type}`] || ''}
+                                                                onChange={(e) => handleChange(feature.id, type, e.target.value)}
+                                                                placeholder="Wert"
+                                                            />
+                                                        )}
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        ))
+                                    )}
                                 </TableBody>
                             </Table>
                             <div className="mt-6 flex justify-end">
                                 <div className="flex items-center gap-3">
-                                    <span className="text-muted-foreground text-xs">{isSaving ? 'Speichern...' : saveError || 'Autosave aktiv'}</span>
+                                    <span className="flex items-center gap-1.5">
+                                        {isSaving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                                        {!isSaving && saveSuccess && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                                        {!isSaving && !saveSuccess && saveError && <AlertCircle className="h-4 w-4 text-red-500" />}
+                                        <span className="text-xs text-muted-foreground">
+                                            {isSaving ? 'Speichern…' : saveSuccess ? 'Gespeichert' : saveError ? 'Fehler' : 'Autosave aktiv'}
+                                        </span>
+                                    </span>
                                     <Button type="submit" disabled={isSaving}>
                                         {isSaving && <LoaderCircle className="h-4 w-4 animate-spin" />}
                                         Abstimmung speichern
