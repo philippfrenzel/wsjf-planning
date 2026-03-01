@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ export default function BillingPage({
     upgradePrompt,
     successMessage,
 }: BillingPageProps) {
+    const seatUnitPriceUsd = Number((usePage().props as { billing?: { seatUnitPriceUsd?: number } }).billing?.seatUnitPriceUsd ?? 1);
     const statusLabel = {
         active: 'Active',
         trial: `Free Trial${trialDaysLeft !== null ? ` (${trialDaysLeft} days left)` : ''}`,
@@ -71,12 +72,19 @@ export default function BillingPage({
                             {billingStatus === 'trial' && trialEndsAt &&
                                 `Your free trial ends on ${new Date(trialEndsAt).toLocaleDateString()}.`}
                             {billingStatus === 'active' &&
-                                'Your subscription is active. Seats are billed per team member.'}
+                                `Your subscription is active. Pricing is $${seatUnitPriceUsd} per user per month.`}
                             {billingStatus === 'inactive' &&
-                                'Your trial has ended or subscription is cancelled. Subscribe to continue using the app.'}
+                                `Your trial has ended or subscription is cancelled. Subscribe to continue using the app at $${seatUnitPriceUsd} per user per month.`}
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex gap-3">
+                    <CardContent className="space-y-4">
+                        <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                            <p className="font-medium text-slate-900">Kostenmodell</p>
+                            <p>
+                                Monatliche Kosten = Anzahl aktiver Teammitglieder × ${seatUnitPriceUsd}.
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
                         {billingStatus !== 'active' && (
                             <Button asChild>
                                 <Link href="/billing/checkout">Subscribe Now</Link>
@@ -92,6 +100,7 @@ export default function BillingPage({
                                 <Link href="/billing/checkout">Add Payment Method</Link>
                             </Button>
                         )}
+                        </div>
                     </CardContent>
                 </Card>
             </div>

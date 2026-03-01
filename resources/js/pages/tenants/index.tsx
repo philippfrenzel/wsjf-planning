@@ -42,6 +42,7 @@ const roleBadgeClass = (role?: string | null) => {
 export default function TenantsIndex() {
     const page = usePage<SharedData>();
     const { currentRole, isSuperAdmin } = page.props.auth;
+    const seatUnitPriceUsd = Number((page.props.billing as { seatUnitPriceUsd?: number } | undefined)?.seatUnitPriceUsd ?? 1);
     const isAdmin = currentRole === 'Admin' || !!isSuperAdmin;
     const currentUserId = page.props.auth.user.id;
 
@@ -68,6 +69,7 @@ export default function TenantsIndex() {
     const viewingTenant = tenants.find((t) => t.id === viewingTenantId);
     const viewingOwnedTenant = ownedTenants.find((t) => t.id === viewingTenantId);
     const members = viewingTenant?.members ?? viewingOwnedTenant?.members ?? [];
+    const monthlySeatCostUsd = members.length * seatUnitPriceUsd;
     const pendingInvitations = (viewingOwnedTenant?.invitations ?? []).filter((i) => !i.accepted_at);
 
     const switchTenant = (tenantId: number) => {
@@ -345,6 +347,9 @@ export default function TenantsIndex() {
                                         </a>
                                     </div>
                                 </div>
+                                <p className="text-xs text-slate-500">
+                                    Monatliche Kosten: {members.length} × ${seatUnitPriceUsd} = ${monthlySeatCostUsd}
+                                </p>
                             </div>
                         </div>
                     )}

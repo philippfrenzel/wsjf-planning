@@ -36,10 +36,11 @@ return [
     ],
 
     'stripe' => [
-        'key'      => env('STRIPE_KEY'),
-        'secret'   => env('STRIPE_SECRET'),
-        'webhook'  => ['secret' => env('STRIPE_WEBHOOK_SECRET')],
-        'price_id' => env('STRIPE_PRICE_ID'),
+        'key'                 => env('STRIPE_KEY'),
+        'secret'              => env('STRIPE_SECRET'),
+        'webhook'             => ['secret' => env('STRIPE_WEBHOOK_SECRET')],
+        'price_id'            => env('STRIPE_PRICE_ID'),
+        'seat_unit_price_usd' => (int) env('STRIPE_SEAT_UNIT_PRICE_USD', 1),
     ],
 
 ];

@@ -65,6 +65,9 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
             ],
+            'billing' => [
+                'seatUnitPriceUsd' => (int) config('services.stripe.seat_unit_price_usd', 1),
+            ],
         ];
     }
 
