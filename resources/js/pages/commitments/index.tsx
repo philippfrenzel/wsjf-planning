@@ -1,4 +1,5 @@
 import { useConfirm } from '@/components/confirm-dialog-provider';
+import { IndexFilterPanel } from '@/components/index-filter-panel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -102,11 +103,17 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
         <AppLayout breadcrumbs={[{ title: 'Commitments', href: route('commitments.index') }]}>
             <div className="my-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold">Commitments</h1>
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm">Planning:</span>
+                <Link href={route('commitments.create', selectedPlanning ? { planning_id: selectedPlanning } : {})}>
+                    <Button>Neues Commitment</Button>
+                </Link>
+            </div>
+
+            <div className="mb-6">
+                <IndexFilterPanel onReset={() => handlePlanningChange('all')} resetDisabled={planningFilter === 'all'}>
+                    <div className="max-w-sm">
+                        <label className="mb-1 block text-sm font-medium">Planning</label>
                         <Select value={planningFilter} onValueChange={handlePlanningChange}>
-                            <SelectTrigger className="w-[250px]">
+                            <SelectTrigger>
                                 <SelectValue placeholder="Planning auswählen" />
                             </SelectTrigger>
                             <SelectContent>
@@ -119,10 +126,7 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
                             </SelectContent>
                         </Select>
                     </div>
-                    <Link href={route('commitments.create', selectedPlanning ? { planning_id: selectedPlanning } : {})}>
-                        <Button>Neues Commitment</Button>
-                    </Link>
-                </div>
+                </IndexFilterPanel>
             </div>
 
             <Card>

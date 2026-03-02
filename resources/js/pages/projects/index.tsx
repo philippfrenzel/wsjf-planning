@@ -1,5 +1,6 @@
 import { useConfirm } from '@/components/confirm-dialog-provider';
 import { EmptyState } from '@/components/empty-state';
+import { IndexFilterPanel } from '@/components/index-filter-panel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
 import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Eye, FolderOpen, LayoutGrid, LayoutList, Pencil, Plus, Search, Trash2, Vote, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, FolderOpen, LayoutGrid, LayoutList, Pencil, Plus, Search, Trash2, Vote } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 interface Project {
@@ -171,20 +172,9 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                 </div>
             </div>
 
-            {/* Filter-Box */}
-            <div className="bg-muted mx-4 mb-6 rounded-lg border p-4">
-                <div className="mb-2 flex items-center gap-2">
-                    <Search className="text-muted-foreground h-4 w-4" />
-                    <h2 className="font-medium">Filter</h2>
-
-                    {/* Dauerhaft sichtbarer Reset-Button */}
-                    <Button variant="outline" size="sm" onClick={resetFilters} className="ml-auto">
-                        <X className="mr-1 h-4 w-4" />
-                        Filter zurücksetzen
-                    </Button>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="mx-4 mb-6">
+                <IndexFilterPanel onReset={resetFilters} resetDisabled={!hasActiveFilters}>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div>
                         <label htmlFor="projectNumber" className="text-foreground mb-1 block text-sm font-medium">
                             Projektnummer
@@ -217,7 +207,8 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                             onChange={handleFilterChange}
                         />
                     </div>
-                </div>
+                    </div>
+                </IndexFilterPanel>
             </div>
 
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">

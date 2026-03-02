@@ -1,8 +1,8 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/empty-state';
+import { IndexFilterPanel } from '@/components/index-filter-panel';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -274,22 +274,8 @@ export default function Index({ features }: IndexProps) {
             {/* Gesamtcontainer für Filter und Tabelle */}
             <div className="flex flex-col gap-4 p-5">
                 {/* Filter-Bereich */}
-                <Card className="bg-muted border border-gray-200">
-                    <CardContent>
-                        {/* Neue Position für den Filter-Button in der oberen Zeile */}
-                        <div className="mb-4 flex items-center gap-2">
-                            <Search className="text-muted-foreground h-4 w-4" />
-                            <h2 className="font-medium">Filter</h2>
-
-                            {/* Dauerhaft sichtbarer Reset-Button */}
-                            <Button variant="outline" size="sm" onClick={resetFilters} className="ml-auto">
-                                <X className="mr-1 h-4 w-4" />
-                                Filter zurücksetzen
-                            </Button>
-                        </div>
-
-                        {/* Filter zweizeilig: Erste Zeile */}
-                        <div className="mb-2 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <IndexFilterPanel onReset={resetFilters} resetDisabled={!hasActiveFilters}>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
                                 <label className="mb-1 block text-sm font-medium">Jira Key</label>
                                 <div className="relative">
@@ -379,8 +365,7 @@ export default function Index({ features }: IndexProps) {
                                 </div>
                             </div>
                         </div>
-                        {/* Filter zweizeilig: Zweite Zeile */}
-                        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             {/* Projekt mit Type-Ahead */}
                             <div>
                                 <label className="mb-1 block text-sm font-medium">Projekt</label>
@@ -518,8 +503,7 @@ export default function Index({ features }: IndexProps) {
                                 </div>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+                </IndexFilterPanel>
 
                 {/* Tabellen-Bereich ohne eigene Flexbox-Container-Eigenschaften */}
                 <div className="mt-4">

@@ -1,4 +1,5 @@
 import { useConfirm } from '@/components/confirm-dialog-provider';
+import { IndexFilterPanel } from '@/components/index-filter-panel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, MoreHorizontal, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { Eye, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface Role {
@@ -64,19 +65,16 @@ export default function Index({ users }: UsersIndexProps) {
                     </Button>
                 </div>
 
-                <Card className="mb-6">
-                    <CardContent className="pt-6">
-                        <div className="mb-4 flex items-center gap-4">
-                            <Search className="text-muted-foreground h-5 w-5" />
-                            <Input
-                                placeholder="Suche nach Namen, E-Mail oder Rollen..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="flex-1"
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
+                <div className="mb-6">
+                    <IndexFilterPanel onReset={() => setSearchTerm('')} resetDisabled={!searchTerm}>
+                        <Input
+                            placeholder="Suche nach Namen, E-Mail oder Rollen..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="max-w-xl"
+                        />
+                    </IndexFilterPanel>
+                </div>
 
                 <Card>
                     <CardHeader>

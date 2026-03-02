@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { EmptyState } from '@/components/empty-state';
+import { IndexFilterPanel } from '@/components/index-filter-panel';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -180,20 +181,8 @@ export default function Index({ plannings }: IndexProps) {
 
             {/* Filter-Bereich */}
             <div className="flex flex-col p-5">
-                <Card className="bg-muted border">
-                    <CardContent>
-                        <div className="mb-4 flex items-center gap-2">
-                            <Search className="text-muted-foreground h-4 w-4" />
-                            <h2 className="font-medium">Filter</h2>
-
-                            {/* Dauerhaft sichtbarer Reset-Button */}
-                            <Button variant="outline" size="sm" onClick={resetFilters} className="ml-auto">
-                                <X className="mr-1 h-4 w-4" />
-                                Filter zurücksetzen
-                            </Button>
-                        </div>
-
-                        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <IndexFilterPanel onReset={resetFilters} resetDisabled={!hasActiveFilters}>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             {/* Titel Filter */}
                             <div>
                                 <label className="mb-1 block text-sm font-medium">Titel</label>
@@ -282,9 +271,8 @@ export default function Index({ plannings }: IndexProps) {
                             </div>
                             {/* Leer für Ausrichtung */}
                             <div></div>
-                        </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </IndexFilterPanel>
 
                 {/* Tabellen-Bereich */}
                 <div className="mt-4">
