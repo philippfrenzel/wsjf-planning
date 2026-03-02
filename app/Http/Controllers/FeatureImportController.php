@@ -58,7 +58,7 @@ class FeatureImportController extends Controller
     public function store(Request $request, Project $project): RedirectResponse
     {
         $request->validate([
-            'file' => 'required|file|mimetypes:text/plain,text/csv,application/vnd.ms-excel,application/csv,application/octet-stream',
+            'file' => 'required|file|max:20480',
             'has_header' => 'nullable|boolean',
             'mapping' => 'nullable|array',
             'mapping.*' => 'nullable|in:jira_key,name,description,ignore',
