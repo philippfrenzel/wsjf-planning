@@ -169,12 +169,12 @@ export default function Import({ project }: PageProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="mx-auto w-full max-w-6xl p-6">
                 <Card className="overflow-hidden border shadow-sm">
-                    <CardHeader className="space-y-4 border-b bg-slate-50/70">
+                    <CardHeader className="bg-muted/50 space-y-4 border-b">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <CardTitle className="text-2xl">Feature-Import Wizard</CardTitle>
                                 <CardDescription className="mt-1">
-                                    Projekt: <span className="font-semibold text-slate-800">{project.name}</span>
+                                    Projekt: <span className="text-foreground font-semibold">{project.name}</span>
                                 </CardDescription>
                             </div>
                             <Badge variant="outline" className="text-xs">
@@ -191,12 +191,12 @@ export default function Import({ project }: PageProps) {
                                     className={`rounded-lg border p-3 text-left transition ${
                                         step === item.id
                                             ? 'border-primary bg-background ring-primary/20 ring-2'
-                                            : 'border-slate-200 bg-white hover:border-slate-300'
+                                            : 'border-border bg-background hover:border-primary/40'
                                     }`}
                                 >
-                                    <div className="mb-1 text-xs font-semibold tracking-wide text-slate-500 uppercase">Schritt {item.id}</div>
-                                    <div className="text-sm font-semibold text-slate-900">{item.title}</div>
-                                    <div className="mt-1 text-xs text-slate-600">{item.detail}</div>
+                                    <div className="text-muted-foreground mb-1 text-xs font-semibold tracking-wide uppercase">Schritt {item.id}</div>
+                                    <div className="text-foreground text-sm font-semibold">{item.title}</div>
+                                    <div className="text-muted-foreground mt-1 text-xs">{item.detail}</div>
                                 </button>
                             ))}
                         </div>
@@ -230,7 +230,7 @@ export default function Import({ project }: PageProps) {
                                         <CardHeader>
                                             <CardTitle className="text-base">Workflow-Details</CardTitle>
                                         </CardHeader>
-                                        <CardContent className="space-y-2 text-sm text-slate-700">
+                                        <CardContent className="text-foreground space-y-2 text-sm">
                                             <p>1. CSV-Datei laden und Header prüfen.</p>
                                             <p>2. Spalten auf Jira-Key, Name und Beschreibung mappen.</p>
                                             <p>3. Import starten (bestehende Features werden via Jira-Key aktualisiert).</p>
@@ -267,7 +267,7 @@ export default function Import({ project }: PageProps) {
                                                     <CardContent className="overflow-x-auto">
                                                         <table className="min-w-full text-sm">
                                                             <thead>
-                                                                <tr className="bg-slate-50">
+                                                                <tr className="bg-muted/50">
                                                                     {data.mapping.map((_, i) => (
                                                                         <th key={`h-${i}`} className="border-b px-3 py-2 text-left font-semibold">
                                                                             Spalte {i + 1}
@@ -298,7 +298,7 @@ export default function Import({ project }: PageProps) {
                                                                 </tr>
                                                                 {[0, 1].map((rowIdx) =>
                                                                     preview[rowIdx] ? (
-                                                                        <tr key={`ex-${rowIdx}`} className={rowIdx === 0 && data.has_header ? 'bg-slate-50 font-semibold' : ''}>
+                                                                        <tr key={`ex-${rowIdx}`} className={rowIdx === 0 && data.has_header ? 'bg-muted/50 font-semibold' : ''}>
                                                                             {data.mapping.map((_, i) => (
                                                                                 <td key={`ex-${rowIdx}-${i}`} className="border-b px-3 py-2 whitespace-pre-wrap">
                                                                                     {preview[rowIdx][i] ?? ''}
@@ -321,7 +321,7 @@ export default function Import({ project }: PageProps) {
                                                     <table className="min-w-full text-sm">
                                                         <tbody>
                                                             {preview.map((row, idx) => (
-                                                                <tr key={idx} className={idx === 0 && data.has_header ? 'bg-slate-50 font-semibold' : ''}>
+                                                                <tr key={idx} className={idx === 0 && data.has_header ? 'bg-muted/50 font-semibold' : ''}>
                                                                     {row.map((cell, i) => (
                                                                         <td key={i} className="border-b px-3 py-2 whitespace-pre-wrap">
                                                                             {cell}
@@ -365,15 +365,15 @@ export default function Import({ project }: PageProps) {
                                         </CardHeader>
                                         <CardContent className="space-y-2 text-sm">
                                             <div className="flex items-center gap-2">
-                                                <CheckCircle2 className={`h-4 w-4 ${fileSelected ? 'text-emerald-600' : 'text-slate-400'}`} />
+                                                <CheckCircle2 className={`h-4 w-4 ${fileSelected ? 'text-emerald-600' : 'text-muted-foreground'}`} />
                                                 <span>CSV-Datei ausgewählt</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <CheckCircle2 className={`h-4 w-4 ${preview.length > 0 ? 'text-emerald-600' : 'text-slate-400'}`} />
+                                                <CheckCircle2 className={`h-4 w-4 ${preview.length > 0 ? 'text-emerald-600' : 'text-muted-foreground'}`} />
                                                 <span>Vorschau erfolgreich geladen</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <CheckCircle2 className={`h-4 w-4 ${hasRequiredMapping ? 'text-emerald-600' : 'text-slate-400'}`} />
+                                                <CheckCircle2 className={`h-4 w-4 ${hasRequiredMapping ? 'text-emerald-600' : 'text-muted-foreground'}`} />
                                                 <span>Pflichtfelder (Jira-Key, Name) zugeordnet</span>
                                             </div>
                                         </CardContent>
