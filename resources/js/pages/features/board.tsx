@@ -294,7 +294,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
                 <div className="mt-2 mb-6">
                     <IndexFilterPanel>
                         <div className="flex flex-wrap items-center gap-4">
-                            <div className="w-64">
+                            <div className="w-full sm:w-56">
                                 <label className="mb-1 block text-sm font-medium">Projekt</label>
                                 <Select value={selectedProjectId ? String(selectedProjectId) : '__all'} onValueChange={handleProjectChange}>
                                     <SelectTrigger>
@@ -310,7 +310,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="w-64">
+                            <div className="w-full sm:w-56">
                                 <label className="mb-1 block text-sm font-medium">Planning (optional)</label>
                                 <Select value={selectedPlanningId ? String(selectedPlanningId) : '__all'} onValueChange={handlePlanningChange}>
                                     <SelectTrigger>
@@ -326,7 +326,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="w-64">
+                            <div className="w-full sm:w-56">
                                 <label className="mb-1 block text-sm font-medium">Abgeschlossene Features</label>
                                 <Select value={selectedClosedStatusDays} onValueChange={handleClosedStatusDaysChange}>
                                     <SelectTrigger>
