@@ -1,6 +1,8 @@
 import axios from '@/bootstrap';
+import { IndexFilterPanel } from '@/components/index-filter-panel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import {
     DndContext,
@@ -249,8 +251,8 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
     };
 
     // Handler für die Änderung des Projekts
-    const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newProjectId = e.target.value ? Number(e.target.value) : null;
+    const handleProjectChange = (value: string) => {
+        const newProjectId = value && value !== '__all' ? Number(value) : null;
         setSelectedProjectId(newProjectId);
         // Reset Planning Filter wenn Projekt wechselt
         setSelectedPlanningId(null);
@@ -264,8 +266,8 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
         window.location.href = qs ? `/features/board?${qs}` : '/features/board';
     };
 
-    const handlePlanningChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newPlanningId = e.target.value ? Number(e.target.value) : null;
+    const handlePlanningChange = (value: string) => {
+        const newPlanningId = value && value !== '__all' ? Number(value) : null;
         setSelectedPlanningId(newPlanningId);
         const params = new URLSearchParams();
         if (selectedProjectId) params.set('project_id', String(selectedProjectId));
@@ -275,8 +277,7 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
         window.location.href = qs ? `/features/board?${qs}` : '/features/board';
     };
 
-    const handleClosedStatusDaysChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newDays = e.target.value;
+    const handleClosedStatusDaysChange = (newDays: string) => {
         setSelectedClosedStatusDays(newDays);
         const params = new URLSearchParams();
         if (selectedProjectId) params.set('project_id', String(selectedProjectId));
@@ -291,64 +292,58 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
             <div className="mx-auto max-w-7xl px-4">
                 {/* Filterbereich */}
                 <div className="mt-2 mb-6">
-                    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                    <IndexFilterPanel>
                         <div className="flex flex-wrap items-center gap-4">
                             <div className="w-64">
-                                <label htmlFor="projectFilter" className="text-foreground mb-1 block text-sm font-medium">
-                                    Projekt
-                                </label>
-                                <select
-                                    id="projectFilter"
-                                    className="block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm"
-                                    value={selectedProjectId || ''}
-                                    onChange={handleProjectChange}
-                                >
-                                    <option value="">Alle Projekte</option>
-                                    {projects.map((project) => (
-                                        <option key={project.id} value={project.id}>
-                                            {project.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <label className="mb-1 block text-sm font-medium">Projekt</label>
+                                <Select value={selectedProjectId ? String(selectedProjectId) : '__all'} onValueChange={handleProjectChange}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="__all">Alle Projekte</SelectItem>
+                                        {projects.map((project) => (
+                                            <SelectItem key={project.id} value={String(project.id)}>
+                                                {project.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="w-64">
-                                <label htmlFor="planningFilter" className="text-foreground mb-1 block text-sm font-medium">
-                                    Planning (optional)
-                                </label>
-                                <select
-                                    id="planningFilter"
-                                    className="block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm"
-                                    value={selectedPlanningId || ''}
-                                    onChange={handlePlanningChange}
-                                >
-                                    <option value="">Alle Plannings</option>
-                                    {plannings.map((p) => (
-                                        <option key={p.id} value={p.id}>
-                                            {p.title}
-                                        </option>
-                                    ))}
-                                </select>
+                                <label className="mb-1 block text-sm font-medium">Planning (optional)</label>
+                                <Select value={selectedPlanningId ? String(selectedPlanningId) : '__all'} onValueChange={handlePlanningChange}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="__all">Alle Plannings</SelectItem>
+                                        {plannings.map((p) => (
+                                            <SelectItem key={p.id} value={String(p.id)}>
+                                                {p.title}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="w-64">
-                                <label htmlFor="closedStatusFilter" className="text-foreground mb-1 block text-sm font-medium">
-                                    Abgeschlossene Features
-                                </label>
-                                <select
-                                    id="closedStatusFilter"
-                                    className="block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm"
-                                    value={selectedClosedStatusDays}
-                                    onChange={handleClosedStatusDaysChange}
-                                >
-                                    <option value="10">Älter als 10 Tage ausblenden</option>
-                                    <option value="30">Älter als 30 Tage ausblenden</option>
-                                    <option value="90">Älter als 90 Tage ausblenden</option>
-                                    <option value="180">Älter als 180 Tage ausblenden</option>
-                                    <option value="360">Älter als 360 Tage ausblenden</option>
-                                    <option value="all">Alle anzeigen</option>
-                                </select>
+                                <label className="mb-1 block text-sm font-medium">Abgeschlossene Features</label>
+                                <Select value={selectedClosedStatusDays} onValueChange={handleClosedStatusDaysChange}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="10">Älter als 10 Tage ausblenden</SelectItem>
+                                        <SelectItem value="30">Älter als 30 Tage ausblenden</SelectItem>
+                                        <SelectItem value="90">Älter als 90 Tage ausblenden</SelectItem>
+                                        <SelectItem value="180">Älter als 180 Tage ausblenden</SelectItem>
+                                        <SelectItem value="360">Älter als 360 Tage ausblenden</SelectItem>
+                                        <SelectItem value="all">Alle anzeigen</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
-                    </div>
+                    </IndexFilterPanel>
                 </div>
 
                 <DndContext

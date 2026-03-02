@@ -541,7 +541,7 @@ export default function Index({ features }: IndexProps) {
                             <TableRow>
                                 <TableHead className="hover:bg-muted cursor-pointer" onClick={() => handleSortChange('jira_key')}>
                                     <span className="flex items-center">
-                                        Jira Key
+                                        Jira
                                         {getSortIcon('jira_key')}
                                     </span>
                                 </TableHead>
@@ -552,19 +552,19 @@ export default function Index({ features }: IndexProps) {
                                     </span>
                                 </TableHead>
                                 {/* Status-Spalte hinzufügen */}
-                                <TableHead>Status</TableHead>
+                                <TableHead>Stat.</TableHead>
                                 {/* Neue Spalten für Schätzungsinformationen */}
-                                <TableHead>Komponenten</TableHead>
-                                <TableHead>Gesamtschätzung</TableHead>
+                                <TableHead>Komp.</TableHead>
+                                <TableHead>Gesamt</TableHead>
                                 <TableHead className="hover:bg-muted cursor-pointer" onClick={() => handleSortChange('project')}>
                                     <span className="flex items-center">
-                                        Projekt
+                                        Proj.
                                         {getSortIcon('project')}
                                     </span>
                                 </TableHead>
                                 <TableHead className="hover:bg-muted cursor-pointer" onClick={() => handleSortChange('requester')}>
                                     <span className="flex items-center">
-                                        Anforderer
+                                        Req.
                                         {getSortIcon('requester')}
                                     </span>
                                 </TableHead>
@@ -607,7 +607,7 @@ export default function Index({ features }: IndexProps) {
                             ) : (
                                 paginatedFeatures.map((feature) => (
                                     <TableRow key={feature.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className="font-medium whitespace-nowrap">
                                             {feature.project?.jira_base_uri && feature.jira_key ? (
                                                 <a
                                                     href={`${feature.project.jira_base_uri}${feature.jira_key}`}
@@ -621,11 +621,11 @@ export default function Index({ features }: IndexProps) {
                                                 feature.jira_key
                                             )}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="max-w-[260px]">
                                             {feature.name.length > 50 ? (
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <span className="cursor-help">{feature.name.slice(0, 50)}&hellip;</span>
+                                                        <span className="block cursor-help truncate">{feature.name.slice(0, 50)}&hellip;</span>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <span className="max-w-xs break-words whitespace-pre-line">{feature.name}</span>
@@ -636,7 +636,7 @@ export default function Index({ features }: IndexProps) {
                                             )}
                                         </TableCell>
                                         {/* Status-Badge */}
-                                        <TableCell>
+                                        <TableCell className="whitespace-nowrap">
                                             {feature.status ? (
                                                 <span className={`inline-block rounded-md px-2 py-1 text-xs ${feature.status.color}`}>
                                                     {feature.status.name}
@@ -646,13 +646,13 @@ export default function Index({ features }: IndexProps) {
                                             )}
                                         </TableCell>
                                         {/* Anzahl der Schätzungskomponenten */}
-                                        <TableCell>
+                                        <TableCell className="whitespace-nowrap">
                                             <Badge variant="outline" className="bg-blue-50">
                                                 {feature.estimation_components_count || 0}
                                             </Badge>
                                         </TableCell>
                                         {/* Summe aller gewichteten Schätzungen */}
-                                        <TableCell>
+                                        <TableCell className="whitespace-nowrap">
                                             {feature.total_weighted_case !== null &&
                                             feature.total_weighted_case !== undefined &&
                                             feature.estimation_components_count
@@ -660,9 +660,9 @@ export default function Index({ features }: IndexProps) {
                                                 : '-'}
                                         </TableCell>
                                         {/* Projekt - Diese Zelle fehlt */}
-                                        <TableCell>{feature.project?.name || '-'}</TableCell>
+                                        <TableCell className="max-w-[120px] truncate">{feature.project?.name || '-'}</TableCell>
                                         {/* Anforderer - Diese Zelle fehlt */}
-                                        <TableCell>{feature.requester?.name || '-'}</TableCell>
+                                        <TableCell className="max-w-[110px] truncate">{feature.requester?.name || '-'}</TableCell>
                                         {/* Aktionen */}
                                         <TableCell className="flex justify-end gap-2">
                                             <Button asChild size="icon" variant="secondary">
