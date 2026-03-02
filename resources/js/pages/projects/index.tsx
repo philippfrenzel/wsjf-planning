@@ -4,6 +4,7 @@ import { IndexFilterPanel } from '@/components/index-filter-panel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { WorkflowStateBadge } from '@/components/workflow-state-badge';
@@ -218,20 +219,24 @@ export default function Index({ projects, currentUserId }: IndexProps) {
 
                     {/* Seitenauswahl */}
                     <div className="flex items-center gap-2">
-                        <select
-                            className="rounded border px-2 py-1"
-                            value={perPage}
-                            onChange={(e) => {
-                                setItemsPerPage(Number(e.target.value));
-                                setCurrentPage(1); // Zurück zur ersten Seite
+                        <Select
+                            value={String(perPage)}
+                            onValueChange={(value) => {
+                                setItemsPerPage(Number(value));
+                                setCurrentPage(1);
                             }}
                             disabled={usesServerPagination}
                         >
-                            <option value={5}>5 pro Seite</option>
-                            <option value={10}>10 pro Seite</option>
-                            <option value={25}>25 pro Seite</option>
-                            <option value={50}>50 pro Seite</option>
-                        </select>
+                            <SelectTrigger className="w-[130px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="5">5 pro Seite</SelectItem>
+                                <SelectItem value="10">10 pro Seite</SelectItem>
+                                <SelectItem value="25">25 pro Seite</SelectItem>
+                                <SelectItem value="50">50 pro Seite</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 
@@ -298,11 +303,11 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                                     <TableRow>
                                         <TableCell colSpan={7} className="py-0">
                                             <div className="flex flex-col items-center gap-2 py-8 text-center">
-                                                <Search className="h-8 w-8 text-slate-400" />
-                                                <p className="text-sm text-slate-500">Keine Projekte gefunden</p>
-                                                <button className="text-sm text-indigo-600 underline hover:text-indigo-800" onClick={resetFilters}>
+                                                <Search className="text-muted-foreground h-8 w-8" />
+                                                <p className="text-muted-foreground text-sm">Keine Projekte gefunden</p>
+                                                <Button variant="link" className="h-auto p-0 text-sm" onClick={resetFilters}>
                                                     Filter zurücksetzen
-                                                </button>
+                                                </Button>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -326,11 +331,11 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                 ) : filteredProjects.length === 0 ? (
                     hasActiveFilters ? (
                         <div className="flex flex-col items-center gap-2 py-8 text-center">
-                            <Search className="h-8 w-8 text-slate-400" />
-                            <p className="text-sm text-slate-500">Keine Projekte gefunden</p>
-                            <button className="text-sm text-indigo-600 underline hover:text-indigo-800" onClick={resetFilters}>
+                            <Search className="text-muted-foreground h-8 w-8" />
+                            <p className="text-muted-foreground text-sm">Keine Projekte gefunden</p>
+                            <Button variant="link" className="h-auto p-0 text-sm" onClick={resetFilters}>
                                 Filter zurücksetzen
-                            </button>
+                            </Button>
                         </div>
                     ) : (
                         <EmptyState

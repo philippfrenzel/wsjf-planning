@@ -41,10 +41,10 @@ export default function ProjectShow() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Projekt: ${project.name}`} />
             <Card className="rounded-xl shadow-sm">
-                <CardHeader className="flex flex-col gap-2 border-b border-slate-200 sm:flex-row sm:items-center sm:justify-between">
+                <CardHeader className="border-border flex flex-col gap-2 border-b sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <CardTitle className="text-xl font-semibold text-slate-900">{project.name}</CardTitle>
-                        <CardDescription className="text-slate-600">Projektnummer: {project.project_number}</CardDescription>
+                        <CardTitle className="text-xl font-semibold">{project.name}</CardTitle>
+                        <CardDescription className="text-muted-foreground">Projektnummer: {project.project_number}</CardDescription>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                         {canManage && (
@@ -70,28 +70,28 @@ export default function ProjectShow() {
                             <CardTitle>Projektinformationen</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <dl className="divide-y divide-slate-200">
+                            <dl className="divide-border divide-y">
                                 <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-2">
-                                    <dt className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Startdatum</dt>
-                                    <dd className="text-sm text-slate-900">{project.start_date || '—'}</dd>
+                                    <dt className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Startdatum</dt>
+                                    <dd className="text-foreground text-sm">{project.start_date || '—'}</dd>
                                 </div>
                                 <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-2">
-                                    <dt className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Projektleiter</dt>
-                                    <dd className="text-sm text-slate-900">{project.project_leader?.name ?? '—'}</dd>
+                                    <dt className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Projektleiter</dt>
+                                    <dd className="text-foreground text-sm">{project.project_leader?.name ?? '—'}</dd>
                                 </div>
                                 <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-2">
-                                    <dt className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Stellvertretung</dt>
-                                    <dd className="text-sm text-slate-900">{project.deputy_leader?.name ?? '—'}</dd>
+                                    <dt className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Stellvertretung</dt>
+                                    <dd className="text-foreground text-sm">{project.deputy_leader?.name ?? '—'}</dd>
                                 </div>
                                 <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-2">
-                                    <dt className="text-xs font-semibold tracking-wide text-slate-500 uppercase">JIRA Base URI</dt>
-                                    <dd className="text-sm text-slate-900">
+                                    <dt className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">JIRA Base URI</dt>
+                                    <dd className="text-foreground text-sm">
                                         {project.jira_base_uri ? (
                                             <a
                                                 href={project.jira_base_uri}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-blue-600 hover:underline"
+                                                className="text-primary hover:underline"
                                             >
                                                 {project.jira_base_uri}
                                             </a>
@@ -109,7 +109,7 @@ export default function ProjectShow() {
                             <CardTitle>Beschreibung</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm whitespace-pre-line text-slate-800">{project.description || 'Keine Beschreibung vorhanden.'}</p>
+                            <p className="text-foreground text-sm whitespace-pre-line">{project.description || 'Keine Beschreibung vorhanden.'}</p>
                         </CardContent>
                     </Card>
                 </CardContent>

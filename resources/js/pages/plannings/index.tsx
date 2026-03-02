@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/empty-state';
 import { IndexFilterPanel } from '@/components/index-filter-panel';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
@@ -286,19 +287,23 @@ export default function Index({ plannings }: IndexProps) {
                         {/* Seitenauswahl */}
                         {filteredPlannings.length > 0 && (
                             <div className="flex items-center gap-2">
-                                <select
-                                    className="rounded border px-2 py-1"
-                                    value={itemsPerPage}
-                                    onChange={(e) => {
-                                        setItemsPerPage(Number(e.target.value));
-                                        setCurrentPage(1); // Zurück zur ersten Seite
+                                <Select
+                                    value={String(itemsPerPage)}
+                                    onValueChange={(value) => {
+                                        setItemsPerPage(Number(value));
+                                        setCurrentPage(1);
                                     }}
                                 >
-                                    <option value={5}>5 pro Seite</option>
-                                    <option value={10}>10 pro Seite</option>
-                                    <option value={25}>25 pro Seite</option>
-                                    <option value={50}>50 pro Seite</option>
-                                </select>
+                                    <SelectTrigger className="w-[130px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="5">5 pro Seite</SelectItem>
+                                        <SelectItem value="10">10 pro Seite</SelectItem>
+                                        <SelectItem value="25">25 pro Seite</SelectItem>
+                                        <SelectItem value="50">50 pro Seite</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         )}
                     </div>
@@ -323,14 +328,11 @@ export default function Index({ plannings }: IndexProps) {
                                         <TableRow>
                                             <TableCell colSpan={8} className="py-0">
                                                 <div className="flex flex-col items-center gap-2 py-8 text-center">
-                                                    <Search className="h-8 w-8 text-slate-400" />
-                                                    <p className="text-sm text-slate-500">Keine Plannings gefunden</p>
-                                                    <button
-                                                        className="text-sm text-indigo-600 underline hover:text-indigo-800"
-                                                        onClick={() => setFilters({ title: '', project: '' })}
-                                                    >
+                                                    <Search className="text-muted-foreground h-8 w-8" />
+                                                    <p className="text-muted-foreground text-sm">Keine Plannings gefunden</p>
+                                                    <Button variant="link" className="h-auto p-0 text-sm" onClick={() => setFilters({ title: '', project: '' })}>
                                                         Filter zurücksetzen
-                                                    </button>
+                                                    </Button>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -417,14 +419,11 @@ export default function Index({ plannings }: IndexProps) {
                             {paginatedPlannings.length === 0 ? (
                                 hasActiveFilters ? (
                                     <div className="col-span-full flex flex-col items-center gap-2 py-8 text-center">
-                                        <Search className="h-8 w-8 text-slate-400" />
-                                        <p className="text-sm text-slate-500">Keine Plannings gefunden</p>
-                                        <button
-                                            className="text-sm text-indigo-600 underline hover:text-indigo-800"
-                                            onClick={() => setFilters({ title: '', project: '' })}
-                                        >
+                                        <Search className="text-muted-foreground h-8 w-8" />
+                                        <p className="text-muted-foreground text-sm">Keine Plannings gefunden</p>
+                                        <Button variant="link" className="h-auto p-0 text-sm" onClick={() => setFilters({ title: '', project: '' })}>
                                             Filter zurücksetzen
-                                        </button>
+                                        </Button>
                                     </div>
                                 ) : (
                                     <div className="col-span-full">
