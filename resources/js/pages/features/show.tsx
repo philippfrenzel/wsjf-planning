@@ -168,7 +168,7 @@ export default function Show({ feature, auth }: ShowProps) {
 
                     <CardContent>
                         <Tabs defaultValue="stammdaten" className="space-y-6">
-                            <TabsList className="w-full">
+                            <TabsList>
                                 <TabsTrigger value="stammdaten">Stammdaten</TabsTrigger>
                                 <TabsTrigger value="schaetzungen">Schätzungskomponenten</TabsTrigger>
                             </TabsList>

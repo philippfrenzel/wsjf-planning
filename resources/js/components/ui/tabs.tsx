@@ -24,7 +24,7 @@ function TabsList({
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        "text-muted-foreground inline-flex h-9 w-fit items-center justify-center p-[3px]",
+        "inline-flex h-auto max-w-full items-end justify-start gap-1 overflow-x-auto border-b",
         className
       )}
       {...props}
@@ -40,15 +40,13 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 px-2 py-1 text-sm font-medium whitespace-nowrap transition-all",
-        "border-b-2 border-gray-300", // Grauer Unterstrich für alle Tabs
+        "inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-t-md border border-b-0 px-3 py-1.5 text-sm font-medium transition-all",
+        "bg-muted/40 text-muted-foreground",
         "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring focus-visible:ring-[3px] focus-visible:outline-1",
-        "text-foreground dark:text-muted-foreground",
         "disabled:pointer-events-none disabled:opacity-50",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "data-[state=active]:bg-white dark:data-[state=active]:bg-white", // Weißer Hintergrund für aktiven Tab
-        "data-[state=active]:border-b-2 data-[state=active]:border-[#00A0C6]", // SWICA-Grün Unterstrich für aktiven Tab
-        "data-[state=active]:text-[#00A0C6] data-[state=active]:font-semibold", // Text-Farbe und Schriftgewicht für aktiven Tab
+        "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:font-semibold",
+        "data-[state=active]:border-border data-[state=active]:-mb-px",
         className
       )}
       {...props}

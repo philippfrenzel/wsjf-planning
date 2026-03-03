@@ -81,7 +81,7 @@ export default function Create({ projects, users }: CreateProps) {
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <Tabs defaultValue="stammdaten" className="space-y-4">
-                            <TabsList className="w-full">
+                            <TabsList>
                                 <TabsTrigger value="stammdaten">Stammdaten</TabsTrigger>
                                 <TabsTrigger value="stakeholder">Stakeholder</TabsTrigger>
                             </TabsList>

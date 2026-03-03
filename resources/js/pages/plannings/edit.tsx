@@ -175,7 +175,7 @@ export default function Edit({
                         </div>
 
                         <Tabs defaultValue="stammdaten" className="space-y-4">
-                            <TabsList className="w-full">
+                            <TabsList>
                                 <TabsTrigger value="stammdaten">Stammdaten</TabsTrigger>
                                 <TabsTrigger value="stakeholder">Stakeholder</TabsTrigger>
                                 <TabsTrigger value="features">Features</TabsTrigger>
