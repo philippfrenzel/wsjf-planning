@@ -10,7 +10,7 @@ interface AuthLayoutProps {
 
 export default function AuthSimpleLayout({ children, title, description }: PropsWithChildren<AuthLayoutProps>) {
     return (
-        <div className="bg-[#0f172a] flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+        <div className="bg-background text-foreground flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
             <div className="w-full max-w-sm">
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col items-center gap-4">
@@ -22,12 +22,12 @@ export default function AuthSimpleLayout({ children, title, description }: Props
                         </Link>
 
                         <div className="space-y-2 text-center">
-                            <h1 className="text-xl font-medium text-white">{title}</h1>
-                            <p className="text-slate-400 text-center text-sm">{description}</p>
+                            <h1 className="text-xl font-medium">{title}</h1>
+                            <p className="text-muted-foreground text-center text-sm">{description}</p>
                         </div>
                     </div>
                     {children && (
-                        <div className="[&_.text-muted-foreground]:text-slate-400 [&_a]:text-indigo-400 [&_a:hover]:text-indigo-300">
+                        <div className="[&_a]:text-indigo-500 [&_a:hover]:text-indigo-400 dark:[&_a]:text-indigo-400 dark:[&_a:hover]:text-indigo-300">
                             {children}
                         </div>
                     )}
