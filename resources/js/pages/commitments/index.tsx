@@ -1,15 +1,25 @@
 import { useConfirm } from '@/components/confirm-dialog-provider';
-import { IndexFilterPanel } from '@/components/index-filter-panel';
+import { DataTable } from '@/components/data-table/data-table';
+import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
+import { DataTableToolbar } from '@/components/data-table/data-table-toolbar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
 import { Link, router } from '@inertiajs/react';
+import {
+    type ColumnDef,
+    type ColumnFiltersState,
+    getCoreRowModel,
+    getFacetedRowModel,
+    getFacetedUniqueValues,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    useReactTable,
+} from '@tanstack/react-table';
 import { Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 interface Planning {
     id: number;
@@ -73,126 +83,149 @@ function getCommitmentTypeBadge(type: string) {
     return <Badge className={classes[type as keyof typeof classes]}>{labels[type as keyof typeof labels]}</Badge>;
 }
 
+function arrIncludesFilter(row: any, columnId: string, filterValue: string[]) {
+    if (!filterValue?.length) return true;
+    const value = row.getValue(columnId);
+    return filterValue.includes(value as string);
+}
+
 export default function CommitmentsIndex({ commitments, plannings, selectedPlanning }: CommitmentsIndexProps) {
     const confirm = useConfirm();
     const commitmentData = Array.isArray(commitments) ? commitments : commitments.data;
-    const pagination = Array.isArray(commitments) ? undefined : commitments.meta;
-    const [planningFilter, setPlanningFilter] = useState<string>(selectedPlanning ? String(selectedPlanning) : 'all');
 
-    const handleDeleteCommitment = async (commitmentId: number) => {
-        const ok = await confirm({
-            title: 'Commitment löschen',
-            description: 'Soll dieses Commitment wirklich gelöscht werden?',
-            confirmLabel: 'Löschen',
-            cancelLabel: 'Abbrechen',
-        });
-        if (!ok) return;
-        router.delete(route('commitments.destroy', commitmentId));
-    };
+    const planningOptions = useMemo(
+        () => plannings.map((p) => ({ label: p.title, value: String(p.id) })),
+        [plannings],
+    );
 
-    const handlePlanningChange = (value: string) => {
-        setPlanningFilter(value);
-        if (value === 'all') {
-            window.location.href = route('commitments.index');
-        } else {
-            window.location.href = `${route('commitments.index')}?planning_id=${value}`;
-        }
-    };
+    const initialFilters: ColumnFiltersState = selectedPlanning
+        ? [{ id: 'planning', value: [String(selectedPlanning)] }]
+        : [];
+
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(initialFilters);
+
+    const columns = useMemo<ColumnDef<Commitment>[]>(
+        () => [
+            {
+                id: 'planning',
+                accessorFn: (row) => String(row.planning.id),
+                header: ({ column }) => <DataTableColumnHeader column={column} label="Planning" />,
+                cell: ({ row }) => row.original.planning.title,
+                filterFn: arrIncludesFilter,
+                meta: {
+                    label: 'Planning',
+                    variant: 'multiSelect' as const,
+                    options: planningOptions,
+                },
+                enableColumnFilter: true,
+            },
+            {
+                id: 'feature',
+                accessorFn: (row) => `${row.feature.jira_key}: ${row.feature.name}`,
+                header: ({ column }) => <DataTableColumnHeader column={column} label="Feature" />,
+                cell: ({ row }) => (
+                    <span>
+                        {row.original.feature.jira_key}: {row.original.feature.name}
+                    </span>
+                ),
+            },
+            {
+                id: 'commitment_type',
+                accessorKey: 'commitment_type',
+                header: 'Commitment-Typ',
+                cell: ({ row }) => getCommitmentTypeBadge(row.original.commitment_type),
+                enableSorting: false,
+            },
+            {
+                id: 'user',
+                accessorFn: (row) => row.user.name,
+                header: ({ column }) => <DataTableColumnHeader column={column} label="Benutzer" />,
+                cell: ({ row }) => row.original.user.name,
+            },
+            {
+                id: 'status',
+                accessorFn: (row) => row.status_details?.name ?? '',
+                header: 'Status',
+                cell: ({ row }) => <WorkflowStateBadge statusDetails={row.original.status_details} />,
+                enableSorting: false,
+            },
+            {
+                id: 'actions',
+                header: 'Aktionen',
+                cell: ({ row }) => {
+                    const commitment = row.original;
+                    return (
+                        <div className="flex gap-2">
+                            <Link href={route('commitments.show', commitment.id)}>
+                                <Button size="sm" variant="outline">
+                                    Anzeigen
+                                </Button>
+                            </Link>
+                            <Link href={route('commitments.edit', commitment.id)}>
+                                <Button size="sm" variant="outline">
+                                    Bearbeiten
+                                </Button>
+                            </Link>
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={async () => {
+                                    const ok = await confirm({
+                                        title: 'Commitment löschen',
+                                        description: 'Soll dieses Commitment wirklich gelöscht werden?',
+                                        confirmLabel: 'Löschen',
+                                        cancelLabel: 'Abbrechen',
+                                    });
+                                    if (!ok) return;
+                                    router.delete(route('commitments.destroy', commitment.id));
+                                }}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                Löschen
+                            </Button>
+                        </div>
+                    );
+                },
+                enableSorting: false,
+                enableHiding: false,
+            },
+        ],
+        [planningOptions, confirm],
+    );
+
+    const table = useReactTable({
+        data: commitmentData,
+        columns,
+        state: { columnFilters },
+        onColumnFiltersChange: setColumnFilters,
+        getCoreRowModel: getCoreRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        getFacetedRowModel: getFacetedRowModel(),
+        getFacetedUniqueValues: getFacetedUniqueValues(),
+        defaultColumn: { enableColumnFilter: false },
+        initialState: {
+            sorting: [{ id: 'planning', desc: false }],
+            pagination: { pageSize: 10 },
+        },
+        getRowId: (row) => String(row.id),
+    });
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Commitments', href: route('commitments.index') }]}>
-            <div className="my-6 flex items-center justify-between">
+            <div className="my-6 flex items-center justify-between p-5">
                 <h1 className="text-2xl font-bold">Commitments</h1>
                 <Link href={route('commitments.create', selectedPlanning ? { planning_id: selectedPlanning } : {})}>
                     <Button>Neues Commitment</Button>
                 </Link>
             </div>
 
-            <div className="mb-6">
-                <IndexFilterPanel onReset={() => handlePlanningChange('all')} resetDisabled={planningFilter === 'all'}>
-                    <div className="max-w-sm">
-                        <label className="mb-1 block text-sm font-medium">Planning</label>
-                        <Select value={planningFilter} onValueChange={handlePlanningChange}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Planning auswählen" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Alle Plannings</SelectItem>
-                                {plannings.map((planning) => (
-                                    <SelectItem key={planning.id} value={String(planning.id)}>
-                                        {planning.title}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </IndexFilterPanel>
+            <div className="flex flex-col gap-4 p-5">
+                <DataTable table={table} emptyMessage="Keine Commitments gefunden.">
+                    <DataTableToolbar table={table} />
+                </DataTable>
             </div>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Alle Commitments</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {commitmentData.length === 0 ? (
-                        <div className="text-muted-foreground py-4 text-center">Keine Commitments gefunden.</div>
-                    ) : (
-                        <>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Planning</TableHead>
-                                        <TableHead>Feature</TableHead>
-                                        <TableHead>Commitment-Typ</TableHead>
-                                        <TableHead>Benutzer</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Aktionen</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {commitmentData.map((commitment) => (
-                                        <TableRow key={commitment.id}>
-                                            <TableCell>{commitment.planning.title}</TableCell>
-                                            <TableCell>
-                                                {commitment.feature.jira_key}: {commitment.feature.name}
-                                            </TableCell>
-                                            <TableCell>{getCommitmentTypeBadge(commitment.commitment_type)}</TableCell>
-                                            <TableCell>{commitment.user.name}</TableCell>
-                                            <TableCell>
-                                                <WorkflowStateBadge statusDetails={commitment.status_details} />
-                                            </TableCell>
-                                            <TableCell className="space-x-2">
-                                                <Link href={route('commitments.show', commitment.id)}>
-                                                    <Button size="sm" variant="outline">
-                                                        Anzeigen
-                                                    </Button>
-                                                </Link>
-                                                <Link href={route('commitments.edit', commitment.id)}>
-                                                    <Button size="sm" variant="outline">
-                                                        Bearbeiten
-                                                    </Button>
-                                                </Link>
-                                                <Button size="sm" variant="destructive" onClick={() => handleDeleteCommitment(commitment.id)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                        Löschen
-                                                    </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-
-                            {pagination && pagination.last_page > 1 && (
-                                <div className="text-muted-foreground mt-4 flex justify-end gap-4 text-sm">
-                                    <span>
-                                        Seite {pagination.current_page} / {pagination.last_page}
-                                    </span>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </CardContent>
-            </Card>
         </AppLayout>
     );
 }

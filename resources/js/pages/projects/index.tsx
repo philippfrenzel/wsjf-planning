@@ -1,19 +1,27 @@
 import { useConfirm } from '@/components/confirm-dialog-provider';
+import { DataTable } from '@/components/data-table/data-table';
+import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
+import { DataTableToolbar } from '@/components/data-table/data-table-toolbar';
 import { EmptyState } from '@/components/empty-state';
-import { IndexFilterPanel } from '@/components/index-filter-panel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
 import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Eye, FolderOpen, LayoutGrid, LayoutList, Pencil, Plus, Search, Trash2, Vote } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import {
+    type ColumnDef,
+    type ColumnFiltersState,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    useReactTable,
+} from '@tanstack/react-table';
+import { Eye, FolderOpen, LayoutGrid, LayoutList, Pencil, Plus, Trash2, Vote } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 interface Project {
     id: number;
@@ -47,7 +55,6 @@ type Paginated<T> = {
 export default function Index({ projects, currentUserId }: IndexProps) {
     const confirm = useConfirm();
 
-    // Breadcrumbs definieren
     const breadcrumbs = [
         { title: 'Startseite', href: '/' },
         { title: 'Projekte', href: '#' },
@@ -64,92 +71,133 @@ export default function Index({ projects, currentUserId }: IndexProps) {
         router.delete(route('projects.destroy', { project: projectId }));
     };
 
-    // Filter-Zustand
-    const [filters, setFilters] = useState({
-        projectNumber: '',
-        name: '',
-        leader: '',
+    const projectData = Array.isArray(projects) ? projects : projects.data;
+    const userId = (usePage().props as any)?.auth?.user?.id ?? 'guest';
+    const [viewMode, setViewMode] = useLocalStorage<'table' | 'card'>(`viewPrefs:${userId}:projects.index:viewMode`, 'table');
+
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+    const columns = useMemo<ColumnDef<Project>[]>(
+        () => [
+            {
+                id: 'id',
+                accessorKey: 'id',
+                header: ({ column }) => <DataTableColumnHeader column={column} label="ID" />,
+                enableColumnFilter: false,
+            },
+            {
+                id: 'project_number',
+                accessorKey: 'project_number',
+                header: ({ column }) => <DataTableColumnHeader column={column} label="Projektnummer" />,
+                meta: {
+                    label: 'Projektnummer',
+                    placeholder: 'Projektnummer filtern...',
+                    variant: 'text',
+                },
+                enableColumnFilter: true,
+            },
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: ({ column }) => <DataTableColumnHeader column={column} label="Name" />,
+                meta: {
+                    label: 'Projektname',
+                    placeholder: 'Projektname filtern...',
+                    variant: 'text',
+                },
+                enableColumnFilter: true,
+            },
+            {
+                id: 'status',
+                accessorFn: (row) => row.status_details?.name ?? '',
+                header: ({ column }) => <DataTableColumnHeader column={column} label="Status" />,
+                cell: ({ row }) => (
+                    <WorkflowStateBadge statusDetails={row.original.status_details} defaultLabel="In Planung" />
+                ),
+                enableColumnFilter: false,
+                enableSorting: false,
+            },
+            {
+                id: 'project_leader',
+                accessorFn: (row) => row.project_leader?.name ?? '',
+                header: ({ column }) => <DataTableColumnHeader column={column} label="Projektleiter" />,
+                cell: ({ row }) => row.original.project_leader?.name ?? '-',
+                meta: {
+                    label: 'Projektleiter',
+                    placeholder: 'Projektleiter filtern...',
+                    variant: 'text',
+                },
+                enableColumnFilter: true,
+            },
+            {
+                id: 'deputy_leader',
+                accessorFn: (row) => row.deputy_leader?.name ?? '',
+                header: ({ column }) => <DataTableColumnHeader column={column} label="Stellvertretung" />,
+                cell: ({ row }) => row.original.deputy_leader?.name ?? '-',
+                enableColumnFilter: false,
+            },
+            {
+                id: 'actions',
+                header: () => <div className="text-right">Aktionen</div>,
+                cell: ({ row }) => {
+                    const project = row.original;
+                    const canEdit =
+                        project.created_by === currentUserId ||
+                        project.project_leader?.id === currentUserId ||
+                        project.deputy_leader?.id === currentUserId;
+
+                    return (
+                        <div className="flex justify-end gap-2">
+                            <Button asChild size="icon" variant="outline">
+                                <Link href={route('projects.show', project.id)}>
+                                    <Eye className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                            <Button asChild size="icon" variant="outline">
+                                <Link href={route('plannings.index', { project_id: project.id })}>
+                                    <Vote className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                            {canEdit && (
+                                <>
+                                    <Button asChild size="icon" variant="outline">
+                                        <Link href={route('projects.edit', project.id)}>
+                                            <Pencil className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                    <Button size="icon" variant="destructive" onClick={() => handleDeleteProject(project.id)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+                    );
+                },
+                enableSorting: false,
+                enableHiding: false,
+            },
+        ],
+        [currentUserId],
+    );
+
+    const table = useReactTable({
+        data: projectData,
+        columns,
+        state: { columnFilters },
+        onColumnFiltersChange: setColumnFilters,
+        getCoreRowModel: getCoreRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        defaultColumn: { enableColumnFilter: false },
+        initialState: {
+            sorting: [{ id: 'project_number', desc: false }],
+            pagination: { pageSize: 10 },
+        },
+        getRowId: (row) => String(row.id),
     });
 
-    // Gefilterte Projekte
-    const projectData = Array.isArray(projects) ? projects : projects.data;
-    const pagination = Array.isArray(projects) ? undefined : projects.meta;
-    const [filteredProjects, setFilteredProjects] = useState<Project[]>(projectData);
-
-    // Paginierung (mit persistenter Seitengröße pro Nutzer/Ansicht)
-    const [currentPage, setCurrentPage] = useState(1);
-    const userId = (usePage().props as any)?.auth?.user?.id ?? 'guest';
-    const [itemsPerPage, setItemsPerPage] = useLocalStorage<number>(`tablePrefs:${userId}:projects.index:itemsPerPage`, 10);
-    const [viewMode, setViewMode] = useLocalStorage<'table' | 'card'>(`viewPrefs:${userId}:projects.index:viewMode`, 'table');
-    const [paginatedProjects, setPaginatedProjects] = useState<Project[]>([]);
-    const hasActiveFilters = Boolean(filters.projectNumber.trim() || filters.name.trim() || filters.leader.trim());
-    const usesServerPagination = Boolean(!hasActiveFilters && pagination?.last_page && pagination.last_page > 1);
-
-    // Filter anwenden
-    useEffect(() => {
-        const filtered = projectData.filter((project) => {
-            // Filter für Projektnummer
-            const matchesProjectNumber = project.project_number.toLowerCase().includes(filters.projectNumber.toLowerCase());
-
-            // Filter für Namen
-            const matchesName = project.name.toLowerCase().includes(filters.name.toLowerCase());
-
-            // Filter für Projektleiter
-            const matchesLeader = !filters.leader || project.project_leader?.name?.toLowerCase().includes(filters.leader.toLowerCase());
-
-            return matchesProjectNumber && matchesName && matchesLeader;
-        });
-
-        setFilteredProjects(filtered);
-        // Bei Filteränderung zur ersten Seite zurückkehren
-        setCurrentPage(1);
-    }, [projectData, filters]);
-
-    // Paginierung anwenden
-    useEffect(() => {
-        if (usesServerPagination) {
-            setPaginatedProjects(filteredProjects);
-            return;
-        }
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        setPaginatedProjects(filteredProjects.slice(startIndex, endIndex));
-    }, [filteredProjects, currentPage, itemsPerPage, usesServerPagination]);
-
-    const effectivePage = usesServerPagination ? (pagination?.current_page ?? 1) : currentPage;
-    const perPage = usesServerPagination ? (pagination?.per_page ?? itemsPerPage) : itemsPerPage;
-    const totalItems = usesServerPagination ? (pagination?.total ?? filteredProjects.length) : filteredProjects.length;
-    const totalPages = usesServerPagination ? (pagination?.last_page ?? 1) : Math.ceil(filteredProjects.length / perPage);
-    const startItem = totalItems === 0 ? 0 : (effectivePage - 1) * perPage + 1;
-    const endItem = Math.min(startItem + perPage - 1, totalItems);
-
-    // Filter zurücksetzen
-    const resetFilters = () => {
-        setFilters({
-            projectNumber: '',
-            name: '',
-            leader: '',
-        });
-    };
-
-    // Filter-Werte aktualisieren
-    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFilters((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    const goToPage = (page: number) => {
-        if (usesServerPagination && pagination?.current_page) {
-            router.get(route('projects.index'), { page }, { preserveScroll: true, preserveState: true });
-            return;
-        }
-        setCurrentPage(page);
-    };
-    const goToPreviousPage = () => goToPage(Math.max(effectivePage - 1, 1));
-    const goToNextPage = () => goToPage(Math.min(effectivePage + 1, totalPages));
+    const filteredRows = table.getFilteredRowModel().rows;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -173,284 +221,97 @@ export default function Index({ projects, currentUserId }: IndexProps) {
                 </div>
             </div>
 
-            <div className="mx-4 mb-6">
-                <IndexFilterPanel onReset={resetFilters} resetDisabled={!hasActiveFilters}>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <div>
-                        <label htmlFor="projectNumber" className="text-foreground mb-1 block text-sm font-medium">
-                            Projektnummer
-                        </label>
-                        <Input
-                            id="projectNumber"
-                            name="projectNumber"
-                            placeholder="Nach Projektnummer filtern..."
-                            value={filters.projectNumber}
-                            onChange={handleFilterChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="name" className="text-foreground mb-1 block text-sm font-medium">
-                            Projektname
-                        </label>
-                        <Input id="name" name="name" placeholder="Nach Projektname filtern..." value={filters.name} onChange={handleFilterChange} />
-                    </div>
-
-                    <div>
-                        <label htmlFor="leader" className="text-foreground mb-1 block text-sm font-medium">
-                            Projektleiter
-                        </label>
-                        <Input
-                            id="leader"
-                            name="leader"
-                            placeholder="Nach Projektleiter filtern..."
-                            value={filters.leader}
-                            onChange={handleFilterChange}
-                        />
-                    </div>
-                    </div>
-                </IndexFilterPanel>
-            </div>
-
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                {/* Ergebnisanzeige mit Paginierung */}
-                <div className="text-muted-foreground mb-2 flex items-center justify-between text-sm">
-                    <div>{totalItems > 0 ? `Zeige ${startItem} bis ${endItem} von ${totalItems} Projekten` : 'Keine Projekte gefunden'}</div>
-
-                    {/* Seitenauswahl */}
-                    <div className="flex items-center gap-2">
-                        <Select
-                            value={String(perPage)}
-                            onValueChange={(value) => {
-                                setItemsPerPage(Number(value));
-                                setCurrentPage(1);
-                            }}
-                            disabled={usesServerPagination}
-                        >
-                            <SelectTrigger className="w-[130px]">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="5">5 pro Seite</SelectItem>
-                                <SelectItem value="10">10 pro Seite</SelectItem>
-                                <SelectItem value="25">25 pro Seite</SelectItem>
-                                <SelectItem value="50">50 pro Seite</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-
                 {viewMode === 'table' ? (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>ID</TableHead>
-                                <TableHead>Projektnummer</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Projektleiter</TableHead>
-                                <TableHead>Stellvertretung</TableHead>
-                                <TableHead className="text-right">Aktionen</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {paginatedProjects.map((project) => {
-                                const canEdit =
-                                    project.created_by === currentUserId ||
-                                    project.project_leader?.id === currentUserId ||
-                                    project.deputy_leader?.id === currentUserId;
-
-                                return (
-                                    <TableRow key={project.id}>
-                                        <TableCell>{project.id}</TableCell>
-                                        <TableCell>{project.project_number}</TableCell>
-                                        <TableCell>{project.name}</TableCell>
-                                        <TableCell>
-                                            <WorkflowStateBadge statusDetails={project.status_details} defaultLabel="In Planung" />
-                                        </TableCell>
-                                        <TableCell>{project.project_leader ? project.project_leader.name : '-'}</TableCell>
-                                        <TableCell>{project.deputy_leader ? project.deputy_leader.name : '-'}</TableCell>
-                                        <TableCell className="flex justify-end gap-2">
-                                            <Button asChild size="icon" variant="outline">
-                                                <Link href={route('projects.show', project.id)}>
-                                                    <Eye className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                            <Button asChild size="icon" variant="outline">
-                                                <Link href={route('plannings.index', { project_id: project.id })}>
-                                                    <Vote className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                            {canEdit && (
-                                                <>
-                                                    <Button asChild size="icon" variant="outline">
-                                                        <Link href={route('projects.edit', project.id)}>
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-                                                    <Button size="icon" variant="destructive" onClick={() => handleDeleteProject(project.id)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-
-                            {filteredProjects.length === 0 &&
-                                (hasActiveFilters ? (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="py-0">
-                                            <div className="flex flex-col items-center gap-2 py-8 text-center">
-                                                <Search className="text-muted-foreground h-8 w-8" />
-                                                <p className="text-muted-foreground text-sm">Keine Projekte gefunden</p>
-                                                <Button variant="link" className="h-auto p-0 text-sm" onClick={resetFilters}>
-                                                    Filter zurücksetzen
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="py-0">
-                                            <EmptyState
-                                                icon={FolderOpen}
-                                                title="Noch keine Projekte"
-                                                description="Erstellen Sie Ihr erstes Projekt, um Features und Plannings zu verwalten."
-                                                action={{
-                                                    label: 'Neues Projekt erstellen',
-                                                    href: route('projects.create'),
-                                                }}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                        </TableBody>
-                    </Table>
-                ) : filteredProjects.length === 0 ? (
-                    hasActiveFilters ? (
-                        <div className="flex flex-col items-center gap-2 py-8 text-center">
-                            <Search className="text-muted-foreground h-8 w-8" />
-                            <p className="text-muted-foreground text-sm">Keine Projekte gefunden</p>
-                            <Button variant="link" className="h-auto p-0 text-sm" onClick={resetFilters}>
-                                Filter zurücksetzen
-                            </Button>
-                        </div>
-                    ) : (
-                        <EmptyState
-                            icon={FolderOpen}
-                            title="Noch keine Projekte"
-                            description="Erstellen Sie Ihr erstes Projekt, um Features und Plannings zu verwalten."
-                            action={{
-                                label: 'Neues Projekt erstellen',
-                                href: route('projects.create'),
-                            }}
-                        />
-                    )
+                    <DataTable table={table} emptyMessage={
+                        projectData.length === 0
+                            ? 'Noch keine Projekte'
+                            : 'Keine Projekte gefunden.'
+                    }>
+                        <DataTableToolbar table={table} />
+                    </DataTable>
                 ) : (
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        {paginatedProjects.map((project) => {
-                            const canEdit =
-                                project.created_by === currentUserId ||
-                                project.project_leader?.id === currentUserId ||
-                                project.deputy_leader?.id === currentUserId;
+                    <>
+                        <DataTableToolbar table={table} />
+                        {filteredRows.length === 0 ? (
+                            projectData.length === 0 ? (
+                                <EmptyState
+                                    icon={FolderOpen}
+                                    title="Noch keine Projekte"
+                                    description="Erstellen Sie Ihr erstes Projekt, um Features und Plannings zu verwalten."
+                                    action={{
+                                        label: 'Neues Projekt erstellen',
+                                        href: route('projects.create'),
+                                    }}
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center gap-2 py-8 text-center">
+                                    <p className="text-muted-foreground text-sm">Keine Projekte gefunden</p>
+                                    <Button variant="link" className="h-auto p-0 text-sm" onClick={() => table.resetColumnFilters()}>
+                                        Filter zurücksetzen
+                                    </Button>
+                                </div>
+                            )
+                        ) : (
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                {filteredRows.map((row) => {
+                                    const project = row.original;
+                                    const canEdit =
+                                        project.created_by === currentUserId ||
+                                        project.project_leader?.id === currentUserId ||
+                                        project.deputy_leader?.id === currentUserId;
 
-                            return (
-                                <Card key={project.id}>
-                                    <CardHeader className="space-y-2">
-                                        <div className="flex items-center justify-between gap-2">
-                                            <CardTitle className="text-base">{project.name}</CardTitle>
-                                            <WorkflowStateBadge statusDetails={project.status_details} defaultLabel="In Planung" />
-                                        </div>
-                                        <p className="text-muted-foreground text-xs">#{project.project_number}</p>
-                                    </CardHeader>
-                                    <CardContent className="space-y-3">
-                                        <div className="text-sm">
-                                            <p>
-                                                <span className="text-muted-foreground">Projektleiter: </span>
-                                                {project.project_leader?.name ?? '-'}
-                                            </p>
-                                            <p>
-                                                <span className="text-muted-foreground">Stellvertretung: </span>
-                                                {project.deputy_leader?.name ?? '-'}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center justify-end gap-2">
-                                            <Button asChild size="icon" variant="outline">
-                                                <Link href={route('projects.show', project.id)}>
-                                                    <Eye className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                            <Button asChild size="icon" variant="outline">
-                                                <Link href={route('plannings.index', { project_id: project.id })}>
-                                                    <Vote className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                            {canEdit && (
-                                                <>
+                                    return (
+                                        <Card key={project.id}>
+                                            <CardHeader className="space-y-2">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <CardTitle className="text-base">{project.name}</CardTitle>
+                                                    <WorkflowStateBadge statusDetails={project.status_details} defaultLabel="In Planung" />
+                                                </div>
+                                                <p className="text-muted-foreground text-xs">#{project.project_number}</p>
+                                            </CardHeader>
+                                            <CardContent className="space-y-3">
+                                                <div className="text-sm">
+                                                    <p>
+                                                        <span className="text-muted-foreground">Projektleiter: </span>
+                                                        {project.project_leader?.name ?? '-'}
+                                                    </p>
+                                                    <p>
+                                                        <span className="text-muted-foreground">Stellvertretung: </span>
+                                                        {project.deputy_leader?.name ?? '-'}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center justify-end gap-2">
                                                     <Button asChild size="icon" variant="outline">
-                                                        <Link href={route('projects.edit', project.id)}>
-                                                            <Pencil className="h-4 w-4" />
+                                                        <Link href={route('projects.show', project.id)}>
+                                                            <Eye className="h-4 w-4" />
                                                         </Link>
                                                     </Button>
-                                                    <Button size="icon" variant="destructive" onClick={() => handleDeleteProject(project.id)}>
-                                                        <Trash2 className="h-4 w-4" />
+                                                    <Button asChild size="icon" variant="outline">
+                                                        <Link href={route('plannings.index', { project_id: project.id })}>
+                                                            <Vote className="h-4 w-4" />
+                                                        </Link>
                                                     </Button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
-                    </div>
-                )}
-
-                {/* Verbesserte Paginierungs-Navigation */}
-                {filteredProjects.length > 0 && (
-                    <div className="mt-4 flex items-center justify-between">
-                        <div className="text-muted-foreground text-sm">
-                            Zeige {totalItems === 0 ? 0 : startItem} bis {totalItems === 0 ? 0 : endItem} von {totalItems} Einträgen
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                            <Button variant="outline" size="sm" onClick={goToPreviousPage} disabled={effectivePage === 1}>
-                                <ChevronLeft className="mr-1 h-4 w-4" />
-                                Zurück
-                            </Button>
-
-                            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                                let pageNumber: number;
-
-                                if (totalPages <= 5) {
-                                    pageNumber = i + 1;
-                                } else if (effectivePage <= 3) {
-                                    pageNumber = i + 1;
-                                } else if (effectivePage >= totalPages - 2) {
-                                    pageNumber = totalPages - 4 + i;
-                                } else {
-                                    pageNumber = effectivePage - 2 + i;
-                                }
-
-                                return (
-                                    <Button
-                                        key={pageNumber}
-                                        variant={effectivePage === pageNumber ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => goToPage(pageNumber)}
-                                    >
-                                        {pageNumber}
-                                    </Button>
-                                );
-                            })}
-
-                            <Button variant="outline" size="sm" onClick={goToNextPage} disabled={effectivePage === totalPages || totalPages === 0}>
-                                Weiter
-                                <ChevronRight className="ml-1 h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
+                                                    {canEdit && (
+                                                        <>
+                                                            <Button asChild size="icon" variant="outline">
+                                                                <Link href={route('projects.edit', project.id)}>
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Link>
+                                                            </Button>
+                                                            <Button size="icon" variant="destructive" onClick={() => handleDeleteProject(project.id)}>
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </AppLayout>

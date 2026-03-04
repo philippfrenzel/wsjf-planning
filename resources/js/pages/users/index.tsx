@@ -1,15 +1,21 @@
 import { useConfirm } from '@/components/confirm-dialog-provider';
-import { IndexFilterPanel } from '@/components/index-filter-panel';
+import { DataTable, DataTableColumnHeader, DataTableToolbar } from '@/components/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
+import {
+    type ColumnDef,
+    type ColumnFiltersState,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    useReactTable,
+} from '@tanstack/react-table';
 import { Eye, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 interface Role {
     id: number;
@@ -29,7 +35,6 @@ interface UsersIndexProps {
 
 export default function Index({ users }: UsersIndexProps) {
     const confirm = useConfirm();
-    const [searchTerm, setSearchTerm] = useState('');
 
     const handleDeleteUser = async (userId: number, userName: string) => {
         const ok = await confirm({
@@ -42,13 +47,115 @@ export default function Index({ users }: UsersIndexProps) {
         router.delete(route('users.destroy', { user: userId }));
     };
 
-    // Filtere Benutzer basierend auf Suchbegriff
-    const filteredUsers = users.filter(
-        (user) =>
-            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.roles && user.roles.some((role) => role.name.toLowerCase().includes(searchTerm.toLowerCase()))),
+    const columns = useMemo<ColumnDef<User>[]>(
+        () => [
+            {
+                id: 'name',
+                accessorKey: 'name',
+                header: ({ column }) => <DataTableColumnHeader column={column} label="Name" />,
+                cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+                meta: {
+                    label: 'Name',
+                    placeholder: 'Name filtern...',
+                    variant: 'text',
+                },
+                enableColumnFilter: true,
+            },
+            {
+                id: 'email',
+                accessorKey: 'email',
+                header: ({ column }) => <DataTableColumnHeader column={column} label="E-Mail" />,
+                meta: {
+                    label: 'E-Mail',
+                    placeholder: 'E-Mail filtern...',
+                    variant: 'text',
+                },
+                enableColumnFilter: true,
+            },
+            {
+                id: 'roles',
+                accessorKey: 'roles',
+                header: 'Rollen',
+                cell: ({ row }) => {
+                    const user = row.original;
+                    return (
+                        <div className="flex flex-wrap gap-1">
+                            {user.roles &&
+                                user.roles.map((role) => (
+                                    <Badge key={role.id} variant="outline">
+                                        {role.name}
+                                    </Badge>
+                                ))}
+                            {(!user.roles || user.roles.length === 0) && (
+                                <span className="text-muted-foreground text-sm">Keine Rollen</span>
+                            )}
+                        </div>
+                    );
+                },
+                enableSorting: false,
+                enableColumnFilter: false,
+            },
+            {
+                id: 'actions',
+                header: () => <div className="text-right">Aktionen</div>,
+                cell: ({ row }) => {
+                    const user = row.original;
+                    return (
+                        <div className="flex justify-end">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        <span className="sr-only">Menü öffnen</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <Link href={route('users.show', user.id)} className="flex items-center">
+                                            <Eye className="mr-2 h-4 w-4" />
+                                            <span>Details</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link href={route('users.edit', user.id)} className="flex items-center">
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            <span>Bearbeiten</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteUser(user.id, user.name)}>
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        <span>Löschen</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    );
+                },
+                enableSorting: false,
+                enableHiding: false,
+            },
+        ],
+        [confirm],
     );
+
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+    const table = useReactTable({
+        data: users,
+        columns,
+        state: { columnFilters },
+        onColumnFiltersChange: setColumnFilters,
+        getCoreRowModel: getCoreRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        defaultColumn: { enableColumnFilter: false },
+        initialState: {
+            sorting: [{ id: 'name', desc: false }],
+            pagination: { pageSize: 10 },
+        },
+        getRowId: (row) => String(row.id),
+    });
 
     return (
         <AppLayout>
@@ -65,93 +172,10 @@ export default function Index({ users }: UsersIndexProps) {
                     </Button>
                 </div>
 
-                <div className="mb-6">
-                    <IndexFilterPanel onReset={() => setSearchTerm('')} resetDisabled={!searchTerm}>
-                        <Input
-                            placeholder="Suche nach Namen, E-Mail oder Rollen..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="max-w-xl"
-                        />
-                    </IndexFilterPanel>
-                </div>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Benutzer ({filteredUsers.length})</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>E-Mail</TableHead>
-                                    <TableHead>Rollen</TableHead>
-                                    <TableHead className="w-[100px] text-right">Aktionen</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredUsers.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={4} className="text-muted-foreground py-8 text-center">
-                                            Keine Benutzer gefunden
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    filteredUsers.map((user) => (
-                                        <TableRow key={user.id}>
-                                            <TableCell className="font-medium">{user.name}</TableCell>
-                                            <TableCell>{user.email}</TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {user.roles &&
-                                                        user.roles.map((role) => (
-                                                            <Badge key={role.id} variant="outline">
-                                                                {role.name}
-                                                            </Badge>
-                                                        ))}
-                                                    {(!user.roles || user.roles.length === 0) && (
-                                                        <span className="text-muted-foreground text-sm">Keine Rollen</span>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                            <span className="sr-only">Menü öffnen</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('users.show', user.id)} className="flex items-center">
-                                                                <Eye className="mr-2 h-4 w-4" />
-                                                                <span>Details</span>
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('users.edit', user.id)} className="flex items-center">
-                                                                <Pencil className="mr-2 h-4 w-4" />
-                                                                <span>Bearbeiten</span>
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteUser(user.id, user.name)}>
-                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                            <span>Löschen</span>
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                <DataTable table={table} emptyMessage="Keine Benutzer gefunden.">
+                    <DataTableToolbar table={table} />
+                </DataTable>
             </div>
-
         </AppLayout>
     );
 }
