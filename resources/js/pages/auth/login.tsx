@@ -94,6 +94,12 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                         Log in
                     </Button>
+
+                    <div className="text-muted-foreground text-center text-xs uppercase">oder</div>
+
+                    <Button type="button" variant="outline" className="w-full" onClick={() => (window.location.href = route('auth.google.redirect'))}>
+                        Mit Google anmelden
+                    </Button>
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">

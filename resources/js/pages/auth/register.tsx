@@ -105,6 +105,12 @@ export default function Register() {
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                         Create account
                     </Button>
+
+                    <div className="text-muted-foreground text-center text-xs uppercase">oder</div>
+
+                    <Button type="button" variant="outline" className="w-full" onClick={() => (window.location.href = route('auth.google.redirect'))}>
+                        Mit Google registrieren
+                    </Button>
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">
