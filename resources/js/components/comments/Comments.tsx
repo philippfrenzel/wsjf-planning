@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import type { Comment, CommentableEntity } from '@/types/comment';
-import { MessageSquare, Send } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Loader2, MessageSquare, Send } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { CommentItem } from './CommentItem';
 
 interface CommentsProps {
@@ -19,8 +20,10 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const loadRef = useRef(0);
 
     const loadComments = useCallback(async () => {
+        const id = ++loadRef.current;
         setLoading(true);
         try {
             const response = await axios.get('/comments', {
@@ -29,11 +32,16 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
                     commentable_id: entity.id,
                 },
             });
-            setComments(response.data.data || []);
+            // Only apply if this is still the latest request
+            if (id === loadRef.current) {
+                setComments(response.data.data || []);
+            }
         } catch (error) {
             console.error('Error loading comments:', error);
         } finally {
-            setLoading(false);
+            if (id === loadRef.current) {
+                setLoading(false);
+            }
         }
     }, [entity.type, entity.id]);
 
@@ -43,7 +51,7 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newComment.trim()) return;
+        if (!newComment.trim() || submitting) return;
 
         setSubmitting(true);
         try {
@@ -52,46 +60,46 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
                 commentable_type: entity.type,
                 commentable_id: entity.id,
             });
-
             setNewComment('');
-            // Reload comments to show new comment in the correct place
             await loadComments();
         } catch (error) {
             console.error('Error creating comment:', error);
-            alert('Fehler beim Erstellen des Kommentars. Bitte versuchen Sie es erneut.');
+            toast.error('Fehler beim Erstellen des Kommentars. Bitte versuchen Sie es erneut.');
         } finally {
             setSubmitting(false);
         }
     };
 
-    const handleReply = async (parentId: number, body: string) => {
+    const handleReply = useCallback(async (parentId: number, body: string): Promise<boolean> => {
         try {
-            const response = await axios.post('/comments', {
+            await axios.post('/comments', {
                 body,
                 commentable_type: entity.type,
                 commentable_id: entity.id,
                 parent_id: parentId,
             });
-
-            // Reload comments to show new reply in the correct place
             await loadComments();
+            return true;
         } catch (error) {
             console.error('Error creating reply:', error);
-            alert('Fehler beim Erstellen der Antwort. Bitte versuchen Sie es erneut.');
+            toast.error('Fehler beim Erstellen der Antwort. Bitte versuchen Sie es erneut.');
+            return false;
         }
-    };
+    }, [entity.type, entity.id, loadComments]);
 
-    const handleUpdate = async (commentId: number, body: string) => {
+    const handleUpdate = useCallback(async (commentId: number, body: string): Promise<boolean> => {
         try {
             await axios.put(`/comments/${commentId}`, { body });
             await loadComments();
+            return true;
         } catch (error) {
             console.error('Error updating comment:', error);
-            alert('Fehler beim Aktualisieren des Kommentars. Bitte versuchen Sie es erneut.');
+            toast.error('Fehler beim Aktualisieren des Kommentars. Bitte versuchen Sie es erneut.');
+            return false;
         }
-    };
+    }, [loadComments]);
 
-    const handleDelete = async (commentId: number) => {
+    const handleDelete = useCallback(async (commentId: number): Promise<void> => {
         const ok = await confirm({
             title: 'Kommentar löschen',
             description: 'Möchten Sie diesen Kommentar wirklich löschen?',
@@ -105,9 +113,9 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
             await loadComments();
         } catch (error) {
             console.error('Error deleting comment:', error);
-            alert('Fehler beim Löschen des Kommentars. Bitte versuchen Sie es erneut.');
+            toast.error('Fehler beim Löschen des Kommentars. Bitte versuchen Sie es erneut.');
         }
-    };
+    }, [confirm, loadComments]);
 
     return (
         <Card>
@@ -118,7 +126,6 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                {/* New Comment Form */}
                 <form onSubmit={handleSubmit} className="space-y-2">
                     <Textarea
                         value={newComment}
@@ -126,17 +133,17 @@ export function Comments({ entity, initialComments = [] }: CommentsProps) {
                         placeholder="Schreiben Sie einen Kommentar..."
                         rows={3}
                         className="resize-none"
+                        disabled={submitting}
                     />
                     <div className="flex justify-end">
                         <Button type="submit" disabled={submitting || !newComment.trim()} size="sm">
-                            <Send className="mr-2 h-4 w-4" />
-                            Kommentar abschicken
+                            {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                            {submitting ? 'Wird gesendet...' : 'Kommentar abschicken'}
                         </Button>
                     </div>
                 </form>
 
-                {/* Comments List */}
-                {loading ? (
+                {loading && comments.length === 0 ? (
                     <div className="text-muted-foreground py-4 text-center text-sm">Kommentare werden geladen...</div>
                 ) : comments.length === 0 ? (
                     <div className="text-muted-foreground py-8 text-center text-sm">Noch keine Kommentare vorhanden. Seien Sie der Erste!</div>

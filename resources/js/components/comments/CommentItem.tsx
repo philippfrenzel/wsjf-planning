@@ -2,13 +2,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import type { Comment } from '@/types/comment';
-import { Edit2, MessageCircle, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
+import { Edit2, Loader2, MessageCircle, Trash2, X } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 interface CommentItemProps {
     comment: Comment;
-    onReply: (parentId: number, body: string) => Promise<void>;
-    onUpdate: (commentId: number, body: string) => Promise<void>;
+    onReply: (parentId: number, body: string) => Promise<boolean>;
+    onUpdate: (commentId: number, body: string) => Promise<boolean>;
     onDelete: (commentId: number) => Promise<void>;
     depth?: number;
 }
@@ -18,23 +18,70 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
     const [isEditing, setIsEditing] = useState(false);
     const [replyText, setReplyText] = useState('');
     const [editText, setEditText] = useState(comment.body);
+    const [replySubmitting, setReplySubmitting] = useState(false);
+    const [editSubmitting, setEditSubmitting] = useState(false);
+    const [deleteSubmitting, setDeleteSubmitting] = useState(false);
 
-    const handleReply = async () => {
-        if (!replyText.trim()) return;
-        await onReply(comment.id, replyText);
-        setReplyText('');
-        setIsReplying(false);
-    };
+    const handleReply = useCallback(async () => {
+        if (!replyText.trim() || replySubmitting) return;
+        setReplySubmitting(true);
+        try {
+            const success = await onReply(comment.id, replyText);
+            if (success) {
+                setReplyText('');
+                setIsReplying(false);
+            }
+        } finally {
+            setReplySubmitting(false);
+        }
+    }, [replyText, replySubmitting, onReply, comment.id]);
 
-    const handleUpdate = async () => {
-        if (!editText.trim()) return;
-        await onUpdate(comment.id, editText);
-        setIsEditing(false);
-    };
+    const handleUpdate = useCallback(async () => {
+        if (!editText.trim() || editSubmitting) return;
+        setEditSubmitting(true);
+        try {
+            const success = await onUpdate(comment.id, editText);
+            if (success) {
+                setIsEditing(false);
+            }
+        } finally {
+            setEditSubmitting(false);
+        }
+    }, [editText, editSubmitting, onUpdate, comment.id]);
 
-    const handleDelete = async () => {
-        await onDelete(comment.id);
-    };
+    const handleDelete = useCallback(async () => {
+        if (deleteSubmitting) return;
+        setDeleteSubmitting(true);
+        try {
+            await onDelete(comment.id);
+        } finally {
+            setDeleteSubmitting(false);
+        }
+    }, [deleteSubmitting, onDelete, comment.id]);
+
+    const handleReplyKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                handleReply();
+            }
+        },
+        [handleReply],
+    );
+
+    const handleEditKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                handleUpdate();
+            }
+            if (e.key === 'Escape') {
+                setIsEditing(false);
+                setEditText(comment.body);
+            }
+        },
+        [handleUpdate, comment.body],
+    );
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -75,11 +122,17 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
 
                             {comment.is_owner && !isEditing && (
                                 <div className="flex gap-1">
-                                    <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="h-7 px-2">
+                                    <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="h-7 px-2" disabled={deleteSubmitting}>
                                         <Edit2 className="h-3 w-3" />
                                     </Button>
-                                    <Button variant="ghost" size="sm" onClick={handleDelete} className="h-7 px-2 text-red-600 hover:text-red-700">
-                                        <Trash2 className="h-3 w-3" />
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={handleDelete}
+                                        className="h-7 px-2 text-red-600 hover:text-red-700"
+                                        disabled={deleteSubmitting}
+                                    >
+                                        {deleteSubmitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
                                     </Button>
                                 </div>
                             )}
@@ -87,14 +140,24 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
 
                         {isEditing ? (
                             <div className="space-y-2">
-                                <Textarea value={editText} onChange={(e) => setEditText(e.target.value)} rows={3} className="resize-none" />
-                                <div className="flex gap-2">
-                                    <Button size="sm" onClick={handleUpdate}>
+                                <Textarea
+                                    value={editText}
+                                    onChange={(e) => setEditText(e.target.value)}
+                                    onKeyDown={handleEditKeyDown}
+                                    rows={3}
+                                    className="resize-none"
+                                    disabled={editSubmitting}
+                                    autoFocus
+                                />
+                                <div className="flex items-center gap-2">
+                                    <Button size="sm" onClick={handleUpdate} disabled={editSubmitting || !editText.trim()}>
+                                        {editSubmitting && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
                                         Speichern
                                     </Button>
                                     <Button
                                         size="sm"
                                         variant="outline"
+                                        disabled={editSubmitting}
                                         onClick={() => {
                                             setIsEditing(false);
                                             setEditText(comment.body);
@@ -103,6 +166,7 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
                                         <X className="mr-1 h-3 w-3" />
                                         Abbrechen
                                     </Button>
+                                    <span className="text-muted-foreground text-xs">⌘+Enter zum Speichern</span>
                                 </div>
                             </div>
                         ) : (
@@ -124,17 +188,22 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
                     <Textarea
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
+                        onKeyDown={handleReplyKeyDown}
                         placeholder="Schreiben Sie eine Antwort..."
                         rows={2}
                         className="resize-none"
+                        disabled={replySubmitting}
+                        autoFocus
                     />
-                    <div className="flex gap-2">
-                        <Button size="sm" onClick={handleReply}>
+                    <div className="flex items-center gap-2">
+                        <Button size="sm" onClick={handleReply} disabled={replySubmitting || !replyText.trim()}>
+                            {replySubmitting && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
                             Antworten
                         </Button>
                         <Button
                             size="sm"
                             variant="outline"
+                            disabled={replySubmitting}
                             onClick={() => {
                                 setIsReplying(false);
                                 setReplyText('');
@@ -143,6 +212,7 @@ export function CommentItem({ comment, onReply, onUpdate, onDelete, depth = 0 }:
                             <X className="mr-1 h-3 w-3" />
                             Abbrechen
                         </Button>
+                        <span className="text-muted-foreground text-xs">⌘+Enter zum Senden</span>
                     </div>
                 </div>
             )}
