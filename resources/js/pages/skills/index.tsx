@@ -98,7 +98,7 @@ export default function Index({ skills, roleSets }: { skills: Skill[]; roleSets:
                     <Popover open={seedOpen} onOpenChange={setSeedOpen}>
                         <PopoverTrigger asChild>
                             <Button variant="outline" size="sm">
-                                <Sparkles className="mr-1.5 h-4 w-4" /> Rollen-Vorlagen
+                                <Sparkles className="mr-1.5 h-4 w-4" /> Projekt-Skills laden
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[28rem] p-0" align="end">
