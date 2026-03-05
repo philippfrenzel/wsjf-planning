@@ -116,6 +116,11 @@ class Planning extends Model
         return $this->hasMany(PiObjective::class);
     }
 
+    public function iterations(): HasMany
+    {
+        return $this->hasMany(Iteration::class)->orderBy('number');
+    }
+
     /**
      * Status-Details für Frontend
      */

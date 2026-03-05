@@ -104,10 +104,21 @@ interface PiObjective {
     status: 'draft' | 'committed' | 'achieved' | 'not_achieved';
 }
 
+interface IterationData {
+    id: number;
+    planning_id: number;
+    number: number;
+    name: string;
+    start_date: string;
+    end_date: string;
+    is_ip: boolean;
+}
+
 interface ShowProps {
     planning: Planning;
     stakeholders: Stakeholder[];
     piObjectives: PiObjective[];
+    iterations: IterationData[];
 }
 
 function FeaturesTable({ features }: { features?: Feature[] }) {
@@ -467,7 +478,123 @@ function PiObjectivesPanel({
     );
 }
 
-export default function Show({ planning, stakeholders, piObjectives }: ShowProps) {
+function IterationsPanel({
+    planningId,
+    iterations,
+    canManage,
+}: {
+    planningId: number;
+    iterations: IterationData[];
+    canManage: boolean;
+}) {
+    const [showGenerator, setShowGenerator] = useState(false);
+    const [genForm, setGenForm] = useState({ pi_start: '', pi_end: '', sprint_weeks: '2', ip_sprint: true });
+    const [submitting, setSubmitting] = useState(false);
+    const confirm = useConfirm();
+
+    function handleGenerate(e: React.FormEvent) {
+        e.preventDefault();
+        if (submitting) return;
+        setSubmitting(true);
+        router.post(route('plannings.iterations.generate', planningId), {
+            ...genForm,
+            sprint_weeks: parseInt(genForm.sprint_weeks),
+        }, {
+            preserveScroll: true,
+            onFinish: () => { setSubmitting(false); setShowGenerator(false); },
+        });
+    }
+
+    async function handleDelete(it: IterationData) {
+        const ok = await confirm({
+            title: 'Iteration löschen',
+            description: `Möchten Sie "${it.name}" wirklich löschen?`,
+            confirmLabel: 'Löschen',
+            cancelLabel: 'Abbrechen',
+        });
+        if (ok) router.delete(route('iterations.destroy', it.id), { preserveScroll: true });
+    }
+
+    return (
+        <div className="mt-4 space-y-4">
+            <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">{iterations.length} Iterationen</span>
+                {canManage && (
+                    <Button size="sm" variant="outline" onClick={() => setShowGenerator(!showGenerator)}>
+                        Iterationen generieren
+                    </Button>
+                )}
+            </div>
+
+            {showGenerator && (
+                <Card>
+                    <CardContent className="pt-4">
+                        <form onSubmit={handleGenerate} className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                            <div>
+                                <Label>PI Start</Label>
+                                <Input type="date" value={genForm.pi_start} onChange={(e) => setGenForm({ ...genForm, pi_start: e.target.value })} required />
+                            </div>
+                            <div>
+                                <Label>PI Ende</Label>
+                                <Input type="date" value={genForm.pi_end} onChange={(e) => setGenForm({ ...genForm, pi_end: e.target.value })} required />
+                            </div>
+                            <div>
+                                <Label>Sprint-Wochen</Label>
+                                <Input type="number" min={1} max={6} value={genForm.sprint_weeks} onChange={(e) => setGenForm({ ...genForm, sprint_weeks: e.target.value })} required />
+                            </div>
+                            <div className="flex items-end gap-2">
+                                <Button type="submit" disabled={submitting} size="sm">Generieren</Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
+            )}
+
+            {iterations.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">Noch keine Iterationen definiert.</div>
+            ) : (
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-16">#</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Start</TableHead>
+                            <TableHead>Ende</TableHead>
+                            <TableHead>Typ</TableHead>
+                            {canManage && <TableHead className="text-right">Aktionen</TableHead>}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {iterations.map((it) => (
+                            <TableRow key={it.id}>
+                                <TableCell className="font-mono text-muted-foreground">{it.number}</TableCell>
+                                <TableCell className="font-medium">{it.name}</TableCell>
+                                <TableCell>{it.start_date}</TableCell>
+                                <TableCell>{it.end_date}</TableCell>
+                                <TableCell>
+                                    {it.is_ip ? (
+                                        <Badge variant="secondary">IP Sprint</Badge>
+                                    ) : (
+                                        <Badge variant="outline">Sprint</Badge>
+                                    )}
+                                </TableCell>
+                                {canManage && (
+                                    <TableCell className="text-right">
+                                        <Button size="icon" variant="ghost" onClick={() => handleDelete(it)}>
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                        </Button>
+                                    </TableCell>
+                                )}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            )}
+        </div>
+    );
+}
+
+export default function Show({ planning, stakeholders, piObjectives, iterations }: ShowProps) {
     const { auth } = usePage<SharedData>().props;
     const canManage = auth.currentRole === 'Admin' || auth.currentRole === 'Planner';
 
@@ -497,6 +624,7 @@ export default function Show({ planning, stakeholders, piObjectives }: ShowProps
                                 <TabsTrigger value="features">Features & Individual Votes</TabsTrigger>
                                 <TabsTrigger value="wsjf-ranking">WSJF Ranking</TabsTrigger>
                                 <TabsTrigger value="pi-objectives">PI Objectives</TabsTrigger>
+                                <TabsTrigger value="iterations">Iterationen</TabsTrigger>
                             </TabsList>
                             <TabsContent value="details">
                                 <PlanningDetailsCard planning={planning} stakeholders={stakeholders} />
@@ -575,6 +703,9 @@ export default function Show({ planning, stakeholders, piObjectives }: ShowProps
                             </TabsContent>
                             <TabsContent value="pi-objectives">
                                 <PiObjectivesPanel planningId={planning.id} piObjectives={piObjectives ?? []} canManage={canManage} />
+                            </TabsContent>
+                            <TabsContent value="iterations">
+                                <IterationsPanel planningId={planning.id} iterations={iterations ?? []} canManage={canManage} />
                             </TabsContent>
                         </Tabs>
                     </CardContent>

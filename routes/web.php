@@ -20,6 +20,7 @@ use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PiObjectiveController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\IterationController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -91,6 +92,12 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     Route::post('pi-objectives', [PiObjectiveController::class, 'store'])->name('pi-objectives.store');
     Route::put('pi-objectives/{pi_objective}', [PiObjectiveController::class, 'update'])->name('pi-objectives.update');
     Route::delete('pi-objectives/{pi_objective}', [PiObjectiveController::class, 'destroy'])->name('pi-objectives.destroy');
+
+    // Iterations
+    Route::post('plannings/{planning}/iterations', [IterationController::class, 'store'])->name('plannings.iterations.store');
+    Route::post('plannings/{planning}/iterations/generate', [IterationController::class, 'generate'])->name('plannings.iterations.generate');
+    Route::put('iterations/{iteration}', [IterationController::class, 'update'])->name('iterations.update');
+    Route::delete('iterations/{iteration}', [IterationController::class, 'destroy'])->name('iterations.destroy');
 
     // API-Route zum Laden von Features für ein Planning
     Route::post('api/planning-features', [CommitmentController::class, 'getFeaturesForPlanning'])

@@ -165,10 +165,13 @@ class PlanningController extends Controller
             ->orderBy('business_value', 'desc')
             ->get();
 
+        $iterations = $planning->iterations()->get();
+
         return Inertia::render('plannings/show', [
             'planning' => $planning,
             'stakeholders' => $stakeholders,
             'piObjectives' => $piObjectives,
+            'iterations' => $iterations,
         ]);
     }
 
