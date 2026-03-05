@@ -47,6 +47,23 @@ class BillingController extends Controller
             && str_starts_with(config('services.stripe.price_id'), 'price_')
             && strlen(config('services.stripe.price_id')) > 10;
 
+        // Fetch invoices from Stripe
+        $invoices = [];
+        if ($tenant && $tenant->hasStripeId() && $stripeConfigured) {
+            try {
+                $invoices = $tenant->invoices()->map(fn ($invoice) => [
+                    'id'          => $invoice->id,
+                    'date'        => $invoice->date()->toDateString(),
+                    'total'       => $invoice->total(),
+                    'status'      => $invoice->status ?? ($invoice->paid ? 'paid' : 'open'),
+                    'number'      => $invoice->number,
+                    'pdf_url'     => $invoice->invoicePdf(),
+                ])->toArray();
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
         return Inertia::render('billing/index', [
             'billingStatus'    => $billingStatus,
             'trialEndsAt'      => $trialEndsAt,
@@ -55,6 +72,7 @@ class BillingController extends Controller
             'sponsorNote'      => $tenant?->sponsor_note,
             'upgradePrompt'    => session('upgrade_prompt', false),
             'stripeConfigured' => $stripeConfigured,
+            'invoices'         => $invoices,
         ]);
     }
 

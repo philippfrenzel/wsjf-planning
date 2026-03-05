@@ -4,8 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { type BreadcrumbItem } from '@/types';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Download, FileText } from 'lucide-react';
+
+interface Invoice {
+    id: string;
+    date: string;
+    total: string;
+    status: string;
+    number: string | null;
+    pdf_url: string | null;
+}
 
 interface BillingPageProps {
     billingStatus: 'active' | 'trial' | 'inactive' | 'no_tenant' | 'sponsored';
@@ -16,6 +26,7 @@ interface BillingPageProps {
     upgradePrompt: boolean;
     successMessage?: string;
     stripeConfigured?: boolean;
+    invoices?: Invoice[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -31,6 +42,7 @@ export default function BillingPage({
     upgradePrompt,
     successMessage,
     stripeConfigured = true,
+    invoices = [],
 }: BillingPageProps) {
     const seatUnitPrice = Number((usePage().props as { billing?: { seatUnitPriceUsd?: number } }).billing?.seatUnitPriceUsd ?? 1);
     const flash = (usePage().props as { flash?: { error?: string } }).flash;
@@ -162,6 +174,55 @@ export default function BillingPage({
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Invoices Card */}
+                {invoices.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <FileText className="h-5 w-5" />
+                                Rechnungen
+                            </CardTitle>
+                            <CardDescription>Bisherige Zahlungen und Rechnungen aus Stripe.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Nr.</TableHead>
+                                        <TableHead>Datum</TableHead>
+                                        <TableHead>Betrag</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">PDF</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {invoices.map((inv) => (
+                                        <TableRow key={inv.id}>
+                                            <TableCell className="font-mono text-xs">{inv.number ?? '–'}</TableCell>
+                                            <TableCell>{new Date(inv.date).toLocaleDateString('de-CH')}</TableCell>
+                                            <TableCell>{inv.total}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={inv.status === 'paid' ? 'default' : 'secondary'}>
+                                                    {inv.status === 'paid' ? 'Bezahlt' : inv.status === 'open' ? 'Offen' : inv.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                {inv.pdf_url && (
+                                                    <Button variant="ghost" size="sm" asChild>
+                                                        <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer">
+                                                            <Download className="h-4 w-4" />
+                                                        </a>
+                                                    </Button>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </AppLayout>
     );
