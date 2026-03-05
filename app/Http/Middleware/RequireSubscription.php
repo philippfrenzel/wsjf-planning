@@ -25,9 +25,15 @@ class RequireSubscription
         }
 
         // Allow if: active subscription, generic trial, or on grace period after cancellation
-        $allowed = $tenant->subscribed('default')
-            || $tenant->onGenericTrial()
-            || ($tenant->subscription('default')?->onGracePeriod() ?? false);
+        try {
+            $allowed = $tenant->subscribed('default')
+                || $tenant->onGenericTrial()
+                || ($tenant->subscription('default')?->onGracePeriod() ?? false);
+        } catch (\Throwable $e) {
+            report($e);
+            // If Cashier/Stripe is misconfigured, allow access with generic trial fallback
+            $allowed = $tenant->trial_ends_at && $tenant->trial_ends_at->isFuture();
+        }
 
         if ($allowed) {
             return $next($request);

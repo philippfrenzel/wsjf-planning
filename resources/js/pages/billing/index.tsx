@@ -12,6 +12,7 @@ interface BillingPageProps {
     trialDaysLeft: number | null;
     upgradePrompt: boolean;
     successMessage?: string;
+    stripeConfigured?: boolean;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -24,8 +25,10 @@ export default function BillingPage({
     trialDaysLeft,
     upgradePrompt,
     successMessage,
+    stripeConfigured = true,
 }: BillingPageProps) {
     const seatUnitPriceUsd = Number((usePage().props as { billing?: { seatUnitPriceUsd?: number } }).billing?.seatUnitPriceUsd ?? 1);
+    const flash = (usePage().props as { flash?: { error?: string } }).flash;
     const statusLabel = {
         active: 'Active',
         trial: `Free Trial${trialDaysLeft !== null ? ` (${trialDaysLeft} days left)` : ''}`,
@@ -62,6 +65,20 @@ export default function BillingPage({
                     </Alert>
                 )}
 
+                {flash?.error && (
+                    <Alert variant="destructive">
+                        <AlertDescription>{flash.error}</AlertDescription>
+                    </Alert>
+                )}
+
+                {!stripeConfigured && (
+                    <Alert>
+                        <AlertDescription>
+                            Stripe ist noch nicht konfiguriert. Bitte setze <code className="font-mono text-xs bg-muted px-1 rounded">STRIPE_KEY</code>, <code className="font-mono text-xs bg-muted px-1 rounded">STRIPE_SECRET</code> und <code className="font-mono text-xs bg-muted px-1 rounded">STRIPE_PRICE_ID</code> in deiner Umgebungskonfiguration.
+                        </AlertDescription>
+                    </Alert>
+                )}
+
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-3">
@@ -86,17 +103,17 @@ export default function BillingPage({
                         </div>
                         <div className="flex gap-3">
                         {billingStatus !== 'active' && (
-                            <Button asChild>
+                            <Button asChild disabled={!stripeConfigured}>
                                 <Link href="/billing/checkout">Subscribe Now</Link>
                             </Button>
                         )}
                         {billingStatus === 'active' && (
-                            <Button variant="outline" asChild>
+                            <Button variant="outline" asChild disabled={!stripeConfigured}>
                                 <Link href="/billing/portal">Manage Billing</Link>
                             </Button>
                         )}
                         {billingStatus === 'trial' && (
-                            <Button variant="outline" asChild>
+                            <Button variant="outline" asChild disabled={!stripeConfigured}>
                                 <Link href="/billing/checkout">Add Payment Method</Link>
                             </Button>
                         )}
