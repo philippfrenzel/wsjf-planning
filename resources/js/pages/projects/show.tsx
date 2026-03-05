@@ -1,4 +1,4 @@
-import { LoaderCircle, Zap, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
+import { LoaderCircle, Pencil, Zap, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -128,6 +128,13 @@ export default function ProjectShow() {
                         <Button asChild variant="outline">
                             <Link href={route('projects.features.import', project.id)}>Feature-Import</Link>
                         </Button>
+                        {canManage && (
+                            <Button asChild variant="outline">
+                                <Link href={route('projects.edit', project.id)}>
+                                    <Pencil className="mr-1 h-4 w-4" /> Bearbeiten
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6">

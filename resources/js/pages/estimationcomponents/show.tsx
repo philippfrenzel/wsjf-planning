@@ -1,6 +1,8 @@
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table } from '@/components/ui/table';
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import { Pencil } from 'lucide-react';
 import React from 'react';
 
 // Beispiel für ein einfaches UI-Komponenten-Set
@@ -24,8 +26,13 @@ const EstimationComponentShow: React.FC = () => {
 
     return (
         <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
                 <h2 className="text-xl font-bold">Estimation Component Details</h2>
+                <Button asChild variant="outline" size="sm">
+                    <Link href={route('estimation-components.edit', estimationcomponent.id)}>
+                        <Pencil className="mr-1 h-4 w-4" /> Bearbeiten
+                    </Link>
+                </Button>
             </CardHeader>
             <CardContent>
                 {estimationcomponent && estimationcomponent.id ? (

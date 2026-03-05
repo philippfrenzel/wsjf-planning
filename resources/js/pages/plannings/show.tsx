@@ -1175,8 +1175,15 @@ export default function Show({ planning, stakeholders, piObjectives, iterations,
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="w-full max-w-full px-10">
                 <Card className="w-full">
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>{planning.title}</CardTitle>
+                        {canManage && (
+                            <Button asChild variant="outline" size="sm">
+                                <a href={route('plannings.edit', planning.id)}>
+                                    <Pencil className="mr-1 h-4 w-4" /> Bearbeiten
+                                </a>
+                            </Button>
+                        )}
                     </CardHeader>
                     <CardContent>
                         {planning.vision && (
