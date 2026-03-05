@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { VersionInfo } from '@/components/version-info';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, BarChart3 as Donut, Folder, Kanban, LayoutGrid, Route, Shield, Shirt, Users } from 'lucide-react';
+import { BookOpen, BarChart3 as Donut, Folder, Kanban, LayoutGrid, ListChecks, Route, Shield, Shirt, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 interface AppSidebarProps {
@@ -48,6 +48,11 @@ export function AppSidebar({ hasProjects, firstPlanningId }: AppSidebarProps) {
             title: 'Teams',
             href: '/teams',
             icon: Users,
+        },
+        {
+            title: 'DoR / DoD',
+            href: '/definitions',
+            icon: ListChecks,
         },
         // Admin-Link nur für Philipp
         auth?.user?.email === 'philipp@frenzel.net' && {

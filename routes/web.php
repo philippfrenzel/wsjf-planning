@@ -23,6 +23,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\IterationController;
 use App\Http\Controllers\RiskController;
 use App\Http\Controllers\CapacityController;
+use App\Http\Controllers\DefinitionChecklistController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -113,6 +114,12 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     // Capacity management
     Route::post('plannings/{planning}/capacities', [CapacityController::class, 'upsert'])
         ->name('plannings.capacities.upsert');
+
+    // Definition of Ready / Definition of Done checklists
+    Route::get('definitions', [DefinitionChecklistController::class, 'index'])->name('definitions.index');
+    Route::post('definitions', [DefinitionChecklistController::class, 'store'])->name('definitions.store');
+    Route::put('definitions/{definitionChecklist}', [DefinitionChecklistController::class, 'update'])->name('definitions.update');
+    Route::delete('definitions/{definitionChecklist}', [DefinitionChecklistController::class, 'destroy'])->name('definitions.destroy');
 
     // API-Route zum Laden von Features für ein Planning
     Route::post('api/planning-features', [CommitmentController::class, 'getFeaturesForPlanning'])
