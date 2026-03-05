@@ -180,6 +180,8 @@ class PlanningController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
+        $capacities = $planning->capacities()->get();
+
         return Inertia::render('plannings/show', [
             'planning' => $planning,
             'stakeholders' => $stakeholders,
@@ -187,6 +189,7 @@ class PlanningController extends Controller
             'iterations' => $iterations,
             'risks' => $risks,
             'teams' => $teams,
+            'capacities' => $capacities,
         ]);
     }
 

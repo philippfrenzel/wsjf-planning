@@ -145,6 +145,17 @@ interface TeamData {
     name: string;
 }
 
+interface CapacityData {
+    id: number;
+    planning_id: number;
+    team_id: number;
+    iteration_id: number;
+    available_points: number | null;
+    planned_points: number;
+    availability_percentage: number;
+    notes: string | null;
+}
+
 interface ShowProps {
     planning: Planning;
     stakeholders: Stakeholder[];
@@ -152,6 +163,7 @@ interface ShowProps {
     iterations: IterationData[];
     risks: RiskData[];
     teams: TeamData[];
+    capacities: CapacityData[];
 }
 
 function FeaturesTable({ features }: { features?: Feature[] }) {
@@ -990,7 +1002,165 @@ function ProgramBoard({
     );
 }
 
-export default function Show({ planning, stakeholders, piObjectives, iterations, risks, teams }: ShowProps) {
+// ---- Capacity Panel Component ----
+function CapacityPanel({
+    planningId,
+    teams,
+    iterations,
+    capacities,
+    canManage,
+}: {
+    planningId: number;
+    teams: TeamData[];
+    iterations: IterationData[];
+    capacities: CapacityData[];
+    canManage: boolean;
+}) {
+    const sortedIterations = [...iterations].sort((a, b) => a.number - b.number);
+    const [editCell, setEditCell] = useState<{ teamId: number; iterationId: number } | null>(null);
+    const [form, setForm] = useState({ available_points: '', planned_points: '', availability_percentage: '100', notes: '' });
+
+    const getCapacity = (teamId: number, iterationId: number) =>
+        capacities.find((c) => c.team_id === teamId && c.iteration_id === iterationId);
+
+    const openEdit = (teamId: number, iterationId: number) => {
+        const cap = getCapacity(teamId, iterationId);
+        setForm({
+            available_points: cap?.available_points != null ? String(cap.available_points) : '',
+            planned_points: cap?.planned_points != null ? String(cap.planned_points) : '0',
+            availability_percentage: cap?.availability_percentage != null ? String(cap.availability_percentage) : '100',
+            notes: cap?.notes || '',
+        });
+        setEditCell({ teamId, iterationId });
+    };
+
+    const saveCapacity = () => {
+        if (!editCell) return;
+        router.post(
+            route('plannings.capacities.upsert', { planning: planningId }),
+            {
+                team_id: editCell.teamId,
+                iteration_id: editCell.iterationId,
+                available_points: form.available_points ? Number(form.available_points) : null,
+                planned_points: Number(form.planned_points) || 0,
+                availability_percentage: Number(form.availability_percentage) || 100,
+                notes: form.notes || null,
+            },
+            { preserveScroll: true, onSuccess: () => setEditCell(null) },
+        );
+    };
+
+    const getLoadColor = (cap: CapacityData | undefined) => {
+        if (!cap || !cap.available_points) return '';
+        const load = (cap.planned_points / cap.available_points) * 100;
+        if (load > 100) return 'bg-red-100 dark:bg-red-950';
+        if (load > 80) return 'bg-yellow-100 dark:bg-yellow-950';
+        return 'bg-green-100 dark:bg-green-950';
+    };
+
+    if (iterations.length === 0 || teams.length === 0) {
+        return (
+            <div className="py-8 text-center text-muted-foreground">
+                Bitte zuerst <strong>Teams</strong> und <strong>Iterationen</strong> anlegen.
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+            <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th className="border bg-muted/50 p-2 text-left text-xs font-semibold">Team</th>
+                            {sortedIterations.map((iter) => (
+                                <th key={iter.id} className="border bg-muted/50 p-2 text-center text-xs font-semibold">
+                                    {iter.name}
+                                    {iter.is_ip && <Badge variant="outline" className="ml-1 text-[10px]">IP</Badge>}
+                                </th>
+                            ))}
+                            <th className="border bg-muted/50 p-2 text-center text-xs font-semibold">Summe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {teams.map((team) => {
+                            let totalAvail = 0;
+                            let totalPlanned = 0;
+                            return (
+                                <tr key={team.id}>
+                                    <td className="border bg-muted/30 p-2 text-xs font-medium whitespace-nowrap">{team.name}</td>
+                                    {sortedIterations.map((iter) => {
+                                        const cap = getCapacity(team.id, iter.id);
+                                        if (cap?.available_points) totalAvail += cap.available_points;
+                                        if (cap) totalPlanned += cap.planned_points;
+                                        return (
+                                            <td
+                                                key={iter.id}
+                                                className={`border p-2 text-center text-xs cursor-pointer hover:bg-accent ${getLoadColor(cap)}`}
+                                                onClick={() => canManage && openEdit(team.id, iter.id)}
+                                            >
+                                                {cap ? (
+                                                    <>
+                                                        <div className="font-semibold">{cap.planned_points}/{cap.available_points ?? '?'}</div>
+                                                        <div className="text-[10px] text-muted-foreground">{cap.availability_percentage}%</div>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-muted-foreground">—</span>
+                                                )}
+                                            </td>
+                                        );
+                                    })}
+                                    <td className="border p-2 text-center text-xs font-semibold">
+                                        {totalPlanned}/{totalAvail || '?'}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+
+            <div className="flex gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><span className="inline-block h-3 w-3 rounded bg-green-200" /> &lt;80%</span>
+                <span className="flex items-center gap-1"><span className="inline-block h-3 w-3 rounded bg-yellow-200" /> 80–100%</span>
+                <span className="flex items-center gap-1"><span className="inline-block h-3 w-3 rounded bg-red-200" /> &gt;100%</span>
+            </div>
+
+            {/* Edit dialog */}
+            <Dialog open={!!editCell} onOpenChange={(o) => !o && setEditCell(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Kapazität bearbeiten</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div>
+                            <Label>Verfügbare Punkte</Label>
+                            <Input type="number" min={0} value={form.available_points} onChange={(e) => setForm({ ...form, available_points: e.target.value })} />
+                        </div>
+                        <div>
+                            <Label>Geplante Punkte</Label>
+                            <Input type="number" min={0} value={form.planned_points} onChange={(e) => setForm({ ...form, planned_points: e.target.value })} />
+                        </div>
+                        <div>
+                            <Label>Verfügbarkeit (%)</Label>
+                            <Input type="number" min={0} max={100} value={form.availability_percentage} onChange={(e) => setForm({ ...form, availability_percentage: e.target.value })} />
+                        </div>
+                        <div>
+                            <Label>Notizen</Label>
+                            <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setEditCell(null)}>Abbrechen</Button>
+                        <Button onClick={saveCapacity}>Speichern</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+}
+
+export default function Show({ planning, stakeholders, piObjectives, iterations, risks, teams, capacities }: ShowProps) {
     const { auth } = usePage<SharedData>().props;
     const canManage = auth.currentRole === 'Admin' || auth.currentRole === 'Planner';
 
@@ -1029,6 +1199,7 @@ export default function Show({ planning, stakeholders, piObjectives, iterations,
                                 <TabsTrigger value="iterations">Iterationen</TabsTrigger>
                                 <TabsTrigger value="roam">ROAM Board</TabsTrigger>
                                 <TabsTrigger value="program-board">Program Board</TabsTrigger>
+                                <TabsTrigger value="capacity">Kapazität</TabsTrigger>
                             </TabsList>
                             <TabsContent value="details">
                                 <PlanningDetailsCard planning={planning} stakeholders={stakeholders} />
@@ -1120,6 +1291,15 @@ export default function Show({ planning, stakeholders, piObjectives, iterations,
                                     teams={teams ?? []}
                                     iterations={iterations ?? []}
                                     planningId={planning.id}
+                                    canManage={canManage}
+                                />
+                            </TabsContent>
+                            <TabsContent value="capacity">
+                                <CapacityPanel
+                                    planningId={planning.id}
+                                    teams={teams ?? []}
+                                    iterations={iterations ?? []}
+                                    capacities={capacities ?? []}
                                     canManage={canManage}
                                 />
                             </TabsContent>

@@ -22,6 +22,7 @@ use App\Http\Controllers\PiObjectiveController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\IterationController;
 use App\Http\Controllers\RiskController;
+use App\Http\Controllers\CapacityController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -108,6 +109,10 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     // Program Board: assign feature to team/iteration
     Route::put('plannings/{planning}/features/{feature}/assign', [PlanningController::class, 'assignFeature'])
         ->name('plannings.assign-feature');
+
+    // Capacity management
+    Route::post('plannings/{planning}/capacities', [CapacityController::class, 'upsert'])
+        ->name('plannings.capacities.upsert');
 
     // API-Route zum Laden von Features für ein Planning
     Route::post('api/planning-features', [CommitmentController::class, 'getFeaturesForPlanning'])

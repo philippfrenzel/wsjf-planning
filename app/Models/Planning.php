@@ -127,6 +127,11 @@ class Planning extends Model
         return $this->hasMany(Risk::class);
     }
 
+    public function capacities(): HasMany
+    {
+        return $this->hasMany(TeamIterationCapacity::class);
+    }
+
     /**
      * Status-Details für Frontend
      */
