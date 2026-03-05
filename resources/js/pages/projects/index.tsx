@@ -80,12 +80,6 @@ export default function Index({ projects, currentUserId }: IndexProps) {
     const columns = useMemo<ColumnDef<Project>[]>(
         () => [
             {
-                id: 'id',
-                accessorKey: 'id',
-                header: ({ column }) => <DataTableColumnHeader column={column} label="ID" />,
-                enableColumnFilter: false,
-            },
-            {
                 id: 'project_number',
                 accessorKey: 'project_number',
                 header: ({ column }) => <DataTableColumnHeader column={column} label="Projektnummer" />,
