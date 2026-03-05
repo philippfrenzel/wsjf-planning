@@ -94,20 +94,18 @@ export function SkillRequirementsPicker({ skills, requirements, onToggle, onLeve
                                         return (
                                             <tr
                                                 key={skill.id}
-                                                className={`border-b last:border-0 cursor-pointer transition-colors ${req ? 'bg-primary/5' : 'hover:bg-muted/30'}`}
-                                                onClick={() => onToggle(skill.id)}
+                                                className={`border-b last:border-0 transition-colors ${req ? 'bg-primary/5' : 'hover:bg-muted/30'}`}
                                             >
                                                 <td className="px-4 py-2 text-center">
                                                     <Checkbox
                                                         checked={!!req}
                                                         onCheckedChange={() => onToggle(skill.id)}
-                                                        onClick={(e) => e.stopPropagation()}
                                                     />
                                                 </td>
                                                 <td className="px-4 py-2">
                                                     <span className={`text-sm ${req ? 'font-medium' : ''}`}>{skill.name}</span>
                                                 </td>
-                                                <td className="px-4 py-2" onClick={(e) => e.stopPropagation()}>
+                                                <td className="px-4 py-2">
                                                     {req ? (
                                                         <Select value={req.level} onValueChange={(v) => onLevelChange(skill.id, v)}>
                                                             <SelectTrigger className="h-7 w-full text-xs">
