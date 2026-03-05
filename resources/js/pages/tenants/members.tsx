@@ -20,6 +20,7 @@ type Member = { id: number; name: string; email: string; pivot?: { role?: string
 type OwnedTenant = {
     id: number;
     name: string;
+    owner_user_id: number;
     members?: Member[];
     invitations?: { id: number; tenant_id: number; email: string; accepted_at?: string | null; created_at?: string }[];
 };
@@ -168,21 +169,25 @@ export default function TenantMembers({
                                     {members.map((m) => {
                                         const memberRole = m.pivot?.role;
                                         const isSelf = m.id === currentUserId;
+                                        const isOwner = viewingOwnedTenant && m.id === viewingOwnedTenant.owner_user_id;
                                         return (
                                             <li key={m.id} className="flex items-center gap-3">
                                                 <div
                                                     className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${
-                                                        isSelf ? 'bg-indigo-500' : 'bg-slate-400'
+                                                        isOwner ? 'bg-amber-500' : isSelf ? 'bg-indigo-500' : 'bg-slate-400'
                                                     }`}
                                                 >
                                                     {initials(m.name)}
                                                 </div>
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="text-sm font-medium text-slate-900">{m.name}</p>
+                                                    <p className="text-sm font-medium text-slate-900">
+                                                        {m.name}
+                                                        {isOwner && <span className="ml-2 rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">Eigentümer</span>}
+                                                    </p>
                                                     <p className="truncate text-xs text-slate-500">{m.email}</p>
                                                 </div>
                                                 <span className={roleBadgeClass(memberRole)}>{memberRole ?? 'Voter'}</span>
-                                                {isAdmin && !isSelf && viewingOwnedTenant && (
+                                                {isAdmin && !isSelf && !isOwner && viewingOwnedTenant && (
                                                     <>
                                                         <select
                                                             className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-700"

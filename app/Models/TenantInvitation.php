@@ -51,11 +51,14 @@ class TenantInvitation extends Model
 
             $user->tenants()->syncWithoutDetaching([$this->tenant_id]);
 
-            // INV-05: Assign Voter role in the tenant_user pivot
+            // Assign Voter role — but never downgrade the tenant owner
+            $tenant = Tenant::find($this->tenant_id);
+            $role = ($tenant && $tenant->owner_user_id === $user->id) ? 'Admin' : 'Voter';
             DB::table('tenant_user')
                 ->where('tenant_id', $this->tenant_id)
                 ->where('user_id', $user->id)
-                ->update(['role' => 'Voter']);
+                ->whereNull('role')
+                ->update(['role' => $role]);
 
             $user->forceFill(['current_tenant_id' => $this->tenant_id])->save();
         });

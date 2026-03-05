@@ -40,7 +40,7 @@ class TenantController extends Controller
                     $q->select('id', 'tenant_id', 'email', 'accepted_at', 'created_at');
                 },
             ])
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'owner_user_id']);
 
         $invitations = TenantInvitation::where('email', $user->email)
             ->whereNull('accepted_at')
@@ -136,6 +136,10 @@ class TenantController extends Controller
     {
         $request->validate(['role' => 'required|in:Admin,Planner,Voter']);
 
+        if ($tenant->owner_user_id === $member->id) {
+            return back()->withErrors(['role' => 'Die Rolle des Eigentümers kann nicht geändert werden.']);
+        }
+
         if (!$tenant->members()->where('users.id', $member->id)->exists()) {
             abort(404, 'Member not found in this tenant.');
         }
@@ -150,6 +154,10 @@ class TenantController extends Controller
 
     public function removeMember(Request $request, Tenant $tenant, User $member): RedirectResponse
     {
+        if ($tenant->owner_user_id === $member->id) {
+            return back()->withErrors(['member' => 'Der Eigentümer kann nicht aus der Organisation entfernt werden.']);
+        }
+
         if (Auth::id() === $member->id) {
             return back()->withErrors(['member' => 'You cannot remove yourself from the tenant.']);
         }
