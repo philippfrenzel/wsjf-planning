@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog-provider';
+import MarkdownEditor from '@/components/markdown-editor';
+import MarkdownViewer from '@/components/markdown-viewer';
 
 interface ChecklistItem {
     text: string;
@@ -109,7 +111,7 @@ export default function Index({ checklists }: { checklists: Checklist[] }) {
                         <h3 className="font-semibold">{checklist.title}</h3>
                         {!checklist.is_active && <Badge variant="secondary">Inaktiv</Badge>}
                     </div>
-                    {checklist.description && <p className="mt-1 text-sm text-muted-foreground">{checklist.description}</p>}
+                    {checklist.description && <MarkdownViewer content={checklist.description} className="mt-1" />}
                 </div>
                 <div className="flex gap-1">
                     <Button variant="ghost" size="icon" onClick={() => openEdit(checklist)}>
@@ -201,7 +203,7 @@ export default function Index({ checklists }: { checklists: Checklist[] }) {
                             </div>
                             <div>
                                 <Label>Beschreibung</Label>
-                                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
+                                <MarkdownEditor value={form.description} onChange={(md) => setForm({ ...form, description: md })} placeholder="Beschreibung (Markdown)" minHeight="100px" />
                             </div>
                             <div>
                                 <Label>Checklist-Punkte</Label>
