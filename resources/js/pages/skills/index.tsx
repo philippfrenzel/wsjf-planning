@@ -143,27 +143,29 @@ export default function Index({ skills, roleSets }: { skills: Skill[]; roleSets:
                                                 </div>
                                                 {Object.entries(grouped).map(([cat, items]) => {
                                                     const catAvail = items.filter((i) => !i.exists).map((i) => i.name);
-                                                    const catAllSelected = catAvail.length > 0 && catAvail.every((n) => selectedNames.has(n));
+                                                    const catSelectedCount = catAvail.filter((n) => selectedNames.has(n)).length;
+                                                    const catAllSelected = catAvail.length > 0 && catSelectedCount === catAvail.length;
+                                                    const catSomeSelected = catSelectedCount > 0 && !catAllSelected;
                                                     return (
                                                         <div key={cat}>
-                                                            <div className="flex items-center justify-between mb-1">
+                                                            <label className={`flex items-center gap-2 mb-1 ${catAvail.length > 0 ? 'cursor-pointer' : 'cursor-default'}`}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="h-4 w-4 rounded border-gray-300"
+                                                                    checked={catAllSelected}
+                                                                    ref={(el) => { if (el) el.indeterminate = catSomeSelected; }}
+                                                                    disabled={catAvail.length === 0}
+                                                                    onChange={() => {
+                                                                        setSelectedNames((prev) => {
+                                                                            const next = new Set(prev);
+                                                                            catAvail.forEach((n) => catAllSelected ? next.delete(n) : next.add(n));
+                                                                            return next;
+                                                                        });
+                                                                    }}
+                                                                />
                                                                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{cat}</span>
-                                                                {catAvail.length > 0 && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="text-[10px] text-muted-foreground hover:underline"
-                                                                        onClick={() => {
-                                                                            setSelectedNames((prev) => {
-                                                                                const next = new Set(prev);
-                                                                                catAvail.forEach((n) => catAllSelected ? next.delete(n) : next.add(n));
-                                                                                return next;
-                                                                            });
-                                                                        }}
-                                                                    >
-                                                                        {catAllSelected ? 'Keine' : 'Alle'}
-                                                                    </button>
-                                                                )}
-                                                            </div>
+                                                                <span className="text-[10px] text-muted-foreground">({catSelectedCount}/{catAvail.length})</span>
+                                                            </label>
                                                             {items.map((item) => (
                                                                 <label
                                                                     key={item.name}
