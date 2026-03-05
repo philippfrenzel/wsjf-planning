@@ -3,7 +3,7 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type SharedData, type User } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { LogOut, Settings, Users } from 'lucide-react';
+import { LogOut, Settings, Shield, Users } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -28,6 +28,8 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
         cleanup();
         router.flushAll();
     };
+
+    const isSuperAdmin = (page.props.auth as any).isSuperAdmin ?? false;
 
     return (
         <>
@@ -73,6 +75,20 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                             >
                                 <Users className="mr-2" />
                                 Tenants verwalten
+                            </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                </>
+            )}
+            {isSuperAdmin && (
+                <>
+                    <DropdownMenuGroup>
+                        <DropdownMenuLabel className="text-xs font-medium text-neutral-500">Admin</DropdownMenuLabel>
+                        <DropdownMenuItem asChild>
+                            <Link className="block w-full" href="/admin/licenses" prefetch onClick={cleanup}>
+                                <Shield className="mr-2" />
+                                Lizenzen
                             </Link>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>

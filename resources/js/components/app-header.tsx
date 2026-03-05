@@ -7,7 +7,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, Kanban, LayoutGrid, ListChecks, Map, Menu, Route, Shield, Shirt, FolderKanban, Users, Zap } from 'lucide-react';
+import { BarChart3, Kanban, LayoutGrid, ListChecks, Map, Menu, Route, Shirt, FolderKanban, Users, Zap } from 'lucide-react';
 import AppLogoIcon from './app-logo-icon';
 
 interface AppHeaderProps {
@@ -23,8 +23,6 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const hasFeatures = props.hasFeatures ?? false;
     const getInitials = useInitials();
 
-    const isSuperAdmin = auth?.isSuperAdmin ?? false;
-
     const navItems = [
         { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
         { title: 'Projekte', href: '/projects', icon: FolderKanban },
@@ -35,7 +33,6 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
         { title: 'Skills', href: '/skills', icon: Zap },
         { title: 'DoR/DoD', href: '/definitions', icon: ListChecks },
         hasProjects && { title: 'Roadmap', href: '/roadmap', icon: Map },
-        isSuperAdmin && { title: 'Lizenzen', href: '/admin/licenses', icon: Shield },
     ].filter(Boolean) as { title: string; href: string; icon: React.ElementType }[];
 
     const isActive = (href: string) => page.url.startsWith(href.split('?')[0]);
