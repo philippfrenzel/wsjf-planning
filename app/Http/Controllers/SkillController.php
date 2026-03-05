@@ -56,4 +56,60 @@ class SkillController extends Controller
 
         return redirect()->route('skills.index')->with('success', 'Skill wurde gelöscht.');
     }
+
+    public function seedDefaults(): RedirectResponse
+    {
+        $tenantId = auth()->user()->current_tenant_id;
+
+        $defaults = [
+            // ART-Ebene (Agile Release Train)
+            ['name' => 'Release Train Engineer (RTE)', 'category' => 'ART-Ebene', 'description' => 'Leitet den Agile Release Train, moderiert PI Planning und beseitigt Impediments.'],
+            ['name' => 'Product Manager', 'category' => 'ART-Ebene', 'description' => 'Verantwortet die Programm-Backlog-Priorisierung und die inhaltliche Ausrichtung des ART.'],
+            ['name' => 'System Architect', 'category' => 'ART-Ebene', 'description' => 'Definiert die technische Architektur und Leitplanken für alle Teams im ART.'],
+            ['name' => 'Business Owner', 'category' => 'ART-Ebene', 'description' => 'Stakeholder mit Geschäftsverantwortung, bewertet den Business Value bei PI Planning.'],
+
+            // Team-Ebene
+            ['name' => 'Scrum Master', 'category' => 'Team-Ebene', 'description' => 'Facilitiert agile Zeremonien, schützt das Team und fördert kontinuierliche Verbesserung.'],
+            ['name' => 'Product Owner', 'category' => 'Team-Ebene', 'description' => 'Verantwortet das Team-Backlog, priorisiert Stories und akzeptiert Ergebnisse.'],
+            ['name' => 'Frontend-Entwicklung', 'category' => 'Team-Ebene', 'description' => 'Entwicklung von Benutzeroberflächen mit modernen Web-Frameworks.'],
+            ['name' => 'Backend-Entwicklung', 'category' => 'Team-Ebene', 'description' => 'Entwicklung von APIs, Geschäftslogik und Datenbank-Schichten.'],
+            ['name' => 'Full-Stack-Entwicklung', 'category' => 'Team-Ebene', 'description' => 'Übergreifende Entwicklung von Frontend und Backend.'],
+            ['name' => 'QA / Test Engineering', 'category' => 'Team-Ebene', 'description' => 'Testautomatisierung, Qualitätssicherung und Teststrategien.'],
+            ['name' => 'UX/UI Design', 'category' => 'Team-Ebene', 'description' => 'Nutzerforschung, Interaction Design und visuelle Gestaltung.'],
+            ['name' => 'DevOps / Platform Engineering', 'category' => 'Team-Ebene', 'description' => 'CI/CD-Pipelines, Infrastruktur-Automatisierung und Monitoring.'],
+            ['name' => 'Data Engineering', 'category' => 'Team-Ebene', 'description' => 'Datenmodellierung, ETL-Pipelines und Datenanalyse.'],
+            ['name' => 'Security Engineering', 'category' => 'Team-Ebene', 'description' => 'Applikationssicherheit, Penetration Testing und Compliance.'],
+            ['name' => 'Mobile-Entwicklung', 'category' => 'Team-Ebene', 'description' => 'Entwicklung nativer oder hybrider mobiler Anwendungen.'],
+            ['name' => 'Technical Writing', 'category' => 'Team-Ebene', 'description' => 'Technische Dokumentation, API-Docs und Benutzerhandbücher.'],
+            ['name' => 'Business Analyse', 'category' => 'Team-Ebene', 'description' => 'Anforderungsanalyse, Prozessmodellierung und Stakeholder-Kommunikation.'],
+
+            // Portfolio-Ebene
+            ['name' => 'Lean Portfolio Manager', 'category' => 'Portfolio-Ebene', 'description' => 'Steuert den Wertstrom auf Portfolio-Ebene und priorisiert Epics.'],
+            ['name' => 'Enterprise Architect', 'category' => 'Portfolio-Ebene', 'description' => 'Definiert die übergreifende Unternehmensarchitektur und Technologiestrategie.'],
+            ['name' => 'Epic Owner', 'category' => 'Portfolio-Ebene', 'description' => 'Verantwortet die Ausarbeitung und Umsetzung von Portfolio-Epics.'],
+
+            // Übergreifend
+            ['name' => 'Agile Coach', 'category' => 'Übergreifend', 'description' => 'Begleitet Teams und Führungskräfte bei der agilen Transformation.'],
+            ['name' => 'Solution Architect', 'category' => 'Übergreifend', 'description' => 'Entwirft lösungsübergreifende Architekturen für Solution Trains.'],
+            ['name' => 'Cloud Engineering', 'category' => 'Übergreifend', 'description' => 'Cloud-Infrastruktur, Container-Orchestrierung und Cloud-native Architektur.'],
+            ['name' => 'Performance Engineering', 'category' => 'Übergreifend', 'description' => 'Lasttests, Performance-Optimierung und Kapazitätsplanung.'],
+            ['name' => 'Site Reliability Engineering (SRE)', 'category' => 'Übergreifend', 'description' => 'Betriebsstabilität, Incident Management und Service-Level-Objectives.'],
+        ];
+
+        $inserted = 0;
+        foreach ($defaults as $skill) {
+            $exists = Skill::where('tenant_id', $tenantId)
+                ->where('name', $skill['name'])
+                ->exists();
+            if (!$exists) {
+                Skill::create(array_merge($skill, ['tenant_id' => $tenantId]));
+                $inserted++;
+            }
+        }
+
+        return redirect()->route('skills.index')
+            ->with('success', $inserted > 0
+                ? "{$inserted} SAFe-Skills wurden hinzugefügt."
+                : 'Alle SAFe-Skills sind bereits vorhanden.');
+    }
 }

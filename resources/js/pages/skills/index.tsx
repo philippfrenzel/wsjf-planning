@@ -7,7 +7,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import { router, useForm } from '@inertiajs/react';
 import { useConfirm } from '@/components/confirm-dialog-provider';
-import { Pencil, Plus, Trash2, X, Save, Zap } from 'lucide-react';
+import { Pencil, Plus, Trash2, X, Save, Zap, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 interface Skill {
@@ -74,6 +74,13 @@ export default function Index({ skills }: { skills: Skill[] }) {
             <div className="mx-auto w-full max-w-4xl space-y-6 p-5">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Skills</h1>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.post(route('skills.seed-defaults'), {}, { preserveScroll: true })}
+                    >
+                        <Sparkles className="mr-1.5 h-4 w-4" /> SAFe-Rollen laden
+                    </Button>
                 </div>
 
                 {/* Create form */}
