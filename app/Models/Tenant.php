@@ -17,11 +17,19 @@ class Tenant extends Model
     protected $fillable = [
         'name',
         'owner_user_id',
+        'sponsored_until',
+        'sponsor_note',
     ];
 
     protected $casts = [
         'trial_ends_at' => 'datetime',
+        'sponsored_until' => 'datetime',
     ];
+
+    public function isSponsored(): bool
+    {
+        return $this->sponsored_until && $this->sponsored_until->isFuture();
+    }
 
     public function owner(): BelongsTo
     {

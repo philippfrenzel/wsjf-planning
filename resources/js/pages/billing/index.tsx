@@ -8,9 +8,11 @@ import { type BreadcrumbItem } from '@/types';
 import { CheckCircle2 } from 'lucide-react';
 
 interface BillingPageProps {
-    billingStatus: 'active' | 'trial' | 'inactive' | 'no_tenant';
+    billingStatus: 'active' | 'trial' | 'inactive' | 'no_tenant' | 'sponsored';
     trialEndsAt: string | null;
     trialDaysLeft: number | null;
+    sponsoredUntil: string | null;
+    sponsorNote: string | null;
     upgradePrompt: boolean;
     successMessage?: string;
     stripeConfigured?: boolean;
@@ -24,17 +26,23 @@ export default function BillingPage({
     billingStatus,
     trialEndsAt,
     trialDaysLeft,
+    sponsoredUntil,
+    sponsorNote,
     upgradePrompt,
     successMessage,
     stripeConfigured = true,
 }: BillingPageProps) {
     const seatUnitPrice = Number((usePage().props as { billing?: { seatUnitPriceUsd?: number } }).billing?.seatUnitPriceUsd ?? 1);
     const flash = (usePage().props as { flash?: { error?: string } }).flash;
+
+    const sponsoredDate = sponsoredUntil ? new Date(sponsoredUntil).toLocaleDateString('de-CH') : null;
+
     const statusLabel = {
         active: 'Aktiv',
         trial: `Testphase${trialDaysLeft !== null ? ` (noch ${trialDaysLeft} Tage)` : ''}`,
         inactive: 'Inaktiv',
         no_tenant: 'Keine Organisation',
+        sponsored: `Gesponsert${sponsoredDate ? ` bis ${sponsoredDate}` : ''}`,
     }[billingStatus];
 
     const statusVariant = {
@@ -42,6 +50,7 @@ export default function BillingPage({
         trial: 'secondary',
         inactive: 'destructive',
         no_tenant: 'destructive',
+        sponsored: 'default',
     }[billingStatus] as 'default' | 'secondary' | 'destructive';
 
     return (
@@ -52,7 +61,7 @@ export default function BillingPage({
                     <h1 className="text-2xl font-semibold">Abonnement & Abrechnung</h1>
                 </div>
 
-                {upgradePrompt && billingStatus !== 'active' && (
+                {upgradePrompt && billingStatus !== 'active' && billingStatus !== 'sponsored' && (
                     <Alert variant="destructive">
                         <AlertDescription>
                             Dein Abonnement ist inaktiv. Abonniere, um alle Funktionen nutzen zu können.
@@ -134,11 +143,13 @@ export default function BillingPage({
                                 `Deine Testphase ist abgelaufen oder das Abonnement wurde gekündigt.`}
                             {billingStatus === 'no_tenant' &&
                                 'Erstelle zuerst eine Organisation, um ein Abonnement abzuschliessen.'}
+                            {billingStatus === 'sponsored' &&
+                                `Deine Organisation wird gesponsert${sponsoredDate ? ` bis zum ${sponsoredDate}` : ''}.${sponsorNote ? ` ${sponsorNote}` : ''} Alle Funktionen sind freigeschaltet.`}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex gap-3">
-                        {billingStatus !== 'active' && billingStatus !== 'no_tenant' && (
+                        {billingStatus !== 'active' && billingStatus !== 'no_tenant' && billingStatus !== 'sponsored' && (
                             <Button asChild disabled={!stripeConfigured}>
                                 <a href="/billing/checkout">Jetzt abonnieren</a>
                             </Button>

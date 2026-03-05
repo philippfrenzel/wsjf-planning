@@ -17,12 +17,17 @@ class BillingController extends Controller
             $billingStatus = match(true) {
                 $tenant === null => 'no_tenant',
                 $tenant->subscribed('default') => 'active',
+                $tenant->isSponsored() => 'sponsored',
                 $tenant->onGenericTrial() => 'trial',
                 default => 'inactive',
             };
         } catch (\Throwable $e) {
             report($e);
-            $billingStatus = $tenant === null ? 'no_tenant' : 'inactive';
+            $billingStatus = match(true) {
+                $tenant === null => 'no_tenant',
+                $tenant->isSponsored() => 'sponsored',
+                default => 'inactive',
+            };
         }
 
         $trialEndsAt = $tenant?->trial_ends_at?->toDateString();
@@ -46,6 +51,8 @@ class BillingController extends Controller
             'billingStatus'    => $billingStatus,
             'trialEndsAt'      => $trialEndsAt,
             'trialDaysLeft'    => $trialDaysLeft,
+            'sponsoredUntil'   => $tenant?->sponsored_until?->toDateString(),
+            'sponsorNote'      => $tenant?->sponsor_note,
             'upgradePrompt'    => session('upgrade_prompt', false),
             'stripeConfigured' => $stripeConfigured,
         ]);

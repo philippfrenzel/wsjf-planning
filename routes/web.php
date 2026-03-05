@@ -26,6 +26,7 @@ use App\Http\Controllers\CapacityController;
 use App\Http\Controllers\DefinitionChecklistController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\RoadmapController;
+use App\Http\Controllers\SuperAdminController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -158,6 +159,13 @@ Route::middleware(['auth', 'verified', 'role:Admin', 'subscribed'])->group(funct
 });
 
 Route::get('/admin/users', [UserController::class, 'index'])->name('users.index')->middleware(['auth', 'role:Admin']);
+
+// SuperAdmin-only routes
+Route::middleware(['auth', 'role:SuperAdmin'])->prefix('admin')->group(function () {
+    Route::get('licenses', [SuperAdminController::class, 'licenses'])->name('admin.licenses');
+    Route::patch('licenses/{tenant}', [SuperAdminController::class, 'updateSponsor'])->name('admin.licenses.update');
+    Route::post('licenses/domain', [SuperAdminController::class, 'sponsorDomain'])->name('admin.licenses.domain');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('plans', PlanController::class)->only(['index', 'create', 'store']);

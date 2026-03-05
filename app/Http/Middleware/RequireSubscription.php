@@ -24,15 +24,17 @@ class RequireSubscription
             return $this->denyAccess($request);
         }
 
-        // Allow if: active subscription, generic trial, or on grace period after cancellation
+        // Allow if: active subscription, generic trial, grace period, or sponsored
         try {
             $allowed = $tenant->subscribed('default')
                 || $tenant->onGenericTrial()
-                || ($tenant->subscription('default')?->onGracePeriod() ?? false);
+                || ($tenant->subscription('default')?->onGracePeriod() ?? false)
+                || $tenant->isSponsored();
         } catch (\Throwable $e) {
             report($e);
-            // If Cashier/Stripe is misconfigured, allow access with generic trial fallback
-            $allowed = $tenant->trial_ends_at && $tenant->trial_ends_at->isFuture();
+            // If Cashier/Stripe is misconfigured, allow access with generic trial or sponsoring fallback
+            $allowed = ($tenant->trial_ends_at && $tenant->trial_ends_at->isFuture())
+                || $tenant->isSponsored();
         }
 
         if ($allowed) {
