@@ -32,12 +32,28 @@ class Feature extends Model
     protected $fillable = [
         'jira_key',
         'name',
+        'type',
         'description',
         'requester_id',
         'project_id',
         'created_at',
         'tenant_id',
     ];
+
+    public const TYPE_BUSINESS = 'business';
+    public const TYPE_ENABLER = 'enabler';
+    public const TYPE_TECH_DEBT = 'tech_debt';
+    public const TYPE_NFR = 'nfr';
+
+    public static function types(): array
+    {
+        return [
+            self::TYPE_BUSINESS => 'Business Feature',
+            self::TYPE_ENABLER => 'Enabler',
+            self::TYPE_TECH_DEBT => 'Tech Debt',
+            self::TYPE_NFR => 'NFR',
+        ];
+    }
 
     /**
      * Die Attribute, die an das Array-Format angehängt werden sollen.

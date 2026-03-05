@@ -20,6 +20,7 @@ class StoreFeatureRequest extends FormRequest
         return [
             'jira_key' => ['required', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
+            'type' => ['nullable', 'string', 'in:business,enabler,tech_debt,nfr'],
             'description' => ['nullable', 'string'],
             'requester_id' => ['nullable', 'exists:users,id'],
             'project_id' => ['required', Rule::exists('projects', 'id')->where('tenant_id', $tenantId)],

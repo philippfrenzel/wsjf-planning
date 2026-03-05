@@ -33,6 +33,7 @@ interface Feature {
         name: string;
         color: string;
     };
+    type?: string;
     estimation_components_count?: number;
     total_weighted_case?: number;
     estimation_units?: string[];
@@ -160,7 +161,29 @@ export default function Index({ features }: IndexProps) {
                 enableColumnFilter: true,
             },
             {
-                id: 'status',
+                id: 'type',
+                accessorKey: 'type',
+                header: 'Typ',
+                cell: ({ row }) => {
+                    const labels: Record<string, string> = { business: 'Business', enabler: 'Enabler', tech_debt: 'Tech Debt', nfr: 'NFR' };
+                    const colors: Record<string, string> = { business: 'bg-blue-100 text-blue-800', enabler: 'bg-purple-100 text-purple-800', tech_debt: 'bg-orange-100 text-orange-800', nfr: 'bg-teal-100 text-teal-800' };
+                    const t = row.original.type ?? 'business';
+                    return <Badge className={colors[t] ?? ''}>{labels[t] ?? t}</Badge>;
+                },
+                meta: {
+                    label: 'Typ',
+                    variant: 'select' as const,
+                    options: [
+                        { label: 'Business', value: 'business' },
+                        { label: 'Enabler', value: 'enabler' },
+                        { label: 'Tech Debt', value: 'tech_debt' },
+                        { label: 'NFR', value: 'nfr' },
+                    ],
+                },
+                enableColumnFilter: true,
+                filterFn: arrIncludesFilter,
+            },
+            {
                 accessorFn: (row) => row.status?.name ?? '',
                 header: 'Status',
                 cell: ({ row }) => {
