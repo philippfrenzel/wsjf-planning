@@ -114,4 +114,11 @@ class Project extends Model
     {
         return $this->belongsToMany(Team::class, 'project_team')->withTimestamps();
     }
+
+    public function requiredSkills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, 'project_skill')
+            ->withPivot('level')
+            ->withTimestamps();
+    }
 }

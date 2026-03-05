@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\Skill;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\StatusMapper;
@@ -44,6 +45,7 @@ class ProjectController extends Controller
         return Inertia::render('projects/create', [
             'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'teams' => Team::where('tenant_id', $tenantId)->orderBy('name')->get(['id', 'name']),
+            'skills' => Skill::where('tenant_id', $tenantId)->orderBy('category')->orderBy('name')->get(['id', 'name', 'category']),
         ]);
     }
 
@@ -61,10 +63,15 @@ class ProjectController extends Controller
             'deputy_leader_id' => 'nullable|exists:users,id',
             'team_ids' => ['sometimes', 'array'],
             'team_ids.*' => ['integer', 'exists:teams,id'],
+            'skill_requirements' => ['sometimes', 'array'],
+            'skill_requirements.*.skill_id' => ['required', 'exists:skills,id'],
+            'skill_requirements.*.level' => ['required', 'in:basic,intermediate,expert'],
         ]);
 
         $teamIds = $validated['team_ids'] ?? [];
         unset($validated['team_ids']);
+        $skillRequirements = $validated['skill_requirements'] ?? [];
+        unset($validated['skill_requirements']);
 
         $validated['created_by'] = auth()->id();
 
@@ -72,6 +79,14 @@ class ProjectController extends Controller
 
         if (!empty($teamIds)) {
             $project->teams()->sync($teamIds);
+        }
+
+        if (!empty($skillRequirements)) {
+            $syncData = [];
+            foreach ($skillRequirements as $req) {
+                $syncData[$req['skill_id']] = ['level' => $req['level']];
+            }
+            $project->requiredSkills()->sync($syncData);
         }
 
         return redirect()->route('projects.index')->with('success', 'Projekt erfolgreich erstellt.');
@@ -82,7 +97,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $project->load(['projectLeader', 'deputyLeader', 'teams']);
+        $project->load(['projectLeader', 'deputyLeader', 'teams', 'requiredSkills']);
 
         return Inertia::render('projects/show', [
             'project' => $project,
@@ -122,9 +137,10 @@ class ProjectController extends Controller
         }
 
         return Inertia::render('projects/edit', [
-            'project' => $project->load('teams:id,name'),
+            'project' => $project->load(['teams:id,name', 'requiredSkills']),
             'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'teams' => Team::where('tenant_id', $tenantId)->orderBy('name')->get(['id', 'name']),
+            'skills' => Skill::where('tenant_id', $tenantId)->orderBy('category')->orderBy('name')->get(['id', 'name', 'category']),
             'currentStatus' => [
                 'name' => $currentStatus['name'] ?? 'In Planung',
                 'color' => $currentStatus['color'] ?? 'bg-blue-100 text-blue-800',
@@ -153,10 +169,15 @@ class ProjectController extends Controller
             'new_status' => ['nullable', 'string', Rule::in($allowedTransitions)],
             'team_ids' => ['sometimes', 'array'],
             'team_ids.*' => ['integer', 'exists:teams,id'],
+            'skill_requirements' => ['sometimes', 'array'],
+            'skill_requirements.*.skill_id' => ['required', 'exists:skills,id'],
+            'skill_requirements.*.level' => ['required', 'in:basic,intermediate,expert'],
         ]);
 
         $teamIds = $validated['team_ids'] ?? [];
         unset($validated['team_ids']);
+        $skillRequirements = $validated['skill_requirements'] ?? [];
+        unset($validated['skill_requirements']);
 
         $newStatus = $validated['new_status'] ?? null;
         unset($validated['new_status']);
@@ -177,6 +198,12 @@ class ProjectController extends Controller
 
         $project->update($validated);
         $project->teams()->sync($teamIds);
+
+        $syncData = [];
+        foreach ($skillRequirements as $req) {
+            $syncData[$req['skill_id']] = ['level' => $req['level']];
+        }
+        $project->requiredSkills()->sync($syncData);
 
         return redirect()->route('projects.index')->with('success', 'Projekt erfolgreich aktualisiert.');
     }
