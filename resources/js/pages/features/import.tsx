@@ -232,8 +232,8 @@ export default function Import({ project }: PageProps) {
                                         </CardHeader>
                                         <CardContent className="text-foreground space-y-2 text-sm">
                                             <p>1. CSV-Datei laden und Header prüfen.</p>
-                                            <p>2. Spalten auf Jira-Key, Name und Beschreibung mappen.</p>
-                                            <p>3. Import starten (bestehende Features werden via Jira-Key aktualisiert).</p>
+                                            <p>2. Spalten auf Feature-Key, Name und Beschreibung mappen.</p>
+                                            <p>3. Import starten (bestehende Features werden via Feature-Key aktualisiert).</p>
                                         </CardContent>
                                     </Card>
                                 </div>
@@ -289,7 +289,7 @@ export default function Import({ project }: PageProps) {
                                                                                 }}
                                                                             >
                                                                                 <option value="ignore">Nicht importieren</option>
-                                                                                <option value="jira_key">Jira-Key</option>
+                                                                                <option value="jira_key">Feature-Key</option>
                                                                                 <option value="name">Name</option>
                                                                                 <option value="description">Beschreibung</option>
                                                                             </select>
@@ -374,7 +374,7 @@ export default function Import({ project }: PageProps) {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <CheckCircle2 className={`h-4 w-4 ${hasRequiredMapping ? 'text-emerald-600' : 'text-muted-foreground'}`} />
-                                                <span>Pflichtfelder (Jira-Key, Name) zugeordnet</span>
+                                                <span>Pflichtfelder (Feature-Key, Name) zugeordnet</span>
                                             </div>
                                         </CardContent>
                                     </Card>
@@ -386,7 +386,7 @@ export default function Import({ project }: PageProps) {
 
                             <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
                                 <div className="text-muted-foreground text-xs">
-                                    Upsert-Logik: Features werden anhand des Jira-Keys im Projekt angelegt oder aktualisiert.
+                                    Upsert-Logik: Features werden anhand des Feature-Keys im Projekt angelegt oder aktualisiert.
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Button type="button" variant="cancel" asChild>

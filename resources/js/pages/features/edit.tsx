@@ -301,42 +301,6 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                     <div className="space-y-6">
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <div>
-                                                <Label htmlFor="jira_key">Jira Key</Label>
-                                                <Input
-                                                    id="jira_key"
-                                                    name="jira_key"
-                                                    value={data.jira_key}
-                                                    onChange={handleChange}
-                                                    className="w-full"
-                                                    required
-                                                />
-                                                <InputError message={errors.jira_key} className="mt-1" />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="name">Name</Label>
-                                                <Input
-                                                    id="name"
-                                                    name="name"
-                                                    value={data.name}
-                                                    onChange={handleChange}
-                                                    className="w-full"
-                                                    required
-                                                />
-                                                <InputError message={errors.name} className="mt-1" />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <Label htmlFor="description">Beschreibung</Label>
-                                            <div className="overflow-hidden rounded border">
-                                                {addToolbar()}
-                                                <EditorContent editor={editor} className="min-h-[120px] bg-white p-2" />
-                                            </div>
-                                            <InputError message={errors.description} className="mt-1" />
-                                        </div>
-
-                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                            <div>
                                                 <Label htmlFor="project_id">Projekt</Label>
                                                 <Select value={data.project_id} onValueChange={(value) => handleSelectChange('project_id', value)}>
                                                     <SelectTrigger id="project_id" className="w-full">
@@ -351,6 +315,33 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                                     </SelectContent>
                                                 </Select>
                                                 <InputError message={errors.project_id} className="mt-1" />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="jira_key">Feature-Key</Label>
+                                                <Input
+                                                    id="jira_key"
+                                                    name="jira_key"
+                                                    value={data.jira_key}
+                                                    onChange={handleChange}
+                                                    className="w-full"
+                                                    required
+                                                />
+                                                <InputError message={errors.jira_key} className="mt-1" />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                            <div>
+                                                <Label htmlFor="name">Name</Label>
+                                                <Input
+                                                    id="name"
+                                                    name="name"
+                                                    value={data.name}
+                                                    onChange={handleChange}
+                                                    className="w-full"
+                                                    required
+                                                />
+                                                <InputError message={errors.name} className="mt-1" />
                                             </div>
                                             <div>
                                                 <Label htmlFor="requester_id">Anforderer (optional)</Label>
@@ -372,6 +363,15 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                                 </Select>
                                                 <InputError message={errors.requester_id} className="mt-1" />
                                             </div>
+                                        </div>
+
+                                        <div>
+                                            <Label htmlFor="description">Beschreibung</Label>
+                                            <div className="overflow-hidden rounded border">
+                                                {addToolbar()}
+                                                <EditorContent editor={editor} className="min-h-[120px] bg-white p-2" />
+                                            </div>
+                                            <InputError message={errors.description} className="mt-1" />
                                         </div>
                                     </div>
 

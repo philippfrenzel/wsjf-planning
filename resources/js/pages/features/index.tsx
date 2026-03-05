@@ -110,7 +110,7 @@ export default function Index({ features }: IndexProps) {
             {
                 id: 'jira_key',
                 accessorKey: 'jira_key',
-                header: ({ column }) => <DataTableColumnHeader column={column} label="Jira" />,
+                header: ({ column }) => <DataTableColumnHeader column={column} label="Feature-Key" />,
                 cell: ({ row }) => {
                     const feature = row.original;
                     return feature.project?.jira_base_uri && feature.jira_key ? (
@@ -127,8 +127,8 @@ export default function Index({ features }: IndexProps) {
                     );
                 },
                 meta: {
-                    label: 'Jira Key',
-                    placeholder: 'Jira Key filtern...',
+                    label: 'Feature-Key',
+                    placeholder: 'Feature-Key filtern...',
                     variant: 'text',
                 },
                 enableColumnFilter: true,
