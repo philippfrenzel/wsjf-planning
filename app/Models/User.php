@@ -140,9 +140,28 @@ class User extends Authenticatable
         if (!$tenantId) {
             return null;
         }
-        return DB::table('tenant_user')
+
+        $role = DB::table('tenant_user')
             ->where('tenant_id', $tenantId)
             ->where('user_id', $this->id)
             ->value('role');
+
+        // Self-heal: owner must always be Admin
+        if ($role !== 'Admin') {
+            $isOwner = DB::table('tenants')
+                ->where('id', $tenantId)
+                ->where('owner_user_id', $this->id)
+                ->exists();
+
+            if ($isOwner) {
+                DB::table('tenant_user')
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $this->id)
+                    ->update(['role' => 'Admin']);
+                return 'Admin';
+            }
+        }
+
+        return $role;
     }
 }
