@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export type Locale = 'en' | 'de';
+export type Locale = 'en' | 'de' | 'fr' | 'it';
 
 const setCookie = (name: string, value: string, days = 365) => {
     if (typeof document === 'undefined') {

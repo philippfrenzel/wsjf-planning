@@ -61,12 +61,14 @@ export default function Welcome() {
                         <div className="flex items-center gap-3">
                             <select
                                 value={locale}
-                                onChange={(e) => setLocale(e.target.value as 'en' | 'de')}
+                                onChange={(e) => setLocale(e.target.value as 'en' | 'de' | 'fr' | 'it')}
                                 className="bg-transparent text-slate-400 text-sm border-none outline-none cursor-pointer hover:text-white transition-colors"
                                 aria-label="Language"
                             >
                                 <option value="en">EN</option>
                                 <option value="de">DE</option>
+                                <option value="fr">FR</option>
+                                <option value="it">IT</option>
                             </select>
                             {auth.user ? (
                                 <Link

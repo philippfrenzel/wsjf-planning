@@ -1,0 +1,105 @@
+{
+  "dashboard": "Dashboard",
+  "login": "Accedi",
+  "register": "Prova gratuita",
+  "nav_tagline": "PI Planning per team SAFe",
+
+  "hero_title": "Dai priorità a ciò che conta. Consegna ciò che è importante.",
+  "hero_subtitle": "WSJF Planning offre ai team Agile aziendali una piattaforma basata sui dati per il PI Planning — dallo scoring WSJF e dal voto degli stakeholder alla gestione delle competenze, alle roadmap e al monitoraggio delle consegne. Un unico strumento per l'intero ciclo di pianificazione.",
+  "hero_cta": "Prova gratuita",
+  "hero_cta_secondary": "Come funziona",
+  "hero_dashboard": "Vai alla dashboard",
+  "hero_social_proof": "Scelto dai team Agile che utilizzano SAFe, Scrum e Kanban",
+
+  "trust_label": "Progettato per i moderni framework Agile aziendali",
+  "trust_safe": "SAFe",
+  "trust_scrum": "Scrum",
+  "trust_kanban": "Kanban",
+  "trust_pi": "PI Planning",
+
+  "problem_eyebrow": "Il problema",
+  "problem_title": "Il PI Planning è ancora un incubo di fogli di calcolo.",
+  "problem_text": "I team si destreggiano tra decine di fogli di calcolo, board Miro e catene di email per dare priorità alle funzionalità, allocare la capacità e monitorare gli impegni. Le lacune nelle competenze passano inosservate, le dipendenze rompono gli sprint e gli stakeholder non vedono mai il quadro completo.",
+  "solution_eyebrow": "La soluzione",
+  "solution_title": "Una piattaforma — dallo scoring alla consegna.",
+  "solution_text": "WSJF Planning combina il framework Weighted Shortest Job First con la gestione dei progetti, il monitoraggio delle competenze e l'analisi delle consegne in un unico strumento. Il tuo team valuta, vota, pianifica e consegna — tutto in un unico posto.",
+
+  "features_eyebrow": "Funzionalità della piattaforma",
+  "features_title": "Tutto ciò di cui il tuo team ha bisogno per il PI Planning — e oltre",
+  "features_subtitle": "Dalla prioritizzazione del backlog alla gestione delle competenze del team — una piattaforma completa per i team Agile aziendali.",
+
+  "feat_wsjf_title": "Motore di scoring WSJF",
+  "feat_wsjf_text": "Calcola i punteggi WSJF utilizzando valore di business, criticità temporale, riduzione del rischio e dimensione del lavoro. Voto individuale e di consenso integrato.",
+
+  "feat_voting_title": "Voto degli stakeholder",
+  "feat_voting_text": "Organizza sessioni di voto dal vivo con Product Owner, Architetti e stakeholder. I punteggi vengono aggregati automaticamente — senza fogli di calcolo.",
+
+  "feat_pi_title": "Suite PI Planning",
+  "feat_pi_text": "Pianifica le iterazioni con allocazione della capacità, obiettivi PI, gestione dei rischi ROAM e impegni del team — tutto per un evento PI Planning di successo.",
+
+  "feat_board_title": "Board Kanban",
+  "feat_board_text": "Visualizza il flusso delle funzionalità su un board Kanban drag-and-drop. Monitora le transizioni di stato dal funnel all'analisi fino al completamento.",
+
+  "feat_roadmap_title": "Roadmap",
+  "feat_roadmap_text": "Crea roadmap visive per allineare i team sulle tempistiche di consegna. Comunica il quadro generale agli stakeholder e alla leadership.",
+
+  "feat_projects_title": "Progetto & Portfolio",
+  "feat_projects_text": "Gestisci i progetti con assegnazioni del team, requisiti di competenza e monitoraggio delle funzionalità. Ottieni una vista portfolio di ciò che è pianificato e consegnato.",
+
+  "feat_skills_title": "Gestione delle competenze",
+  "feat_skills_text": "Definisci competenze con livelli di padronanza, assegnale ai membri del team e specifica i requisiti su progetti e funzionalità.",
+
+  "feat_skillmatrix_title": "Matrice delle competenze",
+  "feat_skillmatrix_text": "Verifica istantaneamente se il tuo team copre le competenze necessarie per un progetto. L'analisi dei gap con codice colore evidenzia le competenze mancanti.",
+
+  "feat_dependencies_title": "Dipendenze delle funzionalità",
+  "feat_dependencies_text": "Mappa le dipendenze e la tracciabilità delle funzionalità tra i team. Individua i blocchi inter-team prima che compromettano il tuo PI.",
+
+  "feat_dordod_title": "DoR / DoD",
+  "feat_dordod_text": "Definisci quality gate con checklist Definition of Ready e Definition of Done. Assicura standard coerenti in tutti i team.",
+
+  "feat_enterprise_title": "Multi-Tenant & SSO",
+  "feat_enterprise_text": "Spazi di lavoro completamente isolati per organizzazione con Google SSO, controllo degli accessi basato sui ruoli (Admin, Planner, Voter) e fatturazione per postazione.",
+
+  "feat_reporting_title": "Analisi & Esportazione",
+  "feat_reporting_text": "Monitora la velocity, la precisione degli impegni e le distribuzioni dei punteggi. Esporta report CSV per le revisioni della leadership e le riunioni ART sync.",
+
+  "steps_eyebrow": "Come funziona",
+  "steps_title": "Dal setup al backlog prioritizzato in pochi minuti",
+  "step1_title": "Crea il tuo spazio di lavoro",
+  "step1_text": "Registrati e configura lo spazio di lavoro della tua organizzazione in pochi secondi. L'isolamento multi-tenant garantisce che i tuoi dati restino tuoi.",
+  "step2_title": "Invita il tuo team",
+  "step2_text": "Aggiungi Product Owner, Architetti e stakeholder con i ruoli giusti. I votanti possono partecipare senza un account completo.",
+  "step3_title": "Aggiungi Feature ed Epic",
+  "step3_text": "Importa o crea elementi del backlog. Definisci i requisiti di competenza, le dipendenze e assegnali a programmi o iterazioni.",
+  "step4_title": "Avvia una sessione di voto",
+  "step4_text": "Facilita lo scoring WSJF dal vivo con il tuo team. Tutti votano; i punteggi vengono calcolati automaticamente.",
+  "step5_title": "Ottieni il tuo backlog prioritizzato",
+  "step5_text": "Esporta un backlog ordinato per rango con i punteggi WSJF. Monitora la consegna sul board e sulla roadmap.",
+
+  "pricing_eyebrow": "Prezzi",
+  "pricing_title": "Prezzo semplice per postazione. Nessuna sorpresa.",
+  "pricing_plan_name": "Piano Team",
+  "pricing_per_user": "Utente / Mese",
+  "pricing_feat_trial": "Prova gratuita di 14 giorni",
+  "pricing_feat_all": "Tutte le funzionalità incluse",
+  "pricing_feat_cancel": "Cancellabile in qualsiasi momento",
+  "pricing_feat_sso": "Google SSO incluso",
+  "pricing_feat_teams": "Team e progetti illimitati",
+  "pricing_feat_nocc": "Nessuna carta di credito necessaria per iniziare",
+  "pricing_cta": "Prova gratuita",
+  "pricing_note": "Fatturazione mensile per postazione attiva · Nessun vincolo",
+
+  "security_eyebrow": "Sicurezza di livello enterprise",
+  "security_title": "Progettato per le organizzazioni che tengono alla sicurezza dei dati.",
+  "security_isolation_title": "Isolamento Multi-Tenant",
+  "security_isolation_text": "I dati di ogni organizzazione sono completamente isolati. Nessuna fuga di dati tra tenant — per progettazione.",
+  "security_rbac_title": "Controllo degli accessi basato sui ruoli",
+  "security_rbac_text": "Permessi granulari a ogni livello. Controlla chi legge, scrive e vota.",
+  "security_privacy_title": "Protezione dei dati",
+  "security_privacy_text": "Ospitato nell'UE. Conforme al GDPR. I tuoi dati del backlog restano sotto il tuo controllo.",
+
+  "footer_tagline": "PI Planning per team SAFe",
+  "imprint_link": "Note legali & Privacy",
+  "footer_copyright": "© {year} WSJF Planning Tool. Tutti i diritti riservati."
+}
