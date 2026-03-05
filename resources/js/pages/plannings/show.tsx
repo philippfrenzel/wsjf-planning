@@ -114,11 +114,24 @@ interface IterationData {
     is_ip: boolean;
 }
 
+interface RiskData {
+    id: number;
+    planning_id: number;
+    owner_id: number | null;
+    owner?: { id: number; name: string } | null;
+    title: string;
+    description: string | null;
+    roam_status: string;
+    category: string | null;
+    impact: string;
+}
+
 interface ShowProps {
     planning: Planning;
     stakeholders: Stakeholder[];
     piObjectives: PiObjective[];
     iterations: IterationData[];
+    risks: RiskData[];
 }
 
 function FeaturesTable({ features }: { features?: Feature[] }) {
@@ -594,7 +607,163 @@ function IterationsPanel({
     );
 }
 
-export default function Show({ planning, stakeholders, piObjectives, iterations }: ShowProps) {
+const ROAM_LABELS: Record<string, string> = { identified: 'Identifiziert', resolved: 'Resolved', owned: 'Owned', accepted: 'Accepted', mitigated: 'Mitigated' };
+const ROAM_COLORS: Record<string, string> = { identified: 'bg-red-100 text-red-800', resolved: 'bg-green-100 text-green-800', owned: 'bg-blue-100 text-blue-800', accepted: 'bg-yellow-100 text-yellow-800', mitigated: 'bg-purple-100 text-purple-800' };
+const IMPACT_LABELS: Record<string, string> = { low: 'Niedrig', medium: 'Mittel', high: 'Hoch' };
+const IMPACT_COLORS: Record<string, string> = { low: 'bg-green-50 text-green-700', medium: 'bg-yellow-50 text-yellow-700', high: 'bg-red-50 text-red-700' };
+const CATEGORY_LABELS: Record<string, string> = { technical: 'Technisch', business: 'Business', schedule: 'Zeitplan', resource: 'Ressourcen', dependency: 'Abhängigkeit' };
+
+function RoamBoard({
+    planningId,
+    risks,
+    canManage,
+}: {
+    planningId: number;
+    risks: RiskData[];
+    canManage: boolean;
+}) {
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [editing, setEditing] = useState<RiskData | null>(null);
+    const [form, setForm] = useState({ title: '', description: '', roam_status: 'identified', category: '', impact: 'medium', owner_id: '' });
+    const [submitting, setSubmitting] = useState(false);
+    const confirm = useConfirm();
+
+    function openCreate() {
+        setEditing(null);
+        setForm({ title: '', description: '', roam_status: 'identified', category: '', impact: 'medium', owner_id: '' });
+        setDialogOpen(true);
+    }
+
+    function openEdit(r: RiskData) {
+        setEditing(r);
+        setForm({
+            title: r.title,
+            description: r.description ?? '',
+            roam_status: r.roam_status,
+            category: r.category ?? '',
+            impact: r.impact,
+            owner_id: r.owner_id?.toString() ?? '',
+        });
+        setDialogOpen(true);
+    }
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        if (submitting) return;
+        setSubmitting(true);
+        const payload = { ...form, planning_id: planningId, owner_id: form.owner_id ? parseInt(form.owner_id) : null };
+        if (editing) {
+            router.put(route('risks.update', editing.id), payload, { preserveScroll: true, onFinish: () => { setSubmitting(false); setDialogOpen(false); } });
+        } else {
+            router.post(route('risks.store'), payload, { preserveScroll: true, onFinish: () => { setSubmitting(false); setDialogOpen(false); } });
+        }
+    }
+
+    async function handleDelete(r: RiskData) {
+        const ok = await confirm({ title: 'Risiko löschen', description: `Möchten Sie "${r.title}" wirklich löschen?`, confirmLabel: 'Löschen', cancelLabel: 'Abbrechen' });
+        if (ok) router.delete(route('risks.destroy', r.id), { preserveScroll: true });
+    }
+
+    // Group by ROAM status for board view
+    const grouped = ['identified', 'owned', 'mitigated', 'accepted', 'resolved'].map((status) => ({
+        status,
+        label: ROAM_LABELS[status],
+        color: ROAM_COLORS[status],
+        items: risks.filter((r) => r.roam_status === status),
+    }));
+
+    return (
+        <div className="mt-4 space-y-4">
+            <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">{risks.length} Risiken</span>
+                {canManage && <Button size="sm" onClick={openCreate}><Plus className="mr-1 h-4 w-4" /> Risiko</Button>}
+            </div>
+
+            {risks.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">Noch keine Risiken erfasst.</div>
+            ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                    {grouped.map((col) => (
+                        <div key={col.status} className="rounded-lg border p-3">
+                            <div className="mb-2 flex items-center justify-between">
+                                <Badge className={col.color}>{col.label}</Badge>
+                                <span className="text-xs text-muted-foreground">{col.items.length}</span>
+                            </div>
+                            <div className="space-y-2">
+                                {col.items.map((r) => (
+                                    <Card key={r.id} className="cursor-pointer p-2" onClick={() => canManage && openEdit(r)}>
+                                        <div className="text-sm font-medium">{r.title}</div>
+                                        {r.description && <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{r.description}</div>}
+                                        <div className="mt-2 flex items-center gap-1">
+                                            <Badge variant="outline" className={`text-xs ${IMPACT_COLORS[r.impact]}`}>{IMPACT_LABELS[r.impact]}</Badge>
+                                            {r.category && <Badge variant="outline" className="text-xs">{CATEGORY_LABELS[r.category] ?? r.category}</Badge>}
+                                        </div>
+                                        {r.owner && <div className="mt-1 text-xs text-muted-foreground">Owner: {r.owner.name}</div>}
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogContent>
+                    <DialogHeader><DialogTitle>{editing ? 'Risiko bearbeiten' : 'Neues Risiko'}</DialogTitle></DialogHeader>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <Label htmlFor="risk-title">Titel</Label>
+                            <Input id="risk-title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+                        </div>
+                        <div>
+                            <Label htmlFor="risk-desc">Beschreibung</Label>
+                            <Textarea id="risk-desc" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label>ROAM Status</Label>
+                                <Select value={form.roam_status} onValueChange={(v) => setForm({ ...form, roam_status: v })}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(ROAM_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <Label>Impact</Label>
+                                <Select value={form.impact} onValueChange={(v) => setForm({ ...form, impact: v })}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(IMPACT_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div>
+                            <Label>Kategorie</Label>
+                            <Select value={form.category || '_none'} onValueChange={(v) => setForm({ ...form, category: v === '_none' ? '' : v })}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="_none">– Keine –</SelectItem>
+                                    {Object.entries(CATEGORY_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Abbrechen</Button>
+                            {editing && canManage && (
+                                <Button type="button" variant="destructive" onClick={() => { setDialogOpen(false); handleDelete(editing); }}>Löschen</Button>
+                            )}
+                            <Button type="submit" disabled={submitting}>{editing ? 'Speichern' : 'Erstellen'}</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+}
+
+export default function Show({ planning, stakeholders, piObjectives, iterations, risks }: ShowProps) {
     const { auth } = usePage<SharedData>().props;
     const canManage = auth.currentRole === 'Admin' || auth.currentRole === 'Planner';
 
@@ -625,6 +794,7 @@ export default function Show({ planning, stakeholders, piObjectives, iterations 
                                 <TabsTrigger value="wsjf-ranking">WSJF Ranking</TabsTrigger>
                                 <TabsTrigger value="pi-objectives">PI Objectives</TabsTrigger>
                                 <TabsTrigger value="iterations">Iterationen</TabsTrigger>
+                                <TabsTrigger value="roam">ROAM Board</TabsTrigger>
                             </TabsList>
                             <TabsContent value="details">
                                 <PlanningDetailsCard planning={planning} stakeholders={stakeholders} />
@@ -706,6 +876,9 @@ export default function Show({ planning, stakeholders, piObjectives, iterations 
                             </TabsContent>
                             <TabsContent value="iterations">
                                 <IterationsPanel planningId={planning.id} iterations={iterations ?? []} canManage={canManage} />
+                            </TabsContent>
+                            <TabsContent value="roam">
+                                <RoamBoard planningId={planning.id} risks={risks ?? []} canManage={canManage} />
                             </TabsContent>
                         </Tabs>
                     </CardContent>

@@ -121,6 +121,11 @@ class Planning extends Model
         return $this->hasMany(Iteration::class)->orderBy('number');
     }
 
+    public function risks(): HasMany
+    {
+        return $this->hasMany(Risk::class);
+    }
+
     /**
      * Status-Details für Frontend
      */

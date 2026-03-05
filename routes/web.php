@@ -21,6 +21,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PiObjectiveController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\IterationController;
+use App\Http\Controllers\RiskController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -98,6 +99,11 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     Route::post('plannings/{planning}/iterations/generate', [IterationController::class, 'generate'])->name('plannings.iterations.generate');
     Route::put('iterations/{iteration}', [IterationController::class, 'update'])->name('iterations.update');
     Route::delete('iterations/{iteration}', [IterationController::class, 'destroy'])->name('iterations.destroy');
+
+    // Risks (ROAM)
+    Route::post('risks', [RiskController::class, 'store'])->name('risks.store');
+    Route::put('risks/{risk}', [RiskController::class, 'update'])->name('risks.update');
+    Route::delete('risks/{risk}', [RiskController::class, 'destroy'])->name('risks.destroy');
 
     // API-Route zum Laden von Features für ein Planning
     Route::post('api/planning-features', [CommitmentController::class, 'getFeaturesForPlanning'])

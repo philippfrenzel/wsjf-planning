@@ -167,11 +167,17 @@ class PlanningController extends Controller
 
         $iterations = $planning->iterations()->get();
 
+        $risks = $planning->risks()
+            ->with('owner:id,name')
+            ->orderByRaw("FIELD(roam_status, 'identified', 'owned', 'mitigated', 'accepted', 'resolved')")
+            ->get();
+
         return Inertia::render('plannings/show', [
             'planning' => $planning,
             'stakeholders' => $stakeholders,
             'piObjectives' => $piObjectives,
             'iterations' => $iterations,
+            'risks' => $risks,
         ]);
     }
 
