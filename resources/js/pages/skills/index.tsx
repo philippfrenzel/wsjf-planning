@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import { router, useForm } from '@inertiajs/react';
@@ -19,11 +20,17 @@ interface Skill {
     users_count: number;
 }
 
-interface SafeDefault {
+interface RoleItem {
     name: string;
     category: string;
     description: string;
     exists: boolean;
+}
+
+interface RoleSet {
+    key: string;
+    label: string;
+    items: RoleItem[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -31,12 +38,14 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Skills', href: '#' },
 ];
 
-export default function Index({ skills, safeDefaults }: { skills: Skill[]; safeDefaults: SafeDefault[] }) {
+export default function Index({ skills, roleSets }: { skills: Skill[]; roleSets: RoleSet[] }) {
     const confirm = useConfirm();
     const [editingId, setEditingId] = useState<number | null>(null);
     const [seedOpen, setSeedOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState(roleSets[0]?.key ?? 'safe');
     const [selectedNames, setSelectedNames] = useState<Set<string>>(() => {
-        return new Set(safeDefaults.filter((d) => !d.exists).map((d) => d.name));
+        const allAvailable = roleSets.flatMap((s) => s.items).filter((d) => !d.exists).map((d) => d.name);
+        return new Set(allAvailable);
     });
 
     const createForm = useForm({ name: '', category: '', description: '' });
@@ -89,108 +98,130 @@ export default function Index({ skills, safeDefaults }: { skills: Skill[]; safeD
                     <Popover open={seedOpen} onOpenChange={setSeedOpen}>
                         <PopoverTrigger asChild>
                             <Button variant="outline" size="sm">
-                                <Sparkles className="mr-1.5 h-4 w-4" /> SAFe-Rollen laden
+                                <Sparkles className="mr-1.5 h-4 w-4" /> Rollen-Vorlagen
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-96 max-h-[28rem] overflow-y-auto p-3" align="end">
-                            {(() => {
-                                const grouped = safeDefaults.reduce<Record<string, SafeDefault[]>>((acc, d) => {
-                                    (acc[d.category] ??= []).push(d);
-                                    return acc;
-                                }, {});
-                                const availableNames = safeDefaults.filter((d) => !d.exists).map((d) => d.name);
-                                const allSelected = availableNames.every((n) => selectedNames.has(n));
-                                return (
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between border-b pb-2">
-                                            <span className="text-sm font-semibold">SAFe-Rollen auswählen</span>
-                                            <button
-                                                type="button"
-                                                className="text-xs text-muted-foreground hover:underline"
-                                                onClick={() => {
-                                                    setSelectedNames(allSelected ? new Set() : new Set(availableNames));
-                                                }}
-                                            >
-                                                {allSelected ? 'Keine' : 'Alle'}
-                                            </button>
-                                        </div>
-                                        {Object.entries(grouped).map(([cat, items]) => {
-                                            const catAvail = items.filter((i) => !i.exists).map((i) => i.name);
-                                            const catAllSelected = catAvail.length > 0 && catAvail.every((n) => selectedNames.has(n));
-                                            return (
-                                                <div key={cat}>
-                                                    <div className="flex items-center justify-between mb-1">
-                                                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{cat}</span>
-                                                        {catAvail.length > 0 && (
-                                                            <button
-                                                                type="button"
-                                                                className="text-[10px] text-muted-foreground hover:underline"
-                                                                onClick={() => {
-                                                                    setSelectedNames((prev) => {
-                                                                        const next = new Set(prev);
-                                                                        catAvail.forEach((n) => catAllSelected ? next.delete(n) : next.add(n));
-                                                                        return next;
-                                                                    });
-                                                                }}
-                                                            >
-                                                                {catAllSelected ? 'Keine' : 'Alle'}
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                    {items.map((item) => (
-                                                        <label
-                                                            key={item.name}
-                                                            className={`flex items-start gap-2 rounded px-1.5 py-1 text-sm ${item.exists ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-accent'}`}
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                className="mt-0.5 h-4 w-4 rounded border-gray-300"
-                                                                disabled={item.exists}
-                                                                checked={item.exists || selectedNames.has(item.name)}
-                                                                onChange={() => {
-                                                                    if (item.exists) return;
-                                                                    setSelectedNames((prev) => {
-                                                                        const next = new Set(prev);
-                                                                        next.has(item.name) ? next.delete(item.name) : next.add(item.name);
-                                                                        return next;
-                                                                    });
-                                                                }}
-                                                            />
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <span className="font-medium">{item.name}</span>
-                                                                    {item.exists && <Check className="h-3 w-3 text-green-500" />}
-                                                                </div>
-                                                                <p className="text-xs text-muted-foreground leading-tight">{item.description}</p>
-                                                            </div>
-                                                        </label>
-                                                    ))}
+                        <PopoverContent className="w-[28rem] p-0" align="end">
+                            <Tabs value={activeTab} onValueChange={setActiveTab}>
+                                <div className="border-b px-3 pt-3">
+                                    <TabsList className="w-full">
+                                        {roleSets.map((rs) => (
+                                            <TabsTrigger key={rs.key} value={rs.key} className="flex-1 text-xs">
+                                                {rs.label}
+                                            </TabsTrigger>
+                                        ))}
+                                    </TabsList>
+                                </div>
+                                {roleSets.map((rs) => {
+                                    const grouped = rs.items.reduce<Record<string, RoleItem[]>>((acc, d) => {
+                                        (acc[d.category] ??= []).push(d);
+                                        return acc;
+                                    }, {});
+                                    const availableNames = rs.items.filter((d) => !d.exists).map((d) => d.name);
+                                    const tabSelected = availableNames.filter((n) => selectedNames.has(n));
+                                    const allSelected = availableNames.length > 0 && tabSelected.length === availableNames.length;
+                                    return (
+                                        <TabsContent key={rs.key} value={rs.key} className="m-0 max-h-[24rem] overflow-y-auto px-3 pb-3">
+                                            <div className="space-y-3">
+                                                <div className="sticky top-0 z-10 flex items-center justify-between bg-popover pt-2 pb-1">
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {tabSelected.length} / {availableNames.length} verfügbar ausgewählt
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        className="text-xs text-muted-foreground hover:underline"
+                                                        onClick={() => {
+                                                            setSelectedNames((prev) => {
+                                                                const next = new Set(prev);
+                                                                availableNames.forEach((n) => allSelected ? next.delete(n) : next.add(n));
+                                                                return next;
+                                                            });
+                                                        }}
+                                                    >
+                                                        {allSelected ? 'Keine' : 'Alle'}
+                                                    </button>
                                                 </div>
-                                            );
-                                        })}
-                                        <Button
-                                            size="sm"
-                                            className="w-full"
-                                            disabled={selectedNames.size === 0}
-                                            onClick={() => {
-                                                router.post(
-                                                    route('skills.seed-defaults'),
-                                                    { names: Array.from(selectedNames) },
-                                                    {
-                                                        preserveScroll: true,
-                                                        onSuccess: () => {
-                                                            setSeedOpen(false);
-                                                            setSelectedNames(new Set());
-                                                        },
-                                                    },
-                                                );
-                                            }}
-                                        >
-                                            {selectedNames.size} Rolle{selectedNames.size !== 1 ? 'n' : ''} hinzufügen
-                                        </Button>
-                                    </div>
-                                );
-                            })()}
+                                                {Object.entries(grouped).map(([cat, items]) => {
+                                                    const catAvail = items.filter((i) => !i.exists).map((i) => i.name);
+                                                    const catAllSelected = catAvail.length > 0 && catAvail.every((n) => selectedNames.has(n));
+                                                    return (
+                                                        <div key={cat}>
+                                                            <div className="flex items-center justify-between mb-1">
+                                                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{cat}</span>
+                                                                {catAvail.length > 0 && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="text-[10px] text-muted-foreground hover:underline"
+                                                                        onClick={() => {
+                                                                            setSelectedNames((prev) => {
+                                                                                const next = new Set(prev);
+                                                                                catAvail.forEach((n) => catAllSelected ? next.delete(n) : next.add(n));
+                                                                                return next;
+                                                                            });
+                                                                        }}
+                                                                    >
+                                                                        {catAllSelected ? 'Keine' : 'Alle'}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                            {items.map((item) => (
+                                                                <label
+                                                                    key={item.name}
+                                                                    className={`flex items-start gap-2 rounded px-1.5 py-1 text-sm ${item.exists ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-accent'}`}
+                                                                >
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className="mt-0.5 h-4 w-4 rounded border-gray-300"
+                                                                        disabled={item.exists}
+                                                                        checked={item.exists || selectedNames.has(item.name)}
+                                                                        onChange={() => {
+                                                                            if (item.exists) return;
+                                                                            setSelectedNames((prev) => {
+                                                                                const next = new Set(prev);
+                                                                                next.has(item.name) ? next.delete(item.name) : next.add(item.name);
+                                                                                return next;
+                                                                            });
+                                                                        }}
+                                                                    />
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <div className="flex items-center gap-1.5">
+                                                                            <span className="font-medium">{item.name}</span>
+                                                                            {item.exists && <Check className="h-3 w-3 text-green-500" />}
+                                                                        </div>
+                                                                        <p className="text-xs text-muted-foreground leading-tight">{item.description}</p>
+                                                                    </div>
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </TabsContent>
+                                    );
+                                })}
+                            </Tabs>
+                            <div className="border-t p-3">
+                                <Button
+                                    size="sm"
+                                    className="w-full"
+                                    disabled={selectedNames.size === 0}
+                                    onClick={() => {
+                                        router.post(
+                                            route('skills.seed-defaults'),
+                                            { names: Array.from(selectedNames) },
+                                            {
+                                                preserveScroll: true,
+                                                onSuccess: () => {
+                                                    setSeedOpen(false);
+                                                    setSelectedNames(new Set());
+                                                },
+                                            },
+                                        );
+                                    }}
+                                >
+                                    {selectedNames.size} Rolle{selectedNames.size !== 1 ? 'n' : ''} hinzufügen
+                                </Button>
+                            </div>
                         </PopoverContent>
                     </Popover>
                 </div>
