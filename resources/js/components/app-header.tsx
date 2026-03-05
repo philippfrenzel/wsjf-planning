@@ -19,20 +19,20 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const { auth } = page.props;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const props = page.props as any;
-    const hasProjects = props.hasProjects ?? true;
-    const firstPlanningId = props.firstPlanningId ?? '';
+    const hasProjects = props.hasProjects ?? false;
+    const hasFeatures = props.hasFeatures ?? false;
     const getInitials = useInitials();
 
     const navItems = [
         { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
         { title: 'Projekte', href: '/projects', icon: FolderKanban },
-        { title: 'Features', href: '/features', icon: Shirt },
-        { title: 'Board', href: '/features/board', icon: Kanban },
-        hasProjects && { title: 'WSJF', href: `/plannings?project_id=${firstPlanningId}`, icon: Route },
+        hasProjects && { title: 'Features', href: '/features', icon: Shirt },
+        hasProjects && { title: 'Board', href: '/features/board', icon: Kanban },
+        hasFeatures && { title: 'WSJF', href: '/plannings', icon: Route },
         { title: 'Teams', href: '/teams', icon: Users },
         { title: 'Skills', href: '/skills', icon: Zap },
         { title: 'DoR/DoD', href: '/definitions', icon: ListChecks },
-        { title: 'Roadmap', href: '/roadmap', icon: Map },
+        hasProjects && { title: 'Roadmap', href: '/roadmap', icon: Map },
         auth?.user?.email === 'philipp@frenzel.net' && { title: 'Admin', href: '/plannings/admin', icon: Shield },
     ].filter(Boolean) as { title: string; href: string; icon: React.ElementType }[];
 

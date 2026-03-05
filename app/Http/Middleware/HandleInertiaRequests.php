@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
@@ -68,6 +69,8 @@ class HandleInertiaRequests extends Middleware
             'billing' => [
                 'seatUnitPriceUsd' => (int) config('services.stripe.seat_unit_price_usd', 1),
             ],
+            'hasProjects' => fn () => $this->tenantHas($request, 'projects'),
+            'hasFeatures' => fn () => $this->tenantHas($request, 'features'),
         ];
     }
 
@@ -139,5 +142,17 @@ class HandleInertiaRequests extends Middleware
         }
 
         return null;
+    }
+
+    /**
+     * Check if the current tenant has at least one record in the given table.
+     */
+    protected function tenantHas(Request $request, string $table): bool
+    {
+        $tenantId = $request->user()?->current_tenant_id;
+        if (!$tenantId) {
+            return false;
+        }
+        return DB::table($table)->where('tenant_id', $tenantId)->exists();
     }
 }
