@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { BarChart3, Building2, CalendarCheck2, CheckCircle2, Gauge, Globe, Lock, Shield, Users } from 'lucide-react';
+import { BarChart3, Briefcase, Building2, CalendarCheck2, CheckCircle2, ClipboardCheck, Columns3, Gauge, GitBranch, Globe, Grid3X3, Lock, Map, Shield, Users, Zap } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { type SharedData } from '@/types';
 
@@ -12,9 +12,15 @@ export default function Welcome() {
     const features = [
         { icon: <Gauge className="h-8 w-8 text-indigo-500" />, title: t('feat_wsjf_title'), text: t('feat_wsjf_text') },
         { icon: <Users className="h-8 w-8 text-indigo-500" />, title: t('feat_voting_title'), text: t('feat_voting_text') },
-        { icon: <Building2 className="h-8 w-8 text-indigo-500" />, title: t('feat_multitenant_title'), text: t('feat_multitenant_text') },
-        { icon: <Lock className="h-8 w-8 text-indigo-500" />, title: t('feat_roles_title'), text: t('feat_roles_text') },
-        { icon: <CalendarCheck2 className="h-8 w-8 text-indigo-500" />, title: t('feat_sprint_title'), text: t('feat_sprint_text') },
+        { icon: <CalendarCheck2 className="h-8 w-8 text-indigo-500" />, title: t('feat_pi_title'), text: t('feat_pi_text') },
+        { icon: <Columns3 className="h-8 w-8 text-indigo-500" />, title: t('feat_board_title'), text: t('feat_board_text') },
+        { icon: <Map className="h-8 w-8 text-indigo-500" />, title: t('feat_roadmap_title'), text: t('feat_roadmap_text') },
+        { icon: <Briefcase className="h-8 w-8 text-indigo-500" />, title: t('feat_projects_title'), text: t('feat_projects_text') },
+        { icon: <Zap className="h-8 w-8 text-indigo-500" />, title: t('feat_skills_title'), text: t('feat_skills_text') },
+        { icon: <Grid3X3 className="h-8 w-8 text-indigo-500" />, title: t('feat_skillmatrix_title'), text: t('feat_skillmatrix_text') },
+        { icon: <GitBranch className="h-8 w-8 text-indigo-500" />, title: t('feat_dependencies_title'), text: t('feat_dependencies_text') },
+        { icon: <ClipboardCheck className="h-8 w-8 text-indigo-500" />, title: t('feat_dordod_title'), text: t('feat_dordod_text') },
+        { icon: <Building2 className="h-8 w-8 text-indigo-500" />, title: t('feat_enterprise_title'), text: t('feat_enterprise_text') },
         { icon: <BarChart3 className="h-8 w-8 text-indigo-500" />, title: t('feat_reporting_title'), text: t('feat_reporting_text') },
     ];
 
@@ -171,7 +177,7 @@ export default function Welcome() {
                         <h2 className="mt-3 text-3xl lg:text-4xl font-bold text-slate-900">{t('features_title')}</h2>
                         <p className="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">{t('features_subtitle')}</p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {features.map((f, i) => (
                             <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                                 <div className="mb-4">{f.icon}</div>

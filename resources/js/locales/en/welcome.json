@@ -5,7 +5,7 @@
   "nav_tagline": "PI Planning for SAFe Teams",
 
   "hero_title": "Prioritize What Matters. Ship What Counts.",
-  "hero_subtitle": "WSJF Planning gives enterprise Agile teams a data-driven formula to rank backlog items by business value, time criticality, and job size — eliminating guesswork from PI Planning.",
+  "hero_subtitle": "WSJF Planning gives enterprise Agile teams a data-driven platform for PI Planning — from WSJF scoring and stakeholder voting to skill management, roadmaps, and delivery tracking. One tool for the entire planning cycle.",
   "hero_cta": "Start Free Trial",
   "hero_cta_secondary": "See How It Works",
   "hero_dashboard": "Go to Dashboard",
@@ -18,27 +18,51 @@
   "trust_pi": "PI Planning",
 
   "problem_eyebrow": "The Problem",
-  "problem_title": "Backlog prioritization shouldn't be a guessing game.",
-  "problem_text": "Most teams prioritize features based on loudest stakeholder, gut feeling, or whoever wrote the ticket last. The result: wrong things get built, sprints get derailed, and value delivery suffers.",
+  "problem_title": "PI Planning is still a spreadsheet nightmare.",
+  "problem_text": "Teams juggle dozens of spreadsheets, Miro boards, and email threads to prioritize features, allocate capacity, and track commitments. Skill gaps go unnoticed, dependencies break sprints, and stakeholders never see the full picture.",
   "solution_eyebrow": "The Solution",
-  "solution_title": "WSJF gives you a formula — not an opinion.",
-  "solution_text": "Weighted Shortest Job First (WSJF) is the prioritization framework at the heart of SAFe PI Planning. It quantifies business value, time criticality, risk, and job size into a single score that your whole team agrees on.",
+  "solution_title": "One platform — from scoring to delivery.",
+  "solution_text": "WSJF Planning combines the Weighted Shortest Job First framework with project management, skill tracking, and delivery analytics in a single tool. Your team scores, votes, plans, and ships — all in one place.",
 
-  "features_eyebrow": "Core Capabilities",
-  "features_title": "Everything your team needs for structured PI Planning",
-  "features_subtitle": "From scoring to stakeholder voting to reporting — built for enterprise Agile at scale.",
+  "features_eyebrow": "Platform Capabilities",
+  "features_title": "Everything your team needs for PI Planning — and beyond",
+  "features_subtitle": "From backlog prioritization to team skill management — a complete platform for enterprise Agile teams.",
+
   "feat_wsjf_title": "WSJF Scoring Engine",
-  "feat_wsjf_text": "Automatically calculate WSJF scores using Business Value, Time Criticality, Risk Reduction, and Job Size. Individual and consensus voting built in.",
+  "feat_wsjf_text": "Calculate WSJF scores using Business Value, Time Criticality, Risk Reduction, and Job Size. Individual and consensus voting built in.",
+
   "feat_voting_title": "Stakeholder Voting",
-  "feat_voting_text": "Invite Product Owners, Architects, and stakeholders to vote on estimates. Aggregate scores with one click. No spreadsheets, no email chains.",
-  "feat_multitenant_title": "Multi-Tenant Workspaces",
-  "feat_multitenant_text": "Each organization gets a fully isolated workspace. Manage multiple teams, programs, or Agile Release Trains under one account.",
-  "feat_roles_title": "Role-Based Access Control",
-  "feat_roles_text": "Four roles — SuperAdmin, Admin, Planner, Voter — give you fine-grained control over who sees, edits, and votes on your backlog.",
-  "feat_sprint_title": "Sprint & Release Integration",
-  "feat_sprint_text": "Feed WSJF-ranked backlogs directly into sprint planning. Align PI objectives with sprint capacity and track committed vs. delivered.",
-  "feat_reporting_title": "Analytics & Reporting",
-  "feat_reporting_text": "Track key planning metrics: velocity, commitment accuracy, score distribution. Export reports for leadership and ART sync meetings.",
+  "feat_voting_text": "Run live voting sessions with Product Owners, Architects, and stakeholders. Scores aggregate automatically — no spreadsheets needed.",
+
+  "feat_pi_title": "PI Planning Suite",
+  "feat_pi_text": "Plan iterations with capacity allocation, PI objectives, ROAM risk management, and team commitments — everything for a successful PI Planning event.",
+
+  "feat_board_title": "Kanban Board",
+  "feat_board_text": "Visualize feature flow on a drag-and-drop Kanban board. Track status transitions from funnel through analysis to done.",
+
+  "feat_roadmap_title": "Roadmap",
+  "feat_roadmap_text": "Build visual roadmaps to align teams on delivery timelines. Communicate the big picture to stakeholders and leadership.",
+
+  "feat_projects_title": "Project & Portfolio",
+  "feat_projects_text": "Manage projects with team assignments, skill requirements, and feature tracking. Get a portfolio-level view of what's planned and delivered.",
+
+  "feat_skills_title": "Skill Management",
+  "feat_skills_text": "Define skills with proficiency levels, assign them to team members, and specify requirements on projects and features.",
+
+  "feat_skillmatrix_title": "Skill Matrix",
+  "feat_skillmatrix_text": "Instantly see whether your team covers the skills a project needs. Color-coded gap analysis highlights missing competencies.",
+
+  "feat_dependencies_title": "Feature Dependencies",
+  "feat_dependencies_text": "Map feature dependencies and lineage across teams. Spot cross-team blockers before they derail your PI.",
+
+  "feat_dordod_title": "DoR / DoD",
+  "feat_dordod_text": "Define quality gates with Definition of Ready and Definition of Done checklists. Ensure consistent standards across all teams.",
+
+  "feat_enterprise_title": "Multi-Tenant & SSO",
+  "feat_enterprise_text": "Fully isolated workspaces per organization with Google SSO, role-based access (Admin, Planner, Voter), and per-seat billing.",
+
+  "feat_reporting_title": "Analytics & Export",
+  "feat_reporting_text": "Track velocity, commitment accuracy, and score distributions. Export CSV reports for leadership reviews and ART sync meetings.",
 
   "steps_eyebrow": "How It Works",
   "steps_title": "From setup to prioritized backlog in minutes",
@@ -47,11 +71,11 @@
   "step2_title": "Invite Your Team",
   "step2_text": "Add Product Owners, Architects, and stakeholders with the right roles. Voters can join without a full account.",
   "step3_title": "Add Features & Epics",
-  "step3_text": "Import or create backlog items. Assign them to programs, sprints, or PI iterations.",
+  "step3_text": "Import or create backlog items. Define skill requirements, dependencies, and assign to programs or iterations.",
   "step4_title": "Run a Voting Session",
   "step4_text": "Facilitate live WSJF scoring with your team. Everyone votes; scores are tallied automatically.",
   "step5_title": "Get Your Prioritized Backlog",
-  "step5_text": "Export a rank-ordered backlog with WSJF scores. Feed it straight into your PI Planning board.",
+  "step5_text": "Export a rank-ordered backlog with WSJF scores. Track delivery on the board and roadmap.",
 
   "pricing_eyebrow": "Pricing",
   "pricing_title": "Simple per-seat pricing. No surprises.",

@@ -5,7 +5,7 @@
   "nav_tagline": "PI Planning für SAFe-Teams",
 
   "hero_title": "Priorisiere, was zählt. Liefere, was wichtig ist.",
-  "hero_subtitle": "WSJF Planning gibt enterprise Agile-Teams eine datengetriebene Formel, um Backlog-Einträge nach Geschäftswert, Zeitkritikalität und Aufwand zu bewerten – und macht Guesswork in der PI-Planung überflüssig.",
+  "hero_subtitle": "WSJF Planning gibt Enterprise-Agile-Teams eine datengetriebene Plattform für PI Planning — von WSJF-Scoring und Stakeholder-Voting bis zu Skill-Management, Roadmaps und Delivery-Tracking. Ein Tool für den gesamten Planungszyklus.",
   "hero_cta": "Kostenlos starten",
   "hero_cta_secondary": "So funktioniert's",
   "hero_dashboard": "Zum Dashboard",
@@ -18,27 +18,51 @@
   "trust_pi": "PI Planning",
 
   "problem_eyebrow": "Das Problem",
-  "problem_title": "Backlog-Priorisierung sollte kein Ratespiel sein.",
-  "problem_text": "Die meisten Teams priorisieren Features nach dem lautesten Stakeholder, dem Bauchgefühl oder nach Wer-hat-das-Ticket-zuletzt-geschrieben. Das Ergebnis: Die falschen Dinge werden gebaut, Sprints entgleisen, und der Wert bleibt aus.",
+  "problem_title": "PI Planning ist immer noch ein Spreadsheet-Albtraum.",
+  "problem_text": "Teams jonglieren mit dutzenden Spreadsheets, Miro-Boards und E-Mail-Ketten, um Features zu priorisieren, Kapazitäten zu planen und Commitments zu tracken. Skill-Lücken bleiben unbemerkt, Dependencies sprengen Sprints und Stakeholder sehen nie das Gesamtbild.",
   "solution_eyebrow": "Die Lösung",
-  "solution_title": "WSJF gibt dir eine Formel – keine Meinung.",
-  "solution_text": "Weighted Shortest Job First (WSJF) ist das Priorisierungs-Framework im Kern von SAFe PI Planning. Es quantifiziert Geschäftswert, Zeitkritikalität, Risikoreduktion und Aufwand in einen einzelnen Score, dem dein gesamtes Team zustimmt.",
+  "solution_title": "Eine Plattform — vom Scoring bis zur Delivery.",
+  "solution_text": "WSJF Planning kombiniert das Weighted-Shortest-Job-First-Framework mit Projektmanagement, Skill-Tracking und Delivery-Analysen in einem einzigen Tool. Dein Team bewertet, stimmt ab, plant und liefert — alles an einem Ort.",
 
-  "features_eyebrow": "Kernfunktionen",
-  "features_title": "Alles, was dein Team für strukturiertes PI Planning braucht",
-  "features_subtitle": "Von der Bewertung über Stakeholder-Voting bis zum Reporting – entwickelt für Enterprise Agile im großen Maßstab.",
+  "features_eyebrow": "Plattform-Funktionen",
+  "features_title": "Alles, was dein Team für PI Planning braucht — und darüber hinaus",
+  "features_subtitle": "Von Backlog-Priorisierung bis Team-Skill-Management — eine komplette Plattform für Enterprise-Agile-Teams.",
+
   "feat_wsjf_title": "WSJF-Scoring-Engine",
-  "feat_wsjf_text": "Berechne WSJF-Scores automatisch anhand von Geschäftswert, Zeitkritikalität, Risikoreduktion und Aufwand. Individual- und Konsens-Voting bereits integriert.",
+  "feat_wsjf_text": "Berechne WSJF-Scores anhand von Geschäftswert, Zeitkritikalität, Risikoreduktion und Aufwand. Individual- und Konsens-Voting integriert.",
+
   "feat_voting_title": "Stakeholder-Voting",
-  "feat_voting_text": "Lade Product Owner, Architekten und Stakeholder zum Abstimmen ein. Scores auf Knopfdruck aggregieren. Keine Tabellen, keine E-Mail-Ketten.",
-  "feat_multitenant_title": "Multi-Tenant-Workspaces",
-  "feat_multitenant_text": "Jede Organisation erhält einen vollständig isolierten Workspace. Verwalte mehrere Teams, Programme oder Agile Release Trains in einem Account.",
-  "feat_roles_title": "Rollenbasierte Zugriffskontrolle",
-  "feat_roles_text": "Vier Rollen – SuperAdmin, Admin, Planner, Voter – geben dir feingranulare Kontrolle darüber, wer deinen Backlog sehen, bearbeiten und bewerten darf.",
-  "feat_sprint_title": "Sprint- & Release-Integration",
-  "feat_sprint_text": "Führe WSJF-gereifte Backlogs direkt in die Sprintplanung ein. Stimme PI-Ziele mit Sprint-Kapazität ab und verfolge Committed vs. Delivered.",
-  "feat_reporting_title": "Analysen & Reporting",
-  "feat_reporting_text": "Verfolge wichtige Planungsmetriken: Velocity, Commitment-Genauigkeit, Score-Verteilung. Exportiere Berichte für Leadership und ART-Sync-Meetings.",
+  "feat_voting_text": "Führe Live-Voting-Sessions mit Product Ownern, Architekten und Stakeholdern durch. Scores werden automatisch aggregiert — keine Spreadsheets nötig.",
+
+  "feat_pi_title": "PI Planning Suite",
+  "feat_pi_text": "Plane Iterationen mit Kapazitätsverteilung, PI-Objectives, ROAM-Risikomanagement und Team-Commitments — alles für ein erfolgreiches PI Planning Event.",
+
+  "feat_board_title": "Kanban-Board",
+  "feat_board_text": "Visualisiere den Feature-Flow auf einem Drag-and-Drop-Kanban-Board. Verfolge Status-Übergänge von Funnel über Analyse bis Done.",
+
+  "feat_roadmap_title": "Roadmap",
+  "feat_roadmap_text": "Erstelle visuelle Roadmaps, um Teams auf Delivery-Timelines auszurichten. Kommuniziere das Gesamtbild an Stakeholder und Leadership.",
+
+  "feat_projects_title": "Projekt & Portfolio",
+  "feat_projects_text": "Verwalte Projekte mit Team-Zuordnungen, Skill-Anforderungen und Feature-Tracking. Erhalte eine Portfolio-Sicht auf Geplantes und Geliefertes.",
+
+  "feat_skills_title": "Skill-Management",
+  "feat_skills_text": "Definiere Skills mit Kompetenzstufen, weise sie Teammitgliedern zu und hinterlege Anforderungen auf Projekten und Features.",
+
+  "feat_skillmatrix_title": "Skill-Matrix",
+  "feat_skillmatrix_text": "Sieh sofort, ob dein Team die benötigten Skills für ein Projekt abdeckt. Farbcodierte Gap-Analyse zeigt fehlende Kompetenzen.",
+
+  "feat_dependencies_title": "Feature-Dependencies",
+  "feat_dependencies_text": "Mappe Feature-Abhängigkeiten und Lineage über Teams hinweg. Erkenne teamübergreifende Blocker, bevor sie dein PI gefährden.",
+
+  "feat_dordod_title": "DoR / DoD",
+  "feat_dordod_text": "Definiere Quality Gates mit Definition-of-Ready- und Definition-of-Done-Checklisten. Sichere einheitliche Standards über alle Teams.",
+
+  "feat_enterprise_title": "Multi-Tenant & SSO",
+  "feat_enterprise_text": "Vollständig isolierte Workspaces pro Organisation mit Google SSO, rollenbasierter Zugriffskontrolle (Admin, Planner, Voter) und Per-Seat-Billing.",
+
+  "feat_reporting_title": "Analysen & Export",
+  "feat_reporting_text": "Tracke Velocity, Commitment-Genauigkeit und Score-Verteilungen. Exportiere CSV-Reports für Leadership-Reviews und ART-Sync-Meetings.",
 
   "steps_eyebrow": "So funktioniert's",
   "steps_title": "Vom Setup zum priorisierten Backlog in Minuten",
@@ -47,11 +71,11 @@
   "step2_title": "Team einladen",
   "step2_text": "Füge Product Owner, Architekten und Stakeholder mit den richtigen Rollen hinzu. Voter können ohne vollständigen Account beitreten.",
   "step3_title": "Features & Epics erfassen",
-  "step3_text": "Importiere oder erstelle Backlog-Einträge. Weise sie Programmen, Sprints oder PI-Iterationen zu.",
+  "step3_text": "Importiere oder erstelle Backlog-Einträge. Definiere Skill-Anforderungen, Dependencies und weise sie Programmen oder Iterationen zu.",
   "step4_title": "Voting-Session durchführen",
   "step4_text": "Moderiere das WSJF-Scoring live mit deinem Team. Alle stimmen ab; Scores werden automatisch berechnet.",
   "step5_title": "Priorisierten Backlog erhalten",
-  "step5_text": "Exportiere einen rang-geordneten Backlog mit WSJF-Scores. Direkt in dein PI-Planning-Board einspeisen.",
+  "step5_text": "Exportiere einen rang-geordneten Backlog mit WSJF-Scores. Verfolge die Delivery auf Board und Roadmap.",
 
   "pricing_eyebrow": "Preise",
   "pricing_title": "Einfache Pro-Seat-Preise. Keine Überraschungen.",
@@ -62,7 +86,7 @@
   "security_eyebrow": "Enterprise-Grade Sicherheit",
   "security_title": "Entwickelt für Organisationen, denen Datensicherheit wichtig ist.",
   "security_isolation_title": "Multi-Tenant-Isolierung",
-  "security_isolation_text": "Die Daten jeder Organisation sind vollständig isoliert. Kein mandantenübergreifender Datenaustausch – by Design.",
+  "security_isolation_text": "Die Daten jeder Organisation sind vollständig isoliert. Kein mandantenübergreifender Datenaustausch — by Design.",
   "security_rbac_title": "Rollenbasierte Zugriffskontrolle",
   "security_rbac_text": "Granulare Berechtigungen auf jeder Ebene. Kontrolliere, wer lesen, schreiben und abstimmen darf.",
   "security_privacy_title": "Datenschutz",
