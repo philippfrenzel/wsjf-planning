@@ -67,5 +67,72 @@ class VoteService
             'planning_id' => $planning->id,
             'rows'        => count($upsertRows),
         ]);
+
+        // Persist WSJF scores after recalculating common votes
+        $this->persistWsjfScores($planning);
+    }
+
+    /**
+     * Computes and persists WSJF scores on the feature_planning pivot.
+     */
+    public function persistWsjfScores(Planning $planning): void
+    {
+        $creatorId = $planning->created_by;
+        if (!$creatorId) return;
+
+        $featureIds = $planning->features()->pluck('features.id');
+        if ($featureIds->isEmpty()) return;
+
+        // Get common votes (creator's votes = averaged stakeholder votes)
+        $votes = Vote::where('planning_id', $planning->id)
+            ->where('user_id', $creatorId)
+            ->whereIn('feature_id', $featureIds)
+            ->get()
+            ->groupBy('feature_id');
+
+        $scores = [];
+        foreach ($votes as $featureId => $featureVotes) {
+            $bv = $featureVotes->firstWhere('type', 'BusinessValue')?->value;
+            $tc = $featureVotes->firstWhere('type', 'TimeCriticality')?->value;
+            $rr = $featureVotes->firstWhere('type', 'RiskOpportunity')?->value;
+            $js = $featureVotes->firstWhere('type', 'JobSize')?->value;
+
+            if ($bv && $tc && $rr && $js && $js > 0) {
+                $scores[$featureId] = round(($bv + $tc + $rr) / $js, 2);
+            }
+        }
+
+        // Sort by score descending for ranking
+        arsort($scores);
+
+        $rank = 1;
+        foreach ($scores as $featureId => $score) {
+            DB::table('feature_planning')
+                ->where('planning_id', $planning->id)
+                ->where('feature_id', $featureId)
+                ->update([
+                    'wsjf_score' => $score,
+                    'wsjf_rank' => $rank++,
+                    'updated_at' => now(),
+                ]);
+        }
+
+        // Null out features without a computable score
+        $scoredIds = array_keys($scores);
+        if (count($scoredIds) < $featureIds->count()) {
+            DB::table('feature_planning')
+                ->where('planning_id', $planning->id)
+                ->whereNotIn('feature_id', $scoredIds)
+                ->update([
+                    'wsjf_score' => null,
+                    'wsjf_rank' => null,
+                    'updated_at' => now(),
+                ]);
+        }
+
+        Log::info('WSJF scores persisted', [
+            'planning_id' => $planning->id,
+            'scored_features' => count($scores),
+        ]);
     }
 }

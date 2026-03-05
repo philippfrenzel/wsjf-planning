@@ -101,6 +101,7 @@ class Planning extends Model
     public function features(): BelongsToMany
     {
         return $this->belongsToMany(Feature::class, 'feature_planning', 'planning_id', 'feature_id')
+            ->withPivot('wsjf_score', 'wsjf_rank')
             ->withTimestamps();
     }
 
