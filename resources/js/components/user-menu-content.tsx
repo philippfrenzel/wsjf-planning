@@ -1,9 +1,11 @@
 import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { useTranslation } from '@/hooks/use-translation';
+import { type Locale } from '@/hooks/use-locale';
 import { type SharedData, type User } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { LogOut, Settings, Shield, Users } from 'lucide-react';
+import { Globe, LogOut, Settings, Shield, Users } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -14,6 +16,10 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
     const page = usePage<SharedData>();
     const tenants = page.props.auth.tenants ?? [];
     const currentTenant = page.props.auth.currentTenant ?? null;
+    const { t, locale, setLocale } = useTranslation();
+
+    const localeLabels: Record<Locale, string> = { en: 'English', de: 'Deutsch', fr: 'Français', it: 'Italiano' };
+    const locales: Locale[] = ['en', 'de', 'fr', 'it'];
 
     const hasRoute = (name: string) => {
         try {
@@ -42,10 +48,10 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             {tenants.length > 0 && hasRoute('tenants.index') && (
                 <>
                     <DropdownMenuGroup>
-                        <DropdownMenuLabel className="text-xs font-medium text-neutral-500">Team</DropdownMenuLabel>
+                        <DropdownMenuLabel className="text-xs font-medium text-neutral-500">{t('menu_team')}</DropdownMenuLabel>
                         {currentTenant && (
                             <div className="px-2 pb-1 text-xs text-neutral-600">
-                                Aktueller Tenant: <span className="font-semibold">{currentTenant.name}</span>
+                                {t('menu_current_tenant')} <span className="font-semibold">{currentTenant.name}</span>
                             </div>
                         )}
                         {tenants.map((t) => (
@@ -74,7 +80,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                                 onClick={cleanup}
                             >
                                 <Users className="mr-2" />
-                                Tenants verwalten
+                                {t('menu_manage_tenants')}
                             </Link>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
@@ -84,11 +90,11 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             {isSuperAdmin && (
                 <>
                     <DropdownMenuGroup>
-                        <DropdownMenuLabel className="text-xs font-medium text-neutral-500">Admin</DropdownMenuLabel>
+                        <DropdownMenuLabel className="text-xs font-medium text-neutral-500">{t('menu_admin')}</DropdownMenuLabel>
                         <DropdownMenuItem asChild>
                             <Link className="block w-full" href="/admin/licenses" prefetch onClick={cleanup}>
                                 <Shield className="mr-2" />
-                                Lizenzen
+                                {t('menu_licenses')}
                             </Link>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
@@ -96,10 +102,25 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </>
             )}
             <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs font-medium text-neutral-500">{t('menu_language')}</DropdownMenuLabel>
+                {locales.map((l) => (
+                    <DropdownMenuItem
+                        key={l}
+                        className="cursor-pointer"
+                        onClick={() => setLocale(l)}
+                    >
+                        <Globe className="mr-2 h-4 w-4" />
+                        <span className={locale === l ? 'font-semibold' : ''}>{localeLabels[l]}</span>
+                        {locale === l && <span className="ml-auto text-xs text-green-600">✓</span>}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
                         <Settings className="mr-2" />
-                        Settings
+                        {t('menu_settings')}
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -107,7 +128,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuItem asChild>
                 <Link className="block w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
                     <LogOut className="mr-2" />
-                    Log out
+                    {t('menu_logout')}
                 </Link>
             </DropdownMenuItem>
         </>

@@ -4,6 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/compon
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
+import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
@@ -22,17 +23,18 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const hasProjects = props.hasProjects ?? false;
     const hasFeatures = props.hasFeatures ?? false;
     const getInitials = useInitials();
+    const { t } = useTranslation();
 
     const navItems = [
-        { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
-        { title: 'Projekte', href: '/projects', icon: FolderKanban },
-        hasProjects && { title: 'Features', href: '/features', icon: Shirt },
-        hasProjects && { title: 'Board', href: '/features/board', icon: Kanban },
-        hasFeatures && { title: 'WSJF', href: '/plannings', icon: Route },
-        { title: 'Teams', href: '/teams', icon: Users },
-        { title: 'Skills', href: '/skills', icon: Zap },
-        { title: 'DoR/DoD', href: '/definitions', icon: ListChecks },
-        hasProjects && { title: 'Roadmap', href: '/roadmap', icon: Map },
+        { title: t('nav_dashboard'), href: '/dashboard', icon: LayoutGrid },
+        { title: t('nav_projects'), href: '/projects', icon: FolderKanban },
+        hasProjects && { title: t('nav_features'), href: '/features', icon: Shirt },
+        hasProjects && { title: t('nav_board'), href: '/features/board', icon: Kanban },
+        hasFeatures && { title: t('nav_wsjf'), href: '/plannings', icon: Route },
+        { title: t('nav_teams'), href: '/teams', icon: Users },
+        { title: t('nav_skills'), href: '/skills', icon: Zap },
+        { title: t('nav_dordod'), href: '/definitions', icon: ListChecks },
+        hasProjects && { title: t('nav_roadmap'), href: '/roadmap', icon: Map },
     ].filter(Boolean) as { title: string; href: string; icon: React.ElementType }[];
 
     const isActive = (href: string) => page.url.startsWith(href.split('?')[0]);
