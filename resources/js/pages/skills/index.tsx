@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import { router, useForm } from '@inertiajs/react';
 import { useConfirm } from '@/components/confirm-dialog-provider';
-import { Pencil, Plus, Trash2, X, Save, Zap, Sparkles } from 'lucide-react';
+import { Pencil, Plus, Trash2, X, Save, Zap, Sparkles, Check } from 'lucide-react';
 import { useState } from 'react';
 
 interface Skill {
@@ -18,14 +19,25 @@ interface Skill {
     users_count: number;
 }
 
+interface SafeDefault {
+    name: string;
+    category: string;
+    description: string;
+    exists: boolean;
+}
+
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Startseite', href: '/' },
     { title: 'Skills', href: '#' },
 ];
 
-export default function Index({ skills }: { skills: Skill[] }) {
+export default function Index({ skills, safeDefaults }: { skills: Skill[]; safeDefaults: SafeDefault[] }) {
     const confirm = useConfirm();
     const [editingId, setEditingId] = useState<number | null>(null);
+    const [seedOpen, setSeedOpen] = useState(false);
+    const [selectedNames, setSelectedNames] = useState<Set<string>>(() => {
+        return new Set(safeDefaults.filter((d) => !d.exists).map((d) => d.name));
+    });
 
     const createForm = useForm({ name: '', category: '', description: '' });
     const editForm = useForm({ name: '', category: '', description: '' });
@@ -74,13 +86,113 @@ export default function Index({ skills }: { skills: Skill[] }) {
             <div className="mx-auto w-full max-w-4xl space-y-6 p-5">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Skills</h1>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.post(route('skills.seed-defaults'), {}, { preserveScroll: true })}
-                    >
-                        <Sparkles className="mr-1.5 h-4 w-4" /> SAFe-Rollen laden
-                    </Button>
+                    <Popover open={seedOpen} onOpenChange={setSeedOpen}>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <Sparkles className="mr-1.5 h-4 w-4" /> SAFe-Rollen laden
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-96 max-h-[28rem] overflow-y-auto p-3" align="end">
+                            {(() => {
+                                const grouped = safeDefaults.reduce<Record<string, SafeDefault[]>>((acc, d) => {
+                                    (acc[d.category] ??= []).push(d);
+                                    return acc;
+                                }, {});
+                                const availableNames = safeDefaults.filter((d) => !d.exists).map((d) => d.name);
+                                const allSelected = availableNames.every((n) => selectedNames.has(n));
+                                return (
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between border-b pb-2">
+                                            <span className="text-sm font-semibold">SAFe-Rollen auswählen</span>
+                                            <button
+                                                type="button"
+                                                className="text-xs text-muted-foreground hover:underline"
+                                                onClick={() => {
+                                                    setSelectedNames(allSelected ? new Set() : new Set(availableNames));
+                                                }}
+                                            >
+                                                {allSelected ? 'Keine' : 'Alle'}
+                                            </button>
+                                        </div>
+                                        {Object.entries(grouped).map(([cat, items]) => {
+                                            const catAvail = items.filter((i) => !i.exists).map((i) => i.name);
+                                            const catAllSelected = catAvail.length > 0 && catAvail.every((n) => selectedNames.has(n));
+                                            return (
+                                                <div key={cat}>
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{cat}</span>
+                                                        {catAvail.length > 0 && (
+                                                            <button
+                                                                type="button"
+                                                                className="text-[10px] text-muted-foreground hover:underline"
+                                                                onClick={() => {
+                                                                    setSelectedNames((prev) => {
+                                                                        const next = new Set(prev);
+                                                                        catAvail.forEach((n) => catAllSelected ? next.delete(n) : next.add(n));
+                                                                        return next;
+                                                                    });
+                                                                }}
+                                                            >
+                                                                {catAllSelected ? 'Keine' : 'Alle'}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                    {items.map((item) => (
+                                                        <label
+                                                            key={item.name}
+                                                            className={`flex items-start gap-2 rounded px-1.5 py-1 text-sm ${item.exists ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-accent'}`}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                className="mt-0.5 h-4 w-4 rounded border-gray-300"
+                                                                disabled={item.exists}
+                                                                checked={item.exists || selectedNames.has(item.name)}
+                                                                onChange={() => {
+                                                                    if (item.exists) return;
+                                                                    setSelectedNames((prev) => {
+                                                                        const next = new Set(prev);
+                                                                        next.has(item.name) ? next.delete(item.name) : next.add(item.name);
+                                                                        return next;
+                                                                    });
+                                                                }}
+                                                            />
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <span className="font-medium">{item.name}</span>
+                                                                    {item.exists && <Check className="h-3 w-3 text-green-500" />}
+                                                                </div>
+                                                                <p className="text-xs text-muted-foreground leading-tight">{item.description}</p>
+                                                            </div>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })}
+                                        <Button
+                                            size="sm"
+                                            className="w-full"
+                                            disabled={selectedNames.size === 0}
+                                            onClick={() => {
+                                                router.post(
+                                                    route('skills.seed-defaults'),
+                                                    { names: Array.from(selectedNames) },
+                                                    {
+                                                        preserveScroll: true,
+                                                        onSuccess: () => {
+                                                            setSeedOpen(false);
+                                                            setSelectedNames(new Set());
+                                                        },
+                                                    },
+                                                );
+                                            }}
+                                        >
+                                            {selectedNames.size} Rolle{selectedNames.size !== 1 ? 'n' : ''} hinzufügen
+                                        </Button>
+                                    </div>
+                                );
+                            })()}
+                        </PopoverContent>
+                    </Popover>
                 </div>
 
                 {/* Create form */}

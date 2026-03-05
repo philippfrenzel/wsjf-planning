@@ -18,9 +18,13 @@ class SkillController extends Controller
     public function index(): Response
     {
         $skills = Skill::withCount('users')->orderBy('category')->orderBy('name')->get();
+        $existingNames = $skills->pluck('name')->toArray();
 
         return Inertia::render('skills/index', [
             'skills' => $skills,
+            'safeDefaults' => collect(self::safeDefaults())
+                ->map(fn ($s) => array_merge($s, ['exists' => in_array($s['name'], $existingNames)]))
+                ->values(),
         ]);
     }
 
@@ -57,18 +61,42 @@ class SkillController extends Controller
         return redirect()->route('skills.index')->with('success', 'Skill wurde gelöscht.');
     }
 
-    public function seedDefaults(): RedirectResponse
+    public function seedDefaults(Request $request): RedirectResponse
     {
-        $tenantId = auth()->user()->current_tenant_id;
+        $request->validate([
+            'names' => ['required', 'array', 'min:1'],
+            'names.*' => ['required', 'string'],
+        ]);
 
-        $defaults = [
-            // ART-Ebene (Agile Release Train)
+        $tenantId = auth()->user()->current_tenant_id;
+        $selected = collect($request->names);
+        $defaults = collect(self::safeDefaults())->keyBy('name');
+
+        $inserted = 0;
+        foreach ($selected as $name) {
+            $skill = $defaults->get($name);
+            if (!$skill) continue;
+
+            $exists = Skill::where('tenant_id', $tenantId)->where('name', $name)->exists();
+            if (!$exists) {
+                Skill::create(array_merge($skill, ['tenant_id' => $tenantId]));
+                $inserted++;
+            }
+        }
+
+        return redirect()->route('skills.index')
+            ->with('success', $inserted > 0
+                ? "{$inserted} SAFe-Skills wurden hinzugefügt."
+                : 'Alle ausgewählten Skills sind bereits vorhanden.');
+    }
+
+    public static function safeDefaults(): array
+    {
+        return [
             ['name' => 'Release Train Engineer (RTE)', 'category' => 'ART-Ebene', 'description' => 'Leitet den Agile Release Train, moderiert PI Planning und beseitigt Impediments.'],
             ['name' => 'Product Manager', 'category' => 'ART-Ebene', 'description' => 'Verantwortet die Programm-Backlog-Priorisierung und die inhaltliche Ausrichtung des ART.'],
             ['name' => 'System Architect', 'category' => 'ART-Ebene', 'description' => 'Definiert die technische Architektur und Leitplanken für alle Teams im ART.'],
             ['name' => 'Business Owner', 'category' => 'ART-Ebene', 'description' => 'Stakeholder mit Geschäftsverantwortung, bewertet den Business Value bei PI Planning.'],
-
-            // Team-Ebene
             ['name' => 'Scrum Master', 'category' => 'Team-Ebene', 'description' => 'Facilitiert agile Zeremonien, schützt das Team und fördert kontinuierliche Verbesserung.'],
             ['name' => 'Product Owner', 'category' => 'Team-Ebene', 'description' => 'Verantwortet das Team-Backlog, priorisiert Stories und akzeptiert Ergebnisse.'],
             ['name' => 'Frontend-Entwicklung', 'category' => 'Team-Ebene', 'description' => 'Entwicklung von Benutzeroberflächen mit modernen Web-Frameworks.'],
@@ -82,34 +110,14 @@ class SkillController extends Controller
             ['name' => 'Mobile-Entwicklung', 'category' => 'Team-Ebene', 'description' => 'Entwicklung nativer oder hybrider mobiler Anwendungen.'],
             ['name' => 'Technical Writing', 'category' => 'Team-Ebene', 'description' => 'Technische Dokumentation, API-Docs und Benutzerhandbücher.'],
             ['name' => 'Business Analyse', 'category' => 'Team-Ebene', 'description' => 'Anforderungsanalyse, Prozessmodellierung und Stakeholder-Kommunikation.'],
-
-            // Portfolio-Ebene
             ['name' => 'Lean Portfolio Manager', 'category' => 'Portfolio-Ebene', 'description' => 'Steuert den Wertstrom auf Portfolio-Ebene und priorisiert Epics.'],
             ['name' => 'Enterprise Architect', 'category' => 'Portfolio-Ebene', 'description' => 'Definiert die übergreifende Unternehmensarchitektur und Technologiestrategie.'],
             ['name' => 'Epic Owner', 'category' => 'Portfolio-Ebene', 'description' => 'Verantwortet die Ausarbeitung und Umsetzung von Portfolio-Epics.'],
-
-            // Übergreifend
             ['name' => 'Agile Coach', 'category' => 'Übergreifend', 'description' => 'Begleitet Teams und Führungskräfte bei der agilen Transformation.'],
             ['name' => 'Solution Architect', 'category' => 'Übergreifend', 'description' => 'Entwirft lösungsübergreifende Architekturen für Solution Trains.'],
             ['name' => 'Cloud Engineering', 'category' => 'Übergreifend', 'description' => 'Cloud-Infrastruktur, Container-Orchestrierung und Cloud-native Architektur.'],
             ['name' => 'Performance Engineering', 'category' => 'Übergreifend', 'description' => 'Lasttests, Performance-Optimierung und Kapazitätsplanung.'],
             ['name' => 'Site Reliability Engineering (SRE)', 'category' => 'Übergreifend', 'description' => 'Betriebsstabilität, Incident Management und Service-Level-Objectives.'],
         ];
-
-        $inserted = 0;
-        foreach ($defaults as $skill) {
-            $exists = Skill::where('tenant_id', $tenantId)
-                ->where('name', $skill['name'])
-                ->exists();
-            if (!$exists) {
-                Skill::create(array_merge($skill, ['tenant_id' => $tenantId]));
-                $inserted++;
-            }
-        }
-
-        return redirect()->route('skills.index')
-            ->with('success', $inserted > 0
-                ? "{$inserted} SAFe-Skills wurden hinzugefügt."
-                : 'Alle SAFe-Skills sind bereits vorhanden.');
     }
 }
