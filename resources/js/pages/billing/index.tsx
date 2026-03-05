@@ -140,12 +140,12 @@ export default function BillingPage({
                         <div className="flex gap-3">
                         {billingStatus !== 'active' && billingStatus !== 'no_tenant' && (
                             <Button asChild disabled={!stripeConfigured}>
-                                <Link href="/billing/checkout">Jetzt abonnieren</Link>
+                                <a href="/billing/checkout">Jetzt abonnieren</a>
                             </Button>
                         )}
                         {billingStatus === 'active' && (
                             <Button variant="outline" asChild disabled={!stripeConfigured}>
-                                <Link href="/billing/portal">Abonnement verwalten</Link>
+                                <a href="/billing/portal">Abonnement verwalten</a>
                             </Button>
                         )}
                         </div>
