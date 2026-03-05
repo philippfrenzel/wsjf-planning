@@ -25,6 +25,9 @@ class UpdateFeatureRequest extends FormRequest
             'requester_id' => ['nullable', 'exists:users,id'],
             'project_id' => ['required', Rule::exists('projects', 'id')->where('tenant_id', $tenantId)],
             'status' => ['nullable', 'string', 'in:in-planning,approved,rejected,implemented,obsolete,archived,deleted'],
+            'skill_requirements' => ['sometimes', 'array'],
+            'skill_requirements.*.skill_id' => ['required', 'exists:skills,id'],
+            'skill_requirements.*.level' => ['required', 'in:basic,intermediate,expert'],
         ];
     }
 }

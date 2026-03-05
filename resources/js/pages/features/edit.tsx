@@ -1,7 +1,9 @@
 import { Comments } from '@/components/comments';
 import InputError from '@/components/input-error';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,7 +13,7 @@ import { useForm } from '@inertiajs/react';
 import TextAlign from '@tiptap/extension-text-align';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { LoaderCircle, Save, X } from 'lucide-react';
+import { LoaderCircle, Save, X, Zap } from 'lucide-react';
 import React from 'react';
 
 import DependenciesSection from './components/DependenciesSection';
@@ -47,6 +49,7 @@ interface Feature {
         color: string;
     };
     dependencies?: DependencyItem[];
+    required_skills?: { id: number; name: string; category: string | null; pivot: { level: string } }[];
 }
 interface StatusOption {
     value: string;
@@ -55,22 +58,38 @@ interface StatusOption {
     current: boolean;
 }
 
+interface SkillOption {
+    id: number;
+    name: string;
+    category: string | null;
+}
+
+interface SkillRequirement {
+    skill_id: number;
+    level: string;
+}
+
 interface EditProps {
     feature: Feature;
     projects: Project[];
     users: User[];
+    skills: SkillOption[];
     statusOptions: StatusOption[];
     featureOptions?: { id: number; jira_key: string; name: string }[];
     dependencies?: DependencyItem[];
 }
 
-export default function Edit({ feature, projects, users, statusOptions, featureOptions = [], dependencies = [] }: EditProps) {
+export default function Edit({ feature, projects, users, skills, statusOptions, featureOptions = [], dependencies = [] }: EditProps) {
     const { data, setData, put, processing, errors } = useForm({
         jira_key: feature.jira_key || '',
         name: feature.name || '',
         description: feature.description || '',
         requester_id: feature.requester_id ? String(feature.requester_id) : '',
         project_id: feature.project_id ? String(feature.project_id) : '',
+        skill_requirements: (feature.required_skills || []).map((s) => ({
+            skill_id: s.id,
+            level: s.pivot.level,
+        })) as SkillRequirement[],
     });
 
     // Breadcrumbs definieren
@@ -94,6 +113,27 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
             setData('description', editor.getHTML());
         },
     });
+
+    function toggleSkillRequirement(skillId: number) {
+        const existing = data.skill_requirements.find((r) => r.skill_id === skillId);
+        if (existing) {
+            setData('skill_requirements', data.skill_requirements.filter((r) => r.skill_id !== skillId));
+        } else {
+            setData('skill_requirements', [...data.skill_requirements, { skill_id: skillId, level: 'basic' }]);
+        }
+    }
+
+    function setSkillLevel(skillId: number, level: string) {
+        setData('skill_requirements', data.skill_requirements.map((r) =>
+            r.skill_id === skillId ? { ...r, level } : r
+        ));
+    }
+
+    const LEVELS = [
+        { value: 'basic', label: 'Grundkenntnisse' },
+        { value: 'intermediate', label: 'Fortgeschritten' },
+        { value: 'expert', label: 'Experte' },
+    ];
 
     const addToolbar = () => {
         if (!editor) return null;
@@ -334,6 +374,46 @@ export default function Edit({ feature, projects, users, statusOptions, featureO
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Skill Requirements */}
+                                    {skills.length > 0 && (
+                                        <div className="rounded-md border p-4">
+                                            <Label className="mb-2 flex items-center gap-2 text-base font-semibold">
+                                                <Zap className="h-4 w-4" /> Benötigte Skills
+                                            </Label>
+                                            <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+                                                {skills.map((skill) => {
+                                                    const req = data.skill_requirements.find((r) => r.skill_id === skill.id);
+                                                    return (
+                                                        <div key={skill.id} className="flex items-center gap-1.5">
+                                                            <Checkbox
+                                                                checked={!!req}
+                                                                onCheckedChange={() => toggleSkillRequirement(skill.id)}
+                                                            />
+                                                            <span className="text-sm">{skill.name}</span>
+                                                            {skill.category && (
+                                                                <Badge variant="outline" className="px-1 text-[10px]">{skill.category}</Badge>
+                                                            )}
+                                                            {req && (
+                                                                <Select value={req.level} onValueChange={(v) => setSkillLevel(skill.id, v)}>
+                                                                    <SelectTrigger className="h-6 w-[130px] text-xs">
+                                                                        <SelectValue />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        {LEVELS.map((l) => (
+                                                                            <SelectItem key={l.value} value={l.value} className="text-xs">
+                                                                                {l.label}
+                                                                            </SelectItem>
+                                                                        ))}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className="flex justify-end gap-2 border-t pt-4">
                                         <Button type="button" variant="cancel" onClick={() => window.history.back()}>

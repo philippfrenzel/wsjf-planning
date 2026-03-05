@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateFeatureRequest;
 use App\Models\Feature;
 use App\Models\Planning;
 use App\Models\Project;
+use App\Models\Skill;
 use App\Models\User;
 use App\Services\FeatureService;
 use App\Support\StatusMapper;
@@ -225,14 +226,25 @@ class FeatureController extends Controller
         return Inertia::render('features/create', [
             'projects' => Project::all(['id', 'name']),
             'users' => User::whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
+            'skills' => Skill::where('tenant_id', $tenantId)->orderBy('category')->orderBy('name')->get(['id', 'name', 'category']),
         ]);
     }
 
     public function store(StoreFeatureRequest $request)
     {
         $validated = $request->validated();
+        $skillRequirements = $validated['skill_requirements'] ?? [];
+        unset($validated['skill_requirements']);
 
-        Feature::create($validated);
+        $feature = Feature::create($validated);
+
+        if (!empty($skillRequirements)) {
+            $syncData = [];
+            foreach ($skillRequirements as $req) {
+                $syncData[$req['skill_id']] = ['level' => $req['level']];
+            }
+            $feature->requiredSkills()->sync($syncData);
+        }
 
         // Increment data version to trigger Inertia page reload
         cache()->increment('app.data.version', 1);
@@ -301,9 +313,10 @@ class FeatureController extends Controller
             ->get(['id', 'jira_key', 'name', 'project_id']);
 
         return Inertia::render('features/edit', [
-            'feature' => $feature->load(['project', 'requester', 'dependencies.related']),
+            'feature' => $feature->load(['project', 'requester', 'dependencies.related', 'requiredSkills']),
             'projects' => Project::all(['id', 'name']),
             'users' => User::whereHas('tenants', fn ($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
+            'skills' => Skill::where('tenant_id', $tenantId)->orderBy('category')->orderBy('name')->get(['id', 'name', 'category']),
             'statusOptions' => $statusOptions,
             'featureOptions' => $featureOptions,
             'dependencies' => $feature->dependencies->map(function ($dep) {
@@ -323,6 +336,8 @@ class FeatureController extends Controller
     public function update(UpdateFeatureRequest $request, Feature $feature)
     {
         $validated = $request->validated();
+        $skillRequirements = $validated['skill_requirements'] ?? [];
+        unset($validated['skill_requirements']);
 
         // Status separat behandeln, um Spatie State Machine zu nutzen
         $newStatus = $request->input('status');
@@ -336,6 +351,13 @@ class FeatureController extends Controller
             'requester_id' => $validated['requester_id'],
             'project_id' => $validated['project_id'],
         ]);
+
+        // Sync skills
+        $syncData = [];
+        foreach ($skillRequirements as $req) {
+            $syncData[$req['skill_id']] = ['level' => $req['level']];
+        }
+        $feature->requiredSkills()->sync($syncData);
 
         if ($newStatus) {
             $currentValue = $currentStatus instanceof State ? $currentStatus->getValue() : (string) $currentStatus;

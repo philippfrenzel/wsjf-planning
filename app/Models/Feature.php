@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\ModelStates\HasStates;
 use App\States\Feature\FeatureState;
@@ -175,6 +176,13 @@ class Feature extends Model
     public function iteration()
     {
         return $this->belongsTo(Iteration::class);
+    }
+
+    public function requiredSkills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, 'feature_skill')
+            ->withPivot('level')
+            ->withTimestamps();
     }
 
     /**
