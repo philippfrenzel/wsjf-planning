@@ -7,7 +7,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, Kanban, LayoutGrid, Menu, Route, Shield, Shirt, FolderKanban } from 'lucide-react';
+import { BarChart3, Kanban, LayoutGrid, ListChecks, Map, Menu, Route, Shield, Shirt, FolderKanban, Users } from 'lucide-react';
 import AppLogoIcon from './app-logo-icon';
 
 interface AppHeaderProps {
@@ -29,6 +29,9 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
         { title: 'Features', href: '/features', icon: Shirt },
         { title: 'Board', href: '/features/board', icon: Kanban },
         hasProjects && { title: 'WSJF', href: `/plannings?project_id=${firstPlanningId}`, icon: Route },
+        { title: 'Teams', href: '/teams', icon: Users },
+        { title: 'DoR/DoD', href: '/definitions', icon: ListChecks },
+        { title: 'Roadmap', href: '/roadmap', icon: Map },
         auth?.user?.email === 'philipp@frenzel.net' && { title: 'Admin', href: '/plannings/admin', icon: Shield },
     ].filter(Boolean) as { title: string; href: string; icon: React.ElementType }[];
 
