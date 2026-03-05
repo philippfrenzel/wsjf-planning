@@ -49,13 +49,26 @@ interface Feature {
     jira_key: string;
     name: string;
     project_id: number;
+    team_id?: number | null;
+    iteration_id?: number | null;
+    team?: { id: number; name: string } | null;
+    iteration?: { id: number; name: string; number: number } | null;
+    dependencies?: {
+        id: number;
+        feature_id: number;
+        related_feature_id: number | null;
+        type: string;
+        is_external: boolean;
+        external_description: string | null;
+        related?: { id: number; jira_key: string; name: string } | null;
+    }[];
     project?: {
         id: number;
         name: string;
         jira_base_uri?: string;
     };
     votes?: Vote[];
-    commonvotes?: Vote[]; // Vom Controller dediziert geladene Common Votes
+    commonvotes?: Vote[];
     commitments?: {
         id: number;
         commitment_type: string;
@@ -127,12 +140,18 @@ interface RiskData {
     impact: string;
 }
 
+interface TeamData {
+    id: number;
+    name: string;
+}
+
 interface ShowProps {
     planning: Planning;
     stakeholders: Stakeholder[];
     piObjectives: PiObjective[];
     iterations: IterationData[];
     risks: RiskData[];
+    teams: TeamData[];
 }
 
 function FeaturesTable({ features }: { features?: Feature[] }) {
@@ -764,7 +783,214 @@ function RoamBoard({
     );
 }
 
-export default function Show({ planning, stakeholders, piObjectives, iterations, risks }: ShowProps) {
+// ---- Program Board Component ----
+function ProgramBoard({
+    features,
+    teams,
+    iterations,
+    planningId,
+    canManage,
+}: {
+    features: Feature[];
+    teams: TeamData[];
+    iterations: IterationData[];
+    planningId: number;
+    canManage: boolean;
+}) {
+    const confirm = useConfirm();
+    const [assignDialog, setAssignDialog] = useState<{ feature: Feature; open: boolean }>({ feature: {} as Feature, open: false });
+    const [assignTeamId, setAssignTeamId] = useState('');
+    const [assignIterationId, setAssignIterationId] = useState('');
+
+    const sortedIterations = [...iterations].sort((a, b) => a.number - b.number);
+
+    // Features grouped by team_id → iteration_id
+    const getFeatures = (teamId: number | null, iterationId: number | null) =>
+        features.filter((f) => {
+            const matchTeam = teamId === null ? !f.team_id : f.team_id === teamId;
+            const matchIter = iterationId === null ? !f.iteration_id : f.iteration_id === iterationId;
+            return matchTeam && matchIter;
+        });
+
+    const unassignedFeatures = features.filter((f) => !f.team_id || !f.iteration_id);
+
+    const openAssign = (feature: Feature) => {
+        setAssignTeamId(feature.team_id ? String(feature.team_id) : '');
+        setAssignIterationId(feature.iteration_id ? String(feature.iteration_id) : '');
+        setAssignDialog({ feature, open: true });
+    };
+
+    const submitAssign = () => {
+        router.put(
+            route('plannings.assign-feature', { planning: planningId, feature: assignDialog.feature.id }),
+            {
+                team_id: assignTeamId || null,
+                iteration_id: assignIterationId || null,
+            },
+            { preserveScroll: true, onSuccess: () => setAssignDialog({ feature: {} as Feature, open: false }) },
+        );
+    };
+
+    // Dependency lines data: collect all cross-cell dependencies
+    const depLines: { from: Feature; to: Feature; type: string }[] = [];
+    features.forEach((f) => {
+        f.dependencies?.forEach((dep) => {
+            if (dep.related_feature_id) {
+                const target = features.find((t) => t.id === dep.related_feature_id);
+                if (target && (f.team_id !== target.team_id || f.iteration_id !== target.iteration_id)) {
+                    depLines.push({ from: f, to: target, type: dep.type });
+                }
+            }
+        });
+    });
+
+    if (iterations.length === 0 || teams.length === 0) {
+        return (
+            <div className="py-8 text-center text-muted-foreground">
+                Bitte zuerst <strong>Teams</strong> und <strong>Iterationen</strong> anlegen, um das Program Board nutzen zu können.
+            </div>
+        );
+    }
+
+    const typeColors: Record<string, string> = {
+        ermöglicht: 'border-green-500',
+        verhindert: 'border-red-500',
+        bedingt: 'border-yellow-500',
+        ersetzt: 'border-gray-500',
+    };
+
+    return (
+        <div className="space-y-4">
+            {/* Unassigned features */}
+            {unassignedFeatures.length > 0 && (
+                <div className="rounded-lg border border-dashed border-orange-300 bg-orange-50 p-3 dark:border-orange-700 dark:bg-orange-950">
+                    <div className="mb-2 text-xs font-semibold uppercase text-orange-600 dark:text-orange-400">
+                        Nicht zugeordnete Features ({unassignedFeatures.length})
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {unassignedFeatures.map((f) => (
+                            <button
+                                key={f.id}
+                                onClick={() => canManage && openAssign(f)}
+                                className="rounded border bg-white px-2 py-1 text-xs shadow-sm hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800"
+                            >
+                                <span className="font-mono text-muted-foreground">{f.jira_key}</span>{' '}
+                                <span className="font-medium">{f.name}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Board grid */}
+            <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th className="border bg-muted/50 p-2 text-left text-xs font-semibold">Team</th>
+                            {sortedIterations.map((iter) => (
+                                <th key={iter.id} className="border bg-muted/50 p-2 text-center text-xs font-semibold">
+                                    {iter.name}
+                                    {iter.is_ip && <Badge variant="outline" className="ml-1 text-[10px]">IP</Badge>}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {teams.map((team) => (
+                            <tr key={team.id}>
+                                <td className="border bg-muted/30 p-2 text-xs font-medium align-top whitespace-nowrap">
+                                    {team.name}
+                                </td>
+                                {sortedIterations.map((iter) => {
+                                    const cellFeatures = getFeatures(team.id, iter.id);
+                                    return (
+                                        <td key={iter.id} className="border p-1 align-top min-w-[140px]">
+                                            <div className="flex flex-col gap-1">
+                                                {cellFeatures.map((f) => (
+                                                    <button
+                                                        key={f.id}
+                                                        onClick={() => canManage && openAssign(f)}
+                                                        className={`rounded border px-2 py-1 text-left text-xs shadow-sm hover:bg-accent ${
+                                                            f.dependencies && f.dependencies.length > 0
+                                                                ? 'border-l-4 ' + (typeColors[f.dependencies[0]?.type] || 'border-blue-500')
+                                                                : ''
+                                                        }`}
+                                                    >
+                                                        <div className="font-mono text-[10px] text-muted-foreground">{f.jira_key}</div>
+                                                        <div className="font-medium">{f.name}</div>
+                                                        {f.dependencies && f.dependencies.length > 0 && (
+                                                            <div className="mt-0.5 text-[10px] text-muted-foreground">
+                                                                → {f.dependencies.map((d) => d.related?.jira_key || d.external_description || '?').join(', ')}
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Dependency legend */}
+            {depLines.length > 0 && (
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span className="font-semibold">Abhängigkeiten:</span>
+                    {depLines.map((d, i) => (
+                        <span key={i}>
+                            {d.from.jira_key} → {d.to.jira_key} ({d.type})
+                        </span>
+                    ))}
+                </div>
+            )}
+
+            {/* Assign dialog */}
+            <Dialog open={assignDialog.open} onOpenChange={(o) => setAssignDialog((prev) => ({ ...prev, open: o }))}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Feature zuordnen: {assignDialog.feature.jira_key} — {assignDialog.feature.name}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div>
+                            <Label>Team</Label>
+                            <Select value={assignTeamId} onValueChange={setAssignTeamId}>
+                                <SelectTrigger><SelectValue placeholder="Team wählen" /></SelectTrigger>
+                                <SelectContent>
+                                    {teams.map((t) => (
+                                        <SelectItem key={t.id} value={String(t.id)}>{t.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label>Iteration</Label>
+                            <Select value={assignIterationId} onValueChange={setAssignIterationId}>
+                                <SelectTrigger><SelectValue placeholder="Iteration wählen" /></SelectTrigger>
+                                <SelectContent>
+                                    {sortedIterations.map((it) => (
+                                        <SelectItem key={it.id} value={String(it.id)}>
+                                            {it.name} {it.is_ip ? '(IP)' : ''}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setAssignDialog({ feature: {} as Feature, open: false })}>Abbrechen</Button>
+                        <Button onClick={submitAssign}>Zuordnen</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+}
+
+export default function Show({ planning, stakeholders, piObjectives, iterations, risks, teams }: ShowProps) {
     const { auth } = usePage<SharedData>().props;
     const canManage = auth.currentRole === 'Admin' || auth.currentRole === 'Planner';
 
@@ -802,6 +1028,7 @@ export default function Show({ planning, stakeholders, piObjectives, iterations,
                                 <TabsTrigger value="pi-objectives">PI Objectives</TabsTrigger>
                                 <TabsTrigger value="iterations">Iterationen</TabsTrigger>
                                 <TabsTrigger value="roam">ROAM Board</TabsTrigger>
+                                <TabsTrigger value="program-board">Program Board</TabsTrigger>
                             </TabsList>
                             <TabsContent value="details">
                                 <PlanningDetailsCard planning={planning} stakeholders={stakeholders} />
@@ -886,6 +1113,15 @@ export default function Show({ planning, stakeholders, piObjectives, iterations,
                             </TabsContent>
                             <TabsContent value="roam">
                                 <RoamBoard planningId={planning.id} risks={risks ?? []} canManage={canManage} />
+                            </TabsContent>
+                            <TabsContent value="program-board">
+                                <ProgramBoard
+                                    features={planning.features ?? []}
+                                    teams={teams ?? []}
+                                    iterations={iterations ?? []}
+                                    planningId={planning.id}
+                                    canManage={canManage}
+                                />
                             </TabsContent>
                         </Tabs>
                     </CardContent>

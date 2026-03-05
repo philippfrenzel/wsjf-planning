@@ -36,6 +36,8 @@ class Feature extends Model
         'description',
         'requester_id',
         'project_id',
+        'team_id',
+        'iteration_id',
         'created_at',
         'tenant_id',
     ];
@@ -163,6 +165,16 @@ class Feature extends Model
     public function dependents()
     {
         return $this->hasMany(FeatureDependency::class, 'related_feature_id')->with('feature:id,jira_key,name,project_id');
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
+    }
+
+    public function iteration()
+    {
+        return $this->belongsTo(Iteration::class);
     }
 
     /**

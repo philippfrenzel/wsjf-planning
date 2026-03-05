@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Planning;
 use App\Models\Project;
 use App\Models\User;
-use App\Models\Feature; // Feature Model importieren
+use App\Models\Team;
+use App\Models\Feature;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -121,9 +122,12 @@ class PlanningController extends Controller
             'creator:id,name',
             'features' => function ($query) use ($planning) {
                 $query->where('project_id', $planning->project_id)
-                    ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id');
+                    ->select('features.id', 'features.jira_key', 'features.name', 'features.project_id', 'features.team_id', 'features.iteration_id');
             },
             'features.project:id,name,jira_base_uri',
+            'features.team:id,name',
+            'features.iteration:id,name,number',
+            'features.dependencies',
             'features.votes' => function ($query) use ($planningId, $stakeholderIds) {
                 $query->where('planning_id', $planningId)
                     ->whereIn('user_id', $stakeholderIds);
@@ -172,12 +176,17 @@ class PlanningController extends Controller
             ->orderByRaw("FIELD(roam_status, 'identified', 'owned', 'mitigated', 'accepted', 'resolved')")
             ->get();
 
+        $teams = Team::where('tenant_id', Auth::user()->current_tenant_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         return Inertia::render('plannings/show', [
             'planning' => $planning,
             'stakeholders' => $stakeholders,
             'piObjectives' => $piObjectives,
             'iterations' => $iterations,
             'risks' => $risks,
+            'teams' => $teams,
         ]);
     }
 
@@ -344,5 +353,22 @@ class PlanningController extends Controller
         $planning->created_by = $request->created_by;
         $planning->save();
         return redirect()->back()->with('success', 'Ersteller wurde geändert.');
+    }
+
+    /**
+     * Assign a feature to a team and/or iteration on the Program Board.
+     */
+    public function assignFeature(Request $request, Planning $planning, Feature $feature)
+    {
+        $this->authorize('update', $planning);
+
+        $request->validate([
+            'team_id' => ['nullable', 'exists:teams,id'],
+            'iteration_id' => ['nullable', 'exists:iterations,id'],
+        ]);
+
+        $feature->update($request->only(['team_id', 'iteration_id']));
+
+        return redirect()->back()->with('success', 'Feature zugewiesen.');
     }
 }

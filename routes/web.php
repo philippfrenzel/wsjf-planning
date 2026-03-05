@@ -105,6 +105,10 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     Route::put('risks/{risk}', [RiskController::class, 'update'])->name('risks.update');
     Route::delete('risks/{risk}', [RiskController::class, 'destroy'])->name('risks.destroy');
 
+    // Program Board: assign feature to team/iteration
+    Route::put('plannings/{planning}/features/{feature}/assign', [PlanningController::class, 'assignFeature'])
+        ->name('plannings.assign-feature');
+
     // API-Route zum Laden von Features für ein Planning
     Route::post('api/planning-features', [CommitmentController::class, 'getFeaturesForPlanning'])
         ->name('api.planning-features');
