@@ -176,6 +176,7 @@ class SkillController extends Controller
             ['name' => 'Datenbanken (SQL)', 'category' => 'Infrastruktur & Betrieb', 'description' => 'PostgreSQL, MySQL, SQL Server — Schema-Design, Performance-Tuning und Migrationen.'],
             ['name' => 'Datenbanken (NoSQL)', 'category' => 'Infrastruktur & Betrieb', 'description' => 'MongoDB, Redis, Elasticsearch, DynamoDB — Datenmodellierung und Skalierung.'],
             ['name' => 'Message Broker', 'category' => 'Infrastruktur & Betrieb', 'description' => 'Kafka, RabbitMQ, NATS — Event-Streaming und asynchrone Kommunikation.'],
+            ['name' => 'Apache Spark / Big Data', 'category' => 'Infrastruktur & Betrieb', 'description' => 'Verteilte Datenverarbeitung mit PySpark, Spark SQL, Structured Streaming und Delta Lake.'],
         ];
     }
 
