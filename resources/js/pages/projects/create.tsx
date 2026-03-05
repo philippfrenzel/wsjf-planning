@@ -16,11 +16,17 @@ interface User {
     name: string;
 }
 
-interface CreateProps {
-    users: User[];
+interface TeamOption {
+    id: number;
+    name: string;
 }
 
-export default function Create({ users }: CreateProps) {
+interface CreateProps {
+    users: User[];
+    teams: TeamOption[];
+}
+
+export default function Create({ users, teams }: CreateProps) {
     // Breadcrumbs definieren
     const breadcrumbs = [
         { title: 'Startseite', href: '/' },
@@ -37,6 +43,7 @@ export default function Create({ users }: CreateProps) {
         end_date: '',
         project_leader_id: '',
         deputy_leader_id: '',
+        team_ids: [] as string[],
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -125,6 +132,29 @@ export default function Create({ users }: CreateProps) {
                                     </Select>
                                     <InputError message={errors.deputy_leader_id} className="mt-1" />
                                 </div>
+                                {teams.length > 0 && (
+                                    <div>
+                                        <Label>Teams</Label>
+                                        <div className="mt-1 flex flex-wrap gap-3">
+                                            {teams.map((team) => (
+                                                <label key={team.id} className="flex items-center gap-1.5 text-sm">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="h-4 w-4 rounded border-gray-300"
+                                                        checked={data.team_ids.includes(team.id.toString())}
+                                                        onChange={() => {
+                                                            const id = team.id.toString();
+                                                            setData('team_ids', data.team_ids.includes(id)
+                                                                ? data.team_ids.filter((t) => t !== id)
+                                                                : [...data.team_ids, id]);
+                                                        }}
+                                                    />
+                                                    {team.name}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 <div>
                                     <Label htmlFor="start_date">Startdatum</Label>
                                     <Input id="start_date" name="start_date" type="date" value={data.start_date} onChange={handleChange} />

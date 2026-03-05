@@ -26,6 +26,7 @@ interface Project {
     status: string;
     project_leader_id: string;
     deputy_leader_id: string;
+    teams?: { id: number; name: string }[];
 }
 
 interface StatusOption {
@@ -40,14 +41,20 @@ interface CurrentStatus {
     color: string;
 }
 
+interface TeamOption {
+    id: number;
+    name: string;
+}
+
 interface EditProps {
     project: Project;
     users: User[];
+    teams: TeamOption[];
     currentStatus: CurrentStatus;
     statusOptions: StatusOption[];
 }
 
-export default function Edit({ project, users, currentStatus, statusOptions }: EditProps) {
+export default function Edit({ project, users, teams, currentStatus, statusOptions }: EditProps) {
     // Breadcrumbs definieren
     const breadcrumbs = [
         { title: 'Startseite', href: '/' },
@@ -66,6 +73,7 @@ export default function Edit({ project, users, currentStatus, statusOptions }: E
         project_leader_id: project.project_leader_id ? String(project.project_leader_id) : '',
         deputy_leader_id: project.deputy_leader_id ? String(project.deputy_leader_id) : '',
         new_status: '',
+        team_ids: (project.teams || []).map((t) => String(t.id)),
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -166,6 +174,29 @@ export default function Edit({ project, users, currentStatus, statusOptions }: E
                                     </Select>
                                     <InputError message={errors.deputy_leader_id} className="mt-1" />
                                 </div>
+                                {teams.length > 0 && (
+                                    <div>
+                                        <Label>Teams</Label>
+                                        <div className="mt-1 flex flex-wrap gap-3">
+                                            {teams.map((team) => (
+                                                <label key={team.id} className="flex items-center gap-1.5 text-sm">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="h-4 w-4 rounded border-gray-300"
+                                                        checked={data.team_ids.includes(team.id.toString())}
+                                                        onChange={() => {
+                                                            const id = team.id.toString();
+                                                            setData('team_ids', data.team_ids.includes(id)
+                                                                ? data.team_ids.filter((t) => t !== id)
+                                                                : [...data.team_ids, id]);
+                                                        }}
+                                                    />
+                                                    {team.name}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 <div>
                                     <Label htmlFor="start_date">Startdatum</Label>
                                     <Input id="start_date" name="start_date" type="date" value={data.start_date} onChange={handleChange} />

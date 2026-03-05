@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\ModelStates\HasStates;
 use App\States\Project\ProjectState;
 use App\States\Project\InPlanning;
@@ -107,5 +108,10 @@ class Project extends Model
     {
         $status = $this->status;
         return StatusMapper::details(StatusMapper::PROJECT, $status, 'in-planning');
+    }
+
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'project_team')->withTimestamps();
     }
 }
