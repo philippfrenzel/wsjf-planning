@@ -159,9 +159,16 @@ class PlanningController extends Controller
             ->groupBy('users.id', 'users.name', 'users.email')
             ->get();
 
+        $piObjectives = $planning->piObjectives()
+            ->with('user:id,name')
+            ->orderBy('is_committed', 'desc')
+            ->orderBy('business_value', 'desc')
+            ->get();
+
         return Inertia::render('plannings/show', [
             'planning' => $planning,
             'stakeholders' => $stakeholders,
+            'piObjectives' => $piObjectives,
         ]);
     }
 

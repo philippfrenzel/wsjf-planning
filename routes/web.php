@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\PiObjectiveController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -83,6 +84,11 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     // Zusätzliche Commitment-Routen
     Route::get('plannings/{planning}/commitments', [CommitmentController::class, 'planningCommitments'])
         ->name('plannings.commitments');
+
+    // PI Objectives
+    Route::post('pi-objectives', [PiObjectiveController::class, 'store'])->name('pi-objectives.store');
+    Route::put('pi-objectives/{pi_objective}', [PiObjectiveController::class, 'update'])->name('pi-objectives.update');
+    Route::delete('pi-objectives/{pi_objective}', [PiObjectiveController::class, 'destroy'])->name('pi-objectives.destroy');
 
     // API-Route zum Laden von Features für ein Planning
     Route::post('api/planning-features', [CommitmentController::class, 'getFeaturesForPlanning'])

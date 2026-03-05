@@ -111,6 +111,11 @@ class Planning extends Model
         return $this->hasMany(Commitment::class);
     }
 
+    public function piObjectives(): HasMany
+    {
+        return $this->hasMany(PiObjective::class);
+    }
+
     /**
      * Status-Details für Frontend
      */
