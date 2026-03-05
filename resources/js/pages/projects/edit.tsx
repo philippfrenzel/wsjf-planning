@@ -1,15 +1,15 @@
 import InputError from '@/components/input-error';
-import { Badge } from '@/components/ui/badge';
+import { SkillRequirementsPicker } from '@/components/skill-requirements-picker';
+import type { SkillOption, SkillRequirement } from '@/components/skill-requirements-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useForm } from '@inertiajs/react';
-import { LoaderCircle, Save, X, Zap } from 'lucide-react';
+import { LoaderCircle, Save, X } from 'lucide-react';
 import React from 'react';
 
 interface User {
@@ -47,17 +47,6 @@ interface CurrentStatus {
 interface TeamOption {
     id: number;
     name: string;
-}
-
-interface SkillOption {
-    id: number;
-    name: string;
-    category: string | null;
-}
-
-interface SkillRequirement {
-    skill_id: number;
-    level: string;
 }
 
 interface EditProps {
@@ -122,12 +111,6 @@ export default function Edit({ project, users, teams, skills, currentStatus, sta
             r.skill_id === skillId ? { ...r, level } : r
         ));
     }
-
-    const LEVELS = [
-        { value: 'basic', label: 'Grundkenntnisse' },
-        { value: 'intermediate', label: 'Fortgeschritten' },
-        { value: 'expert', label: 'Experte' },
-    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -284,44 +267,12 @@ export default function Edit({ project, users, teams, skills, currentStatus, sta
                         </div>
 
                         {/* Skill Requirements */}
-                        {skills.length > 0 && (
-                            <div className="rounded-md border p-4">
-                                <Label className="mb-2 flex items-center gap-2 text-base font-semibold">
-                                    <Zap className="h-4 w-4" /> Benötigte Skills
-                                </Label>
-                                <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
-                                    {skills.map((skill) => {
-                                        const req = data.skill_requirements.find((r) => r.skill_id === skill.id);
-                                        return (
-                                            <div key={skill.id} className="flex items-center gap-1.5">
-                                                <Checkbox
-                                                    checked={!!req}
-                                                    onCheckedChange={() => toggleSkillRequirement(skill.id)}
-                                                />
-                                                <span className="text-sm">{skill.name}</span>
-                                                {skill.category && (
-                                                    <Badge variant="outline" className="px-1 text-[10px]">{skill.category}</Badge>
-                                                )}
-                                                {req && (
-                                                    <Select value={req.level} onValueChange={(v) => setSkillLevel(skill.id, v)}>
-                                                        <SelectTrigger className="h-6 w-[130px] text-xs">
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {LEVELS.map((l) => (
-                                                                <SelectItem key={l.value} value={l.value} className="text-xs">
-                                                                    {l.label}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
+                        <SkillRequirementsPicker
+                            skills={skills}
+                            requirements={data.skill_requirements}
+                            onToggle={toggleSkillRequirement}
+                            onLevelChange={setSkillLevel}
+                        />
 
                         <div className="flex justify-end gap-2 pt-2">
                             <Button type="button" variant="cancel" onClick={() => window.history.back()}>
