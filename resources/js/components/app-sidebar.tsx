@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { VersionInfo } from '@/components/version-info';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, BarChart3 as Donut, Folder, Kanban, LayoutGrid, Route, Shield, Shirt } from 'lucide-react';
+import { BookOpen, BarChart3 as Donut, Folder, Kanban, LayoutGrid, Route, Shield, Shirt, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 interface AppSidebarProps {
@@ -43,6 +43,11 @@ export function AppSidebar({ hasProjects, firstPlanningId }: AppSidebarProps) {
             title: 'WSJF Verwaltung',
             href: '/plannings?project_id=' + (firstPlanningId || ''),
             icon: Route,
+        },
+        {
+            title: 'Teams',
+            href: '/teams',
+            icon: Users,
         },
         // Admin-Link nur für Philipp
         auth?.user?.email === 'philipp@frenzel.net' && {

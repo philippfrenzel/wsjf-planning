@@ -82,6 +82,13 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class);
     }
 
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'team_user')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
     /**
      * Tenants, in denen der User Mitglied ist.
      */

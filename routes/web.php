@@ -19,6 +19,7 @@ use App\Http\Controllers\TenantController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PiObjectiveController;
+use App\Http\Controllers\TeamController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -64,6 +65,7 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
 
     Route::resource('projects', ProjectController::class);
     Route::resource('plannings', PlanningController::class);
+    Route::resource('teams', TeamController::class);
     Route::get('features/board', [FeatureController::class, 'board'])->name('features.board');
     Route::post('features/{feature}/status', [FeatureController::class, 'updateStatus'])->name('features.status.update');
     Route::get('features/lineage', [FeatureController::class, 'lineage'])->name('features.lineage');
