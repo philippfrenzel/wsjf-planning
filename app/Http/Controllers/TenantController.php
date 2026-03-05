@@ -25,6 +25,17 @@ class TenantController extends Controller
     private function sharedTenantData(): array
     {
         $user = Auth::user();
+
+        // Self-heal: ensure owner always has Admin role BEFORE loading data
+        DB::table('tenant_user')
+            ->join('tenants', function ($join) use ($user) {
+                $join->on('tenants.id', '=', 'tenant_user.tenant_id')
+                     ->where('tenants.owner_user_id', '=', $user->id);
+            })
+            ->where('tenant_user.user_id', $user->id)
+            ->where('tenant_user.role', '!=', 'Admin')
+            ->update(['tenant_user.role' => 'Admin']);
+
         $tenants = $user->tenants()
             ->with(['members' => function ($q) {
                 $q->select('users.id', 'users.name', 'users.email');
@@ -41,15 +52,6 @@ class TenantController extends Controller
                 },
             ])
             ->get(['id', 'name', 'owner_user_id']);
-
-        // Self-heal: ensure owner always has Admin role
-        foreach ($owned as $tenant) {
-            DB::table('tenant_user')
-                ->where('tenant_id', $tenant->id)
-                ->where('user_id', $tenant->owner_user_id)
-                ->where('role', '!=', 'Admin')
-                ->update(['role' => 'Admin']);
-        }
 
         $invitations = TenantInvitation::where('email', $user->email)
             ->whereNull('accepted_at')
