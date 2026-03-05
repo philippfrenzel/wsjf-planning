@@ -24,6 +24,7 @@ use App\Http\Controllers\IterationController;
 use App\Http\Controllers\RiskController;
 use App\Http\Controllers\CapacityController;
 use App\Http\Controllers\DefinitionChecklistController;
+use App\Http\Controllers\RoadmapController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -120,6 +121,9 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     Route::post('definitions', [DefinitionChecklistController::class, 'store'])->name('definitions.store');
     Route::put('definitions/{definitionChecklist}', [DefinitionChecklistController::class, 'update'])->name('definitions.update');
     Route::delete('definitions/{definitionChecklist}', [DefinitionChecklistController::class, 'destroy'])->name('definitions.destroy');
+
+    // Roadmap
+    Route::get('roadmap', [RoadmapController::class, 'index'])->name('roadmap.index');
 
     // API-Route zum Laden von Features für ein Planning
     Route::post('api/planning-features', [CommitmentController::class, 'getFeaturesForPlanning'])
