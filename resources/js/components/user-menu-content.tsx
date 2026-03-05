@@ -67,7 +67,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                         <DropdownMenuItem asChild>
                             <Link
                                 className="block w-full"
-                                href={hasRoute('tenants.index') ? (route as any)('tenants.index') : '/tenants'}
+                                href={hasRoute('tenants.members') ? (route as any)('tenants.members') : '/tenants/members'}
                                 prefetch
                                 onClick={cleanup}
                             >

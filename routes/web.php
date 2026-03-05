@@ -163,6 +163,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Tenants: Übersicht, Wechsel, Einladungen
     Route::get('tenants', [TenantController::class, 'index'])->name('tenants.index');
+    Route::get('tenants/general', [TenantController::class, 'general'])->name('tenants.general');
+    Route::get('tenants/members', [TenantController::class, 'members'])->name('tenants.members');
     Route::post('tenants/{tenant}/switch', [TenantController::class, 'switch'])->name('tenants.switch');
 });
 

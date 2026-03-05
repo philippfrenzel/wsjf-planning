@@ -22,7 +22,7 @@ class TenantController extends Controller
         $this->middleware(['auth', 'verified'])->except('accept');
     }
 
-    public function index(): Response
+    private function sharedTenantData(): array
     {
         $user = Auth::user();
         $tenants = $user->tenants()
@@ -41,18 +41,34 @@ class TenantController extends Controller
                 },
             ])
             ->get(['id', 'name']);
+
         $invitations = TenantInvitation::where('email', $user->email)
             ->whereNull('accepted_at')
             ->select('id', 'tenant_id', 'email', 'token', 'expires_at')
             ->with('tenant:id,name')
             ->get();
 
-        return Inertia::render('tenants/index', [
+        return [
             'tenants' => $tenants,
             'ownedTenants' => $owned,
             'currentTenantId' => $user->current_tenant_id,
             'pendingInvitations' => $invitations,
-        ]);
+        ];
+    }
+
+    public function index(): RedirectResponse
+    {
+        return redirect()->route('tenants.members');
+    }
+
+    public function general(): Response
+    {
+        return Inertia::render('tenants/general', $this->sharedTenantData());
+    }
+
+    public function members(): Response
+    {
+        return Inertia::render('tenants/members', $this->sharedTenantData());
     }
 
     public function switch(Request $request, Tenant $tenant): RedirectResponse
