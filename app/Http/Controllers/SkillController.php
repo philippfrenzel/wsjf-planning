@@ -30,6 +30,7 @@ class SkillController extends Controller
                 ['key' => 'safe', 'label' => 'SAFe-Rollen', 'items' => $withExists(self::safeDefaults())],
                 ['key' => 'software', 'label' => 'Software Engineering', 'items' => $withExists(self::softwareDefaults())],
                 ['key' => 'data', 'label' => 'Data Engineering', 'items' => $withExists(self::dataDefaults())],
+                ['key' => 'security', 'label' => 'Security', 'items' => $withExists(self::securityDefaults())],
             ],
         ]);
     }
@@ -80,6 +81,7 @@ class SkillController extends Controller
             self::safeDefaults(),
             self::softwareDefaults(),
             self::dataDefaults(),
+            self::securityDefaults(),
         ))->keyBy('name');
 
         $inserted = 0;
@@ -98,6 +100,46 @@ class SkillController extends Controller
             ->with('success', $inserted > 0
                 ? "{$inserted} Skills wurden hinzugefügt."
                 : 'Alle ausgewählten Skills sind bereits vorhanden.');
+    }
+
+    public static function securityDefaults(): array
+    {
+        return [
+            // Governance & Compliance
+            ['name' => 'Chief Information Security Officer (CISO)', 'category' => 'Security Governance', 'description' => 'Strategische Verantwortung für Informationssicherheit, Risikomanagement und Security-Budget.'],
+            ['name' => 'Security Governance & Compliance', 'category' => 'Security Governance', 'description' => 'ISO 27001, SOC 2, TISAX, NIS2-Compliance und Audit-Management.'],
+            ['name' => 'Datenschutz (DSGVO/GDPR)', 'category' => 'Security Governance', 'description' => 'Datenschutz-Folgenabschätzungen, Verarbeitungsverzeichnisse und Betroffenenrechte.'],
+            ['name' => 'Risk Management', 'category' => 'Security Governance', 'description' => 'Risikobewertung, Bedrohungsmodellierung (STRIDE, DREAD) und Risikominimierung.'],
+            ['name' => 'Security Awareness Training', 'category' => 'Security Governance', 'description' => 'Schulungsprogramme, Phishing-Simulationen und Security-Kultur.'],
+
+            // Application Security
+            ['name' => 'Application Security (AppSec)', 'category' => 'Application Security', 'description' => 'Secure SDLC, OWASP Top 10, Security-Reviews und Threat Modeling.'],
+            ['name' => 'Secure Code Review', 'category' => 'Application Security', 'description' => 'Statische Code-Analyse (SAST), manuelle Code-Reviews und Schwachstellenbewertung.'],
+            ['name' => 'Penetration Testing', 'category' => 'Application Security', 'description' => 'Web-App-, API- und Infrastruktur-Pentests mit Burp Suite, OWASP ZAP, Metasploit.'],
+            ['name' => 'DevSecOps', 'category' => 'Application Security', 'description' => 'Security in CI/CD-Pipelines: SAST, DAST, SCA, Container-Scanning und Policy-as-Code.'],
+            ['name' => 'API Security', 'category' => 'Application Security', 'description' => 'OAuth 2.0, JWT-Sicherheit, Rate Limiting, API Gateway Security und OWASP API Top 10.'],
+
+            // Infrastructure & Cloud Security
+            ['name' => 'Cloud Security', 'category' => 'Infrastruktur-Security', 'description' => 'AWS/Azure/GCP-Sicherheit: IAM, VPC, Security Groups, KMS und Cloud-native Security.'],
+            ['name' => 'Network Security', 'category' => 'Infrastruktur-Security', 'description' => 'Firewalls, IDS/IPS, Zero Trust Architecture, VPN und Netzwerksegmentierung.'],
+            ['name' => 'Container & Kubernetes Security', 'category' => 'Infrastruktur-Security', 'description' => 'Image-Scanning, Pod Security Policies, RBAC, Network Policies und Runtime Security.'],
+            ['name' => 'Identity & Access Management (IAM)', 'category' => 'Infrastruktur-Security', 'description' => 'SSO, MFA, RBAC, ABAC, Privileged Access Management und Identity Federation.'],
+            ['name' => 'Secrets Management', 'category' => 'Infrastruktur-Security', 'description' => 'HashiCorp Vault, AWS Secrets Manager, Key Rotation und Secrets-in-Code-Prävention.'],
+
+            // Detection & Response
+            ['name' => 'Security Operations (SOC)', 'category' => 'Detection & Response', 'description' => 'Security Monitoring, SIEM-Betrieb (Splunk, Sentinel), Alert-Triage und Schichtbetrieb.'],
+            ['name' => 'Incident Response', 'category' => 'Detection & Response', 'description' => 'Incident-Handling-Prozesse, Forensik, Eskalation und Post-Incident-Reviews.'],
+            ['name' => 'Threat Intelligence', 'category' => 'Detection & Response', 'description' => 'Threat Feeds, IoC-Management, MITRE ATT&CK Framework und Threat Hunting.'],
+            ['name' => 'Digital Forensics', 'category' => 'Detection & Response', 'description' => 'Beweissicherung, Disk-/Memory-Forensik, Log-Analyse und Chain of Custody.'],
+            ['name' => 'Vulnerability Management', 'category' => 'Detection & Response', 'description' => 'Schwachstellen-Scanning (Nessus, Qualys), Patch-Management und CVE-Tracking.'],
+
+            // Spezialgebiete
+            ['name' => 'Cryptography', 'category' => 'Security-Spezialgebiete', 'description' => 'Verschlüsselung, Hashing, PKI, TLS/mTLS und kryptographische Protokolle.'],
+            ['name' => 'Red Teaming', 'category' => 'Security-Spezialgebiete', 'description' => 'Adversary Simulation, Social Engineering, Physical Security Testing und Purple Teaming.'],
+            ['name' => 'Supply Chain Security', 'category' => 'Security-Spezialgebiete', 'description' => 'SBOM, Dependency-Scanning, Sigstore, Software-Supply-Chain-Integrität.'],
+            ['name' => 'IoT / OT Security', 'category' => 'Security-Spezialgebiete', 'description' => 'Industrielle Steuerungssysteme (ICS/SCADA), Embedded Security und Firmware-Analyse.'],
+            ['name' => 'AI/ML Security', 'category' => 'Security-Spezialgebiete', 'description' => 'Adversarial ML, Prompt Injection, Model Security, Data Poisoning und AI Governance.'],
+        ];
     }
 
     public static function softwareDefaults(): array
