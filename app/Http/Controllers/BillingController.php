@@ -38,7 +38,9 @@ class BillingController extends Controller
         $stripeConfigured = !empty(config('cashier.secret'))
             && config('cashier.secret') !== 'sk_test_'
             && !empty(config('services.stripe.price_id'))
-            && config('services.stripe.price_id') !== 'price_';
+            && config('services.stripe.price_id') !== 'price_'
+            && str_starts_with(config('services.stripe.price_id'), 'price_')
+            && strlen(config('services.stripe.price_id')) > 10;
 
         return Inertia::render('billing/index', [
             'billingStatus'    => $billingStatus,
@@ -58,7 +60,12 @@ class BillingController extends Controller
         $priceId = config('services.stripe.price_id');
         if (empty($priceId) || $priceId === 'price_') {
             return redirect()->route('billing.index')
-                ->with('error', 'Stripe is not configured. Please set STRIPE_PRICE_ID in your environment.');
+                ->with('error', 'STRIPE_PRICE_ID ist nicht gesetzt. Bitte hinterlege eine gültige Stripe Price ID (beginnt mit price_...) in deiner Umgebungskonfiguration.');
+        }
+
+        if (!str_starts_with($priceId, 'price_') || strlen($priceId) < 10) {
+            return redirect()->route('billing.index')
+                ->with('error', "Ungültige STRIPE_PRICE_ID: \"{$priceId}\". Die Price ID muss mit \"price_\" beginnen. Hinweis: Eine Product ID (prod_...) ist nicht dasselbe wie eine Price ID.");
         }
 
         try {

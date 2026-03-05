@@ -75,7 +75,13 @@ export default function BillingPage({
                 {!stripeConfigured && (
                     <Alert>
                         <AlertDescription>
-                            Stripe ist noch nicht konfiguriert. Bitte setze <code className="font-mono text-xs bg-muted px-1 rounded">STRIPE_KEY</code>, <code className="font-mono text-xs bg-muted px-1 rounded">STRIPE_SECRET</code> und <code className="font-mono text-xs bg-muted px-1 rounded">STRIPE_PRICE_ID</code> in deiner Umgebungskonfiguration.
+                            Stripe ist noch nicht vollständig konfiguriert. Bitte stelle sicher, dass folgende Umgebungsvariablen gesetzt sind:
+                            <ul className="mt-2 list-disc list-inside text-sm space-y-1">
+                                <li><code className="font-mono text-xs bg-muted px-1 rounded">STRIPE_KEY</code> — Publishable Key (pk_...)</li>
+                                <li><code className="font-mono text-xs bg-muted px-1 rounded">STRIPE_SECRET</code> — Secret Key (sk_...)</li>
+                                <li><code className="font-mono text-xs bg-muted px-1 rounded">STRIPE_PRICE_ID</code> — <strong>Price ID</strong> (price_...), nicht die Product ID (prod_...)</li>
+                            </ul>
+                            <p className="mt-2 text-xs text-muted-foreground">Die Price ID findest du im Stripe Dashboard unter Produkte → dein Produkt → Preise.</p>
                         </AlertDescription>
                     </Alert>
                 )}
