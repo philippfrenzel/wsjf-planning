@@ -21,6 +21,7 @@ class UpdatePlanningRequest extends FormRequest
             'project_id' => ['required', Rule::exists('projects', 'id')->where('tenant_id', $tenantId)],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'vision' => ['nullable', 'string', 'max:5000'],
             'planned_at' => ['nullable', 'date'],
             'executed_at' => ['nullable', 'date'],
             'owner_id' => ['nullable', Rule::exists('tenant_user', 'user_id')->where('tenant_id', $tenantId)],

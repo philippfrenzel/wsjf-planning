@@ -15,6 +15,8 @@ class FeatureDependency extends Model
         'feature_id',
         'related_feature_id',
         'type',
+        'is_external',
+        'external_description',
         'tenant_id',
     ];
 

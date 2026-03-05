@@ -30,6 +30,7 @@ class Planning extends Model
         'created_by',    // ID des Users, der das Planning erstellt hat
         'owner_id',      // ID des Hauptverantwortlichen
         'deputy_id',     // ID des Stellvertreters
+        'vision',        // PI Vision
         // weitere Felder nach Bedarf
         'tenant_id',
         'status',

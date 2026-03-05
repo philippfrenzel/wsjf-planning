@@ -73,12 +73,13 @@ interface Planning {
     id: number;
     title: string;
     description: string;
+    vision?: string | null;
     planned_at: string;
     executed_at: string;
     project?: Project;
-    stakeholders: Stakeholder[]; // Geändert zu Stakeholder statt User
+    stakeholders: Stakeholder[];
     features?: Feature[];
-    creator?: User; // Für Ersteller-Angabe
+    creator?: User;
 }
 
 // WSJF score computed on-the-fly from commonvotes
@@ -782,6 +783,12 @@ export default function Show({ planning, stakeholders, piObjectives, iterations,
                         <CardTitle>{planning.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
+                        {planning.vision && (
+                            <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">
+                                <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">PI Vision</div>
+                                <div className="whitespace-pre-line text-sm">{planning.vision}</div>
+                            </div>
+                        )}
                         {canManage && (
                             <div className="mb-6">
                                 <VoteProgressCard stakeholders={stakeholders} />

@@ -20,6 +20,7 @@ class StorePlanningRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'vision' => ['nullable', 'string', 'max:5000'],
             'project_id' => ['required', Rule::exists('projects', 'id')->where('tenant_id', $tenantId)],
             'planned_at' => ['nullable', 'date'],
             'executed_at' => ['nullable', 'date'],

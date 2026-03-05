@@ -41,6 +41,7 @@ interface Planning {
     project_id: number;
     title: string;
     description: string;
+    vision?: string | null;
     planned_at?: string;
     executed_at?: string;
     stakeholders: User[];
@@ -84,6 +85,7 @@ export default function Edit({
         project_id: planning.project_id ? String(planning.project_id) : '',
         title: planning.title || '',
         description: planning.description || '',
+        vision: planning.vision || '',
         planned_at: formatDateForInput(planning.planned_at),
         executed_at: formatDateForInput(planning.executed_at),
         owner_id: planning.owner_id ? String(planning.owner_id) : '',
@@ -124,7 +126,7 @@ export default function Edit({
     );
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setData(e.target.name as 'title' | 'description' | 'planned_at' | 'executed_at', e.target.value);
+        setData(e.target.name as 'title' | 'description' | 'vision' | 'planned_at' | 'executed_at', e.target.value);
     };
 
     const handleSelectChange = (field: 'project_id' | 'owner_id' | 'deputy_id' | 'status', value: string) => {
@@ -226,6 +228,12 @@ export default function Edit({
                                     <Label htmlFor="description">Beschreibung</Label>
                                     <Textarea id="description" name="description" value={data.description} onChange={handleChange} />
                                     {errors.description && <InputError message={errors.description} className="mt-1" />}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="vision">PI Vision</Label>
+                                    <Textarea id="vision" name="vision" value={data.vision} onChange={handleChange} placeholder="Outcome-orientierte Vision für dieses PI" rows={3} />
+                                    {errors.vision && <InputError message={errors.vision} className="mt-1" />}
                                 </div>
 
                                 <div>
