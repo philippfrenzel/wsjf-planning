@@ -24,6 +24,7 @@ use App\Http\Controllers\IterationController;
 use App\Http\Controllers\RiskController;
 use App\Http\Controllers\CapacityController;
 use App\Http\Controllers\DefinitionChecklistController;
+use App\Http\Controllers\SkillController;
 use App\Http\Controllers\RoadmapController;
 
 Route::get('/', function () {
@@ -71,6 +72,8 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     Route::resource('projects', ProjectController::class);
     Route::resource('plannings', PlanningController::class);
     Route::resource('teams', TeamController::class);
+    Route::put('teams/{team}/member-skills', [TeamController::class, 'updateMemberSkills'])->name('teams.member-skills.update');
+    Route::resource('skills', SkillController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('features/board', [FeatureController::class, 'board'])->name('features.board');
     Route::post('features/{feature}/status', [FeatureController::class, 'updateStatus'])->name('features.status.update');
     Route::get('features/lineage', [FeatureController::class, 'lineage'])->name('features.lineage');

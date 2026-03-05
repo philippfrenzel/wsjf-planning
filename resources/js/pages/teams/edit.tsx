@@ -1,14 +1,17 @@
 import InputError from '@/components/input-error';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { useForm } from '@inertiajs/react';
-import { LoaderCircle, Save, X } from 'lucide-react';
+import { router, useForm } from '@inertiajs/react';
+import { LoaderCircle, Save, X, Zap } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
+import { useState } from 'react';
 
 interface User {
     id: number;
@@ -16,14 +19,39 @@ interface User {
     email: string;
 }
 
+interface SkillOption {
+    id: number;
+    name: string;
+    category: string | null;
+}
+
+interface MemberSkill {
+    id: number;
+    name: string;
+    pivot: { level: string };
+}
+
+interface Member {
+    id: number;
+    name: string;
+    email: string;
+    skills?: MemberSkill[];
+}
+
 interface Team {
     id: number;
     name: string;
     description: string | null;
-    members: { id: number; name: string; email: string }[];
+    members: Member[];
 }
 
-export default function Edit({ team, users }: { team: Team; users: User[] }) {
+const LEVELS = [
+    { value: 'basic', label: 'Grundkenntnisse' },
+    { value: 'intermediate', label: 'Fortgeschritten' },
+    { value: 'expert', label: 'Experte' },
+];
+
+export default function Edit({ team, users, skills }: { team: Team; users: User[]; skills: SkillOption[] }) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Startseite', href: '/' },
         { title: 'Teams', href: '/teams' },
@@ -36,6 +64,19 @@ export default function Edit({ team, users }: { team: Team; users: User[] }) {
         members: team.members.map((m) => m.id),
     });
 
+    // Track member skills locally: { [userId]: { [skillId]: level } }
+    const [memberSkills, setMemberSkills] = useState<Record<number, Record<number, string>>>(() => {
+        const init: Record<number, Record<number, string>> = {};
+        for (const m of team.members) {
+            init[m.id] = {};
+            for (const s of m.skills ?? []) {
+                init[m.id][s.id] = s.pivot.level;
+            }
+        }
+        return init;
+    });
+    const [savingSkills, setSavingSkills] = useState(false);
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         put(route('teams.update', team.id));
@@ -47,9 +88,44 @@ export default function Edit({ team, users }: { team: Team; users: User[] }) {
             : [...data.members, userId]);
     }
 
+    function toggleSkill(userId: number, skillId: number) {
+        setMemberSkills((prev) => {
+            const userSkills = { ...prev[userId] };
+            if (userSkills[skillId]) {
+                delete userSkills[skillId];
+            } else {
+                userSkills[skillId] = 'basic';
+            }
+            return { ...prev, [userId]: userSkills };
+        });
+    }
+
+    function setSkillLevel(userId: number, skillId: number, level: string) {
+        setMemberSkills((prev) => ({
+            ...prev,
+            [userId]: { ...prev[userId], [skillId]: level },
+        }));
+    }
+
+    function saveSkills() {
+        setSavingSkills(true);
+        const payload = {
+            member_skills: data.members.map((userId) => ({
+                user_id: userId,
+                skill_ids: Object.keys(memberSkills[userId] ?? {}).map(Number),
+                levels: memberSkills[userId] ?? {},
+            })),
+        };
+        router.put(route('teams.member-skills.update', team.id), payload as never, {
+            onFinish: () => setSavingSkills(false),
+        });
+    }
+
+    const selectedMembers = users.filter((u) => data.members.includes(u.id));
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <div className="mx-auto w-full max-w-2xl p-5">
+            <div className="mx-auto w-full max-w-3xl space-y-6 p-5">
                 <Card>
                     <CardHeader>
                         <CardTitle>Team bearbeiten</CardTitle>
@@ -93,7 +169,67 @@ export default function Edit({ team, users }: { team: Team; users: User[] }) {
                         </form>
                     </CardContent>
                 </Card>
+
+                {/* Skill assignment per member */}
+                {skills.length > 0 && selectedMembers.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Zap className="h-5 w-5" /> Skills pro Mitglied
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {selectedMembers.map((member) => {
+                                const userSkills = memberSkills[member.id] ?? {};
+                                return (
+                                    <div key={member.id} className="rounded-md border p-3">
+                                        <div className="mb-2 font-medium">{member.name}</div>
+                                        <div className="flex flex-wrap gap-x-4 gap-y-2">
+                                            {skills.map((skill) => {
+                                                const assigned = !!userSkills[skill.id];
+                                                return (
+                                                    <div key={skill.id} className="flex items-center gap-1.5">
+                                                        <Checkbox
+                                                            checked={assigned}
+                                                            onCheckedChange={() => toggleSkill(member.id, skill.id)}
+                                                        />
+                                                        <span className="text-sm">{skill.name}</span>
+                                                        {skill.category && (
+                                                            <Badge variant="outline" className="text-[10px] px-1">{skill.category}</Badge>
+                                                        )}
+                                                        {assigned && (
+                                                            <Select
+                                                                value={userSkills[skill.id]}
+                                                                onValueChange={(v) => setSkillLevel(member.id, skill.id, v)}
+                                                            >
+                                                                <SelectTrigger className="h-6 w-[130px] text-xs">
+                                                                    <SelectValue />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {LEVELS.map((l) => (
+                                                                        <SelectItem key={l.value} value={l.value} className="text-xs">
+                                                                            {l.label}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            <Button onClick={saveSkills} disabled={savingSkills}>
+                                {savingSkills ? <LoaderCircle className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
+                                Skills speichern
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </AppLayout>
     );
 }
+

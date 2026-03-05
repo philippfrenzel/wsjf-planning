@@ -89,6 +89,13 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, 'skill_user')
+            ->withPivot('level')
+            ->withTimestamps();
+    }
+
     /**
      * Tenants, in denen der User Mitglied ist.
      */
