@@ -79,9 +79,16 @@
 
   "pricing_eyebrow": "Preise",
   "pricing_title": "Einfache Pro-Seat-Preise. Keine Überraschungen.",
-  "pricing_text": "Starte mit einer 14-tägigen kostenlosen Testphase. Keine Kreditkarte erforderlich. Skaliere mit deinem Team.",
+  "pricing_plan_name": "Team-Plan",
+  "pricing_per_user": "Benutzer / Monat",
+  "pricing_feat_trial": "14 Tage kostenlose Testphase",
+  "pricing_feat_all": "Alle Funktionen inbegriffen",
+  "pricing_feat_cancel": "Jederzeit kündbar",
+  "pricing_feat_sso": "Google SSO inklusive",
+  "pricing_feat_teams": "Unbegrenzte Teams & Projekte",
+  "pricing_feat_nocc": "Keine Kreditkarte zum Start nötig",
   "pricing_cta": "Kostenlos starten",
-  "pricing_note": "Pro-Seat-Abo · Jederzeit kündbar · SSO im Enterprise-Plan verfügbar",
+  "pricing_note": "Monatliche Abrechnung pro aktivem Seat · Kein Lock-in",
 
   "security_eyebrow": "Enterprise-Grade Sicherheit",
   "security_title": "Entwickelt für Organisationen, denen Datensicherheit wichtig ist.",

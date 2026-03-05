@@ -79,9 +79,16 @@
 
   "pricing_eyebrow": "Pricing",
   "pricing_title": "Simple per-seat pricing. No surprises.",
-  "pricing_text": "Start with a 14-day free trial. No credit card required. Scale as your team grows.",
+  "pricing_plan_name": "Team Plan",
+  "pricing_per_user": "User / Month",
+  "pricing_feat_trial": "14-day free trial",
+  "pricing_feat_all": "All features included",
+  "pricing_feat_cancel": "Cancel anytime",
+  "pricing_feat_sso": "Google SSO included",
+  "pricing_feat_teams": "Unlimited teams & projects",
+  "pricing_feat_nocc": "No credit card required to start",
   "pricing_cta": "Start Free Trial",
-  "pricing_note": "Per-seat subscription · Cancel anytime · SSO available on Enterprise plan",
+  "pricing_note": "Billed monthly per active seat · No lock-in",
 
   "security_eyebrow": "Enterprise-Grade Security",
   "security_title": "Built for organizations that care about data.",

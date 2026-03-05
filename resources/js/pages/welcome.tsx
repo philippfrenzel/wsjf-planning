@@ -210,19 +210,35 @@ export default function Welcome() {
                 </div>
             </section>
 
-            {/* PRICING TEASER */}
+            {/* PRICING */}
             <section className="bg-[#0f172a] py-20">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-                    <span className="text-xs font-semibold uppercase tracking-widest text-indigo-400">{t('pricing_eyebrow')}</span>
-                    <h2 className="mt-3 text-3xl lg:text-4xl font-bold text-white">{t('pricing_title')}</h2>
-                    <p className="mt-4 text-lg text-slate-300 max-w-xl mx-auto">{t('pricing_text')}</p>
-                    <Link
-                        href={route('register')}
-                        className="mt-8 inline-block rounded-lg bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/25"
-                    >
-                        {t('pricing_cta')}
-                    </Link>
-                    <p className="mt-4 text-sm text-slate-500">{t('pricing_note')}</p>
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-12">
+                        <span className="text-xs font-semibold uppercase tracking-widest text-indigo-400">{t('pricing_eyebrow')}</span>
+                        <h2 className="mt-3 text-3xl lg:text-4xl font-bold text-white">{t('pricing_title')}</h2>
+                    </div>
+                    <div className="mx-auto max-w-md rounded-2xl border border-indigo-500/30 bg-gradient-to-b from-slate-800 to-slate-900 p-8 text-center shadow-xl">
+                        <p className="text-sm font-medium uppercase tracking-widest text-indigo-400">{t('pricing_plan_name')}</p>
+                        <div className="mt-4 flex items-baseline justify-center gap-1">
+                            <span className="text-5xl font-bold text-white">CHF 1</span>
+                            <span className="text-slate-400">/ {t('pricing_per_user')}</span>
+                        </div>
+                        <ul className="mt-8 space-y-3 text-left text-sm text-slate-300">
+                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-indigo-400 shrink-0" />{t('pricing_feat_trial')}</li>
+                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-indigo-400 shrink-0" />{t('pricing_feat_all')}</li>
+                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-indigo-400 shrink-0" />{t('pricing_feat_cancel')}</li>
+                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-indigo-400 shrink-0" />{t('pricing_feat_sso')}</li>
+                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-indigo-400 shrink-0" />{t('pricing_feat_teams')}</li>
+                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-indigo-400 shrink-0" />{t('pricing_feat_nocc')}</li>
+                        </ul>
+                        <Link
+                            href={route('register')}
+                            className="mt-8 inline-block w-full rounded-lg bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/25"
+                        >
+                            {t('pricing_cta')}
+                        </Link>
+                        <p className="mt-4 text-xs text-slate-500">{t('pricing_note')}</p>
+                    </div>
                 </div>
             </section>
 

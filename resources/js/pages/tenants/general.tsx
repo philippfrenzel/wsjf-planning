@@ -30,7 +30,7 @@ export default function TenantGeneral({
     const { currentRole, isSuperAdmin } = page.props.auth;
     const isAdmin = currentRole === 'Admin' || !!isSuperAdmin;
     const currentTenantId = page.props.auth.currentTenant?.id ?? null;
-    const seatUnitPriceUsd = Number((page.props.billing as { seatUnitPriceUsd?: number } | undefined)?.seatUnitPriceUsd ?? 1);
+    const seatUnitPrice = Number((page.props.billing as { seatUnitPriceUsd?: number } | undefined)?.seatUnitPriceUsd ?? 1);
 
     const currentOwned = ownedTenants.find((t) => t.id === currentTenantId);
     const members = currentOwned?.members ?? [];
@@ -92,10 +92,10 @@ export default function TenantGeneral({
                                     <div>
                                         <p className="text-muted-foreground">Monatliche Kosten</p>
                                         <p className="text-2xl font-semibold">
-                                            ${members.length * seatUnitPriceUsd}
+                                            CHF {members.length * seatUnitPrice}
                                         </p>
                                         <p className="text-muted-foreground text-xs">
-                                            {members.length} × ${seatUnitPriceUsd} pro Seat
+                                            {members.length} × CHF {seatUnitPrice} pro Seat
                                         </p>
                                     </div>
                                 </div>

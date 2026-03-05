@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { type BreadcrumbItem } from '@/types';
+import { CheckCircle2 } from 'lucide-react';
 
 interface BillingPageProps {
     billingStatus: 'active' | 'trial' | 'inactive' | 'no_tenant';
@@ -27,13 +28,13 @@ export default function BillingPage({
     successMessage,
     stripeConfigured = true,
 }: BillingPageProps) {
-    const seatUnitPriceUsd = Number((usePage().props as { billing?: { seatUnitPriceUsd?: number } }).billing?.seatUnitPriceUsd ?? 1);
+    const seatUnitPrice = Number((usePage().props as { billing?: { seatUnitPriceUsd?: number } }).billing?.seatUnitPriceUsd ?? 1);
     const flash = (usePage().props as { flash?: { error?: string } }).flash;
     const statusLabel = {
-        active: 'Active',
-        trial: `Free Trial${trialDaysLeft !== null ? ` (${trialDaysLeft} days left)` : ''}`,
-        inactive: 'Inactive',
-        no_tenant: 'No Tenant',
+        active: 'Aktiv',
+        trial: `Testphase${trialDaysLeft !== null ? ` (noch ${trialDaysLeft} Tage)` : ''}`,
+        inactive: 'Inaktiv',
+        no_tenant: 'Keine Organisation',
     }[billingStatus];
 
     const statusVariant = {
@@ -48,13 +49,13 @@ export default function BillingPage({
             <Head title="Billing" />
             <div className="flex flex-col gap-6 p-6">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold">Billing & Subscription</h1>
+                    <h1 className="text-2xl font-semibold">Abonnement & Abrechnung</h1>
                 </div>
 
                 {upgradePrompt && billingStatus !== 'active' && (
                     <Alert variant="destructive">
                         <AlertDescription>
-                            Your subscription is inactive. Subscribe to access all features.
+                            Dein Abonnement ist inaktiv. Abonniere, um alle Funktionen nutzen zu können.
                         </AlertDescription>
                     </Alert>
                 )}
@@ -79,42 +80,66 @@ export default function BillingPage({
                     </Alert>
                 )}
 
+                {/* Pricing Card */}
+                <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Preismodell</CardTitle>
+                        <CardDescription>Einfach, transparent und fair.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-4xl font-bold text-indigo-600">CHF {seatUnitPrice}</span>
+                            <span className="text-muted-foreground text-sm">/ Benutzer / Monat</span>
+                        </div>
+                        <ul className="mt-4 space-y-2 text-sm text-slate-600">
+                            <li className="flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                14 Tage kostenlose Testphase
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                Alle Funktionen inbegriffen
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                Jederzeit kündbar
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                Keine versteckten Kosten
+                            </li>
+                        </ul>
+                    </CardContent>
+                </Card>
+
+                {/* Status Card */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-3">
-                            Subscription Status
+                            Abonnement-Status
                             <Badge variant={statusVariant}>{statusLabel}</Badge>
                         </CardTitle>
                         <CardDescription>
                             {billingStatus === 'trial' && trialEndsAt &&
-                                `Your free trial ends on ${new Date(trialEndsAt).toLocaleDateString()}.`}
+                                `Deine kostenlose Testphase endet am ${new Date(trialEndsAt).toLocaleDateString('de-CH')}.`}
                             {billingStatus === 'active' &&
-                                `Your subscription is active. Pricing is $${seatUnitPriceUsd} per user per month.`}
+                                `Dein Abonnement ist aktiv. CHF ${seatUnitPrice} pro Benutzer pro Monat.`}
                             {billingStatus === 'inactive' &&
-                                `Your trial has ended or subscription is cancelled. Subscribe to continue using the app at $${seatUnitPriceUsd} per user per month.`}
+                                `Deine Testphase ist abgelaufen oder das Abonnement wurde gekündigt.`}
+                            {billingStatus === 'no_tenant' &&
+                                'Erstelle zuerst eine Organisation, um ein Abonnement abzuschliessen.'}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-                            <p className="font-medium text-slate-900">Kostenmodell</p>
-                            <p>
-                                Monatliche Kosten = Anzahl aktiver Teammitglieder × ${seatUnitPriceUsd}.
-                            </p>
-                        </div>
                         <div className="flex gap-3">
-                        {billingStatus !== 'active' && (
+                        {billingStatus !== 'active' && billingStatus !== 'no_tenant' && (
                             <Button asChild disabled={!stripeConfigured}>
-                                <Link href="/billing/checkout">Subscribe Now</Link>
+                                <Link href="/billing/checkout">Jetzt abonnieren</Link>
                             </Button>
                         )}
                         {billingStatus === 'active' && (
                             <Button variant="outline" asChild disabled={!stripeConfigured}>
-                                <Link href="/billing/portal">Manage Billing</Link>
-                            </Button>
-                        )}
-                        {billingStatus === 'trial' && (
-                            <Button variant="outline" asChild disabled={!stripeConfigured}>
-                                <Link href="/billing/checkout">Add Payment Method</Link>
+                                <Link href="/billing/portal">Abonnement verwalten</Link>
                             </Button>
                         )}
                         </div>
