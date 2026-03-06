@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DefinitionTemplate;
 use App\Models\Project;
 use App\Models\Skill;
 use App\Models\Team;
@@ -137,10 +138,15 @@ class ProjectController extends Controller
         }
 
         return Inertia::render('projects/edit', [
-            'project' => $project->load(['teams:id,name', 'requiredSkills']),
+            'project' => $project->load(['teams:id,name', 'requiredSkills', 'definitionTemplates:id,type,title']),
             'users' => User::whereHas('tenants', fn($q) => $q->where('tenants.id', $tenantId))->get(['id', 'name']),
             'teams' => Team::where('tenant_id', $tenantId)->orderBy('name')->get(['id', 'name']),
             'skills' => Skill::where('tenant_id', $tenantId)->orderBy('category')->orderBy('name')->get(['id', 'name', 'category']),
+            'definitionTemplates' => DefinitionTemplate::where('tenant_id', $tenantId)
+                ->where('is_active', true)
+                ->orderBy('type')
+                ->orderBy('title')
+                ->get(['id', 'type', 'title']),
             'currentStatus' => [
                 'name' => $currentStatus['name'] ?? 'In Planung',
                 'color' => $currentStatus['color'] ?? 'bg-blue-100 text-blue-800',
@@ -172,11 +178,16 @@ class ProjectController extends Controller
             'skill_requirements' => ['sometimes', 'array'],
             'skill_requirements.*.skill_id' => ['required', 'exists:skills,id'],
             'skill_requirements.*.level' => ['required', 'in:basic,intermediate,expert'],
+            'definition_template_ids' => ['sometimes', 'array'],
+            'definition_template_ids.*' => ['integer', 'exists:definition_templates,id'],
         ]);
 
         $teamIds = $validated['team_ids'] ?? [];
         unset($validated['team_ids']);
         $skillRequirements = $validated['skill_requirements'] ?? [];
+        unset($validated['skill_requirements']);
+        $templateIds = $validated['definition_template_ids'] ?? [];
+        unset($validated['definition_template_ids']);
         unset($validated['skill_requirements']);
 
         $newStatus = $validated['new_status'] ?? null;
@@ -204,6 +215,7 @@ class ProjectController extends Controller
             $syncData[$req['skill_id']] = ['level' => $req['level']];
         }
         $project->requiredSkills()->sync($syncData);
+        $project->definitionTemplates()->sync($templateIds);
 
         return redirect()->route('projects.index')->with('success', 'Projekt erfolgreich aktualisiert.');
     }

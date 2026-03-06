@@ -42,7 +42,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Templates', href: '#' },
 ];
 
-export default function Index({ templates, projects }: { templates: Template[]; projects: ProjectOption[] }) {
+export default function Index({ templates }: { templates: Template[] }) {
     const confirm = useConfirm();
     const [editDialog, setEditDialog] = useState<{ open: boolean; template: Template | null }>({ open: false, template: null });
     const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
@@ -52,7 +52,6 @@ export default function Index({ templates, projects }: { templates: Template[]; 
         description: '',
         body: '',
         is_active: true,
-        project_ids: [] as number[],
     });
 
     const dorTemplates = templates.filter((t) => t.type === 'dor');
@@ -60,7 +59,7 @@ export default function Index({ templates, projects }: { templates: Template[]; 
     const ustTemplates = templates.filter((t) => t.type === 'ust');
 
     const openCreate = (type: TemplateType) => {
-        setForm({ type, title: '', description: '', body: '', is_active: true, project_ids: [] });
+        setForm({ type, title: '', description: '', body: '', is_active: true });
         setEditDialog({ open: true, template: null });
     };
 
@@ -71,16 +70,8 @@ export default function Index({ templates, projects }: { templates: Template[]; 
             description: template.description || '',
             body: template.body || '',
             is_active: template.is_active,
-            project_ids: template.projects.map((p) => p.id),
         });
         setEditDialog({ open: true, template });
-    };
-
-    const toggleProject = (id: number) => {
-        setForm((f) => ({
-            ...f,
-            project_ids: f.project_ids.includes(id) ? f.project_ids.filter((p) => p !== id) : [...f.project_ids, id],
-        }));
     };
 
     const submit = () => {
@@ -90,7 +81,6 @@ export default function Index({ templates, projects }: { templates: Template[]; 
             description: form.description || '',
             body: form.body,
             is_active: form.is_active,
-            project_ids: form.project_ids as unknown as string,
         };
 
         if (editDialog.template) {
@@ -258,30 +248,6 @@ export default function Index({ templates, projects }: { templates: Template[]; 
                                     height={350}
                                 />
                             </div>
-                            {projects.length > 0 && (
-                                <div>
-                                    <Label>Projekt-Zuweisung</Label>
-                                    <div className="mt-2 flex flex-wrap gap-2">
-                                        {projects.map((p) => (
-                                            <button
-                                                key={p.id}
-                                                type="button"
-                                                onClick={() => toggleProject(p.id)}
-                                                className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                                                    form.project_ids.includes(p.id)
-                                                        ? 'border-primary bg-primary text-primary-foreground'
-                                                        : 'border-input bg-background hover:bg-accent'
-                                                }`}
-                                            >
-                                                {p.name}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                        Klicken um Projekte zuzuweisen. Ohne Auswahl gilt das Template für alle.
-                                    </p>
-                                </div>
-                            )}
                         </div>
                         <DialogFooter className="shrink-0">
                             <Button variant="outline" onClick={() => setEditDialog({ open: false, template: null })}>Abbrechen</Button>

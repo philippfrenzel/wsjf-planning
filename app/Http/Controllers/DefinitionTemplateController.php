@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\DefinitionTemplate;
-use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -20,13 +19,8 @@ class DefinitionTemplateController extends Controller
             ->orderBy('title')
             ->get();
 
-        $projects = Project::where('tenant_id', $tenantId)
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
         return Inertia::render('definitions/index', [
             'templates' => $templates,
-            'projects' => $projects,
         ]);
     }
 
@@ -37,21 +31,12 @@ class DefinitionTemplateController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'body' => ['required', 'string'],
-            'project_ids' => ['nullable', 'array'],
-            'project_ids.*' => ['integer', 'exists:projects,id'],
         ]);
 
-        $projectIds = $validated['project_ids'] ?? [];
-        unset($validated['project_ids']);
-
-        $template = DefinitionTemplate::create([
+        DefinitionTemplate::create([
             'tenant_id' => Auth::user()->current_tenant_id,
             ...$validated,
         ]);
-
-        if (! empty($projectIds)) {
-            $template->projects()->sync($projectIds);
-        }
 
         return redirect()->back()->with('success', 'Template erstellt.');
     }
@@ -64,15 +49,9 @@ class DefinitionTemplateController extends Controller
             'description' => ['nullable', 'string'],
             'body' => ['required', 'string'],
             'is_active' => ['boolean'],
-            'project_ids' => ['nullable', 'array'],
-            'project_ids.*' => ['integer', 'exists:projects,id'],
         ]);
 
-        $projectIds = $validated['project_ids'] ?? [];
-        unset($validated['project_ids']);
-
         $definitionTemplate->update($validated);
-        $definitionTemplate->projects()->sync($projectIds);
 
         return redirect()->back()->with('success', 'Template aktualisiert.');
     }

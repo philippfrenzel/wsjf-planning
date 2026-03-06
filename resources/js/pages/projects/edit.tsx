@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useForm } from '@inertiajs/react';
-import { ClipboardList, LoaderCircle, Save, X, Zap } from 'lucide-react';
+import { ClipboardList, FileText, LoaderCircle, Save, X, Zap } from 'lucide-react';
 import React from 'react';
 
 interface User {
@@ -32,6 +32,7 @@ interface Project {
     deputy_leader_id: string;
     teams?: { id: number; name: string }[];
     required_skills?: { id: number; name: string; category: string | null; pivot: { level: string } }[];
+    definition_templates?: { id: number; type: string; title: string }[];
 }
 
 interface StatusOption {
@@ -51,6 +52,18 @@ interface TeamOption {
     name: string;
 }
 
+interface TemplateOption {
+    id: number;
+    type: 'dor' | 'dod' | 'ust';
+    title: string;
+}
+
+const TEMPLATE_TYPE_LABELS: Record<string, string> = {
+    dor: 'Definition of Ready (DoR)',
+    dod: 'Definition of Done (DoD)',
+    ust: 'User Story Template',
+};
+
 interface EditProps {
     project: Project;
     users: User[];
@@ -58,9 +71,10 @@ interface EditProps {
     skills: SkillOption[];
     currentStatus: CurrentStatus;
     statusOptions: StatusOption[];
+    definitionTemplates: TemplateOption[];
 }
 
-export default function Edit({ project, users, teams, skills, currentStatus, statusOptions }: EditProps) {
+export default function Edit({ project, users, teams, skills, currentStatus, statusOptions, definitionTemplates }: EditProps) {
     // Breadcrumbs definieren
     const breadcrumbs = [
         { title: 'Startseite', href: '/' },
@@ -84,6 +98,7 @@ export default function Edit({ project, users, teams, skills, currentStatus, sta
             skill_id: s.id,
             level: s.pivot.level,
         })) as SkillRequirement[],
+        definition_template_ids: (project.definition_templates || []).map((t) => t.id),
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -146,6 +161,15 @@ export default function Edit({ project, users, teams, skills, currentStatus, sta
                                     {data.skill_requirements.length > 0 && (
                                         <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 text-[10px]">
                                             {data.skill_requirements.length}
+                                        </Badge>
+                                    )}
+                                </TabsTrigger>
+                                <TabsTrigger value="templates" className="gap-1.5">
+                                    <FileText className="h-4 w-4" />
+                                    Templates
+                                    {data.definition_template_ids.length > 0 && (
+                                        <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 text-[10px]">
+                                            {data.definition_template_ids.length}
                                         </Badge>
                                     )}
                                 </TabsTrigger>
@@ -294,6 +318,52 @@ export default function Edit({ project, users, teams, skills, currentStatus, sta
                                     onToggle={toggleSkillRequirement}
                                     onLevelChange={setSkillLevel}
                                 />
+                            </TabsContent>
+
+                            <TabsContent value="templates" className="mt-4">
+                                {definitionTemplates.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">Keine aktiven Templates vorhanden. Bitte erstellen Sie Templates unter &quot;Templates&quot;.</p>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {(['dor', 'dod', 'ust'] as const).map((type) => {
+                                            const items = definitionTemplates.filter((t) => t.type === type);
+                                            if (items.length === 0) return null;
+                                            return (
+                                                <div key={type}>
+                                                    <Label className="text-sm font-semibold">{TEMPLATE_TYPE_LABELS[type]}</Label>
+                                                    <div className="mt-2 flex flex-wrap gap-2">
+                                                        {items.map((t) => {
+                                                            const selected = data.definition_template_ids.includes(t.id);
+                                                            return (
+                                                                <button
+                                                                    key={t.id}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setData('definition_template_ids',
+                                                                            selected
+                                                                                ? data.definition_template_ids.filter((id) => id !== t.id)
+                                                                                : [...data.definition_template_ids, t.id]
+                                                                        );
+                                                                    }}
+                                                                    className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                                                                        selected
+                                                                            ? 'border-primary bg-primary text-primary-foreground'
+                                                                            : 'border-input bg-background hover:bg-accent'
+                                                                    }`}
+                                                                >
+                                                                    {t.title}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                        <p className="text-xs text-muted-foreground">
+                                            Wählen Sie die Templates, die für dieses Projekt gelten sollen (DoR, DoD, User Story).
+                                        </p>
+                                    </div>
+                                )}
                             </TabsContent>
                         </Tabs>
 
