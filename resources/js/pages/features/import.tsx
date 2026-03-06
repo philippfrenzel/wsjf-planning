@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import AppLayout from '@/layouts/app-layout';
 import { Link, useForm } from '@inertiajs/react';
-import { CheckCircle2, FileSpreadsheet, LoaderCircle, Save, X } from 'lucide-react';
+import { CheckCircle2, ClipboardCopy, FileSpreadsheet, LoaderCircle, Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 
 interface PageProps {
@@ -78,6 +78,48 @@ function parsePreview(text: string, delimiter: string, maxRows = 10): string[][]
 }
 
 type MappingTarget = 'ignore' | 'jira_key' | 'name' | 'description';
+
+const JQL_QUERY = `project = "DEIN-PROJEKT" AND issuetype IN (Story, Task, Bug) AND sprint IN openSprints() ORDER BY rank ASC`;
+
+function JqlSnippet() {
+    const [copied, setCopied] = useState(false);
+
+    function copyToClipboard() {
+        navigator.clipboard.writeText(JQL_QUERY).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    }
+
+    return (
+        <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/30">
+            <CardHeader className="pb-2">
+                <CardTitle className="text-base">💡 Tipp: Vorgänge aus Jira exportieren</CardTitle>
+                <CardDescription>
+                    Nutze folgendes JQL in Jira unter <span className="font-semibold">Vorgänge &gt; Erweiterte Suche</span>, um eine
+                    Vorgangsliste zu erzeugen. Danach kannst du über <span className="font-semibold">Export &gt; CSV (alle Felder)</span> die
+                    Datei herunterladen.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                <div className="relative">
+                    <pre className="overflow-x-auto rounded-md border bg-white p-3 text-xs leading-relaxed dark:bg-gray-900">
+                        {JQL_QUERY}
+                    </pre>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Button type="button" variant="outline" size="sm" onClick={copyToClipboard} className="gap-1.5">
+                        <ClipboardCopy className="h-3.5 w-3.5" />
+                        {copied ? 'Kopiert!' : 'JQL kopieren'}
+                    </Button>
+                    <span className="text-muted-foreground text-xs">
+                        Ersetze <code className="rounded bg-muted px-1 font-mono text-[11px]">DEIN-PROJEKT</code> durch deinen Jira-Projektschlüssel.
+                    </span>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 export default function Import({ project }: PageProps) {
     const { data, setData, post, processing, progress } = useForm<{ file: File | null; has_header: boolean; mapping: MappingTarget[] }>({
@@ -206,26 +248,30 @@ export default function Import({ project }: PageProps) {
                         <form onSubmit={onSubmit} className="space-y-6">
                             {step === 1 && (
                                 <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-                                    <Card className="border-dashed">
-                                        <CardHeader>
-                                            <CardTitle className="flex items-center gap-2 text-base">
-                                                <FileSpreadsheet className="h-4 w-4" />
-                                                CSV-Datei auswählen
-                                            </CardTitle>
-                                            <CardDescription>Unterstützt werden CSV-Dateien mit Trennzeichen Komma oder Semikolon.</CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <input
-                                                className="file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 w-full rounded border p-2 text-sm file:mr-3 file:rounded file:border-0 file:px-3 file:py-1.5"
-                                                type="file"
-                                                accept=".csv,text/csv,text/plain"
-                                                onChange={(e) => onFileChange(e.target.files?.[0] ?? null)}
-                                            />
-                                            <div className="text-muted-foreground text-xs">
-                                                Erwartete Kernfelder: <span className="font-semibold">jira-key</span> und <span className="font-semibold">name</span>.
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                    <div className="space-y-6">
+                                        <Card className="border-dashed">
+                                            <CardHeader>
+                                                <CardTitle className="flex items-center gap-2 text-base">
+                                                    <FileSpreadsheet className="h-4 w-4" />
+                                                    CSV-Datei auswählen
+                                                </CardTitle>
+                                                <CardDescription>Unterstützt werden CSV-Dateien mit Trennzeichen Komma oder Semikolon.</CardDescription>
+                                            </CardHeader>
+                                            <CardContent className="space-y-3">
+                                                <input
+                                                    className="file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 w-full rounded border p-2 text-sm file:mr-3 file:rounded file:border-0 file:px-3 file:py-1.5"
+                                                    type="file"
+                                                    accept=".csv,text/csv,text/plain"
+                                                    onChange={(e) => onFileChange(e.target.files?.[0] ?? null)}
+                                                />
+                                                <div className="text-muted-foreground text-xs">
+                                                    Erwartete Kernfelder: <span className="font-semibold">jira-key</span> und <span className="font-semibold">name</span>.
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+
+                                        <JqlSnippet />
+                                    </div>
                                     <Card>
                                         <CardHeader>
                                             <CardTitle className="text-base">Workflow-Details</CardTitle>
