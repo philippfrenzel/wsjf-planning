@@ -89,6 +89,8 @@ export default function McpDocs() {
     const tools = [
         { name: 'list-projects', descKey: 'mcp_tool_list_projects', rw: 'read' },
         { name: 'get-project', descKey: 'mcp_tool_get_project', rw: 'read' },
+        { name: 'create-project', descKey: 'mcp_tool_create_project', rw: 'write' },
+        { name: 'update-project', descKey: 'mcp_tool_update_project', rw: 'write' },
         { name: 'list-features', descKey: 'mcp_tool_list_features', rw: 'read' },
         { name: 'get-feature', descKey: 'mcp_tool_get_feature', rw: 'read' },
         { name: 'create-feature', descKey: 'mcp_tool_create_feature', rw: 'write' },

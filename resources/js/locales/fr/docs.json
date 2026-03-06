@@ -39,6 +39,8 @@
   "mcp_copy_tooltip": "Copier",
   "mcp_tool_list_projects": "Lister tous les projets avec les chefs de projet et le nombre d'équipes",
   "mcp_tool_get_project": "Informations détaillées sur un projet incluant équipes, compétences, description",
+  "mcp_tool_create_project": "Créer un nouveau projet avec numéro, nom, date de début et responsable",
+  "mcp_tool_update_project": "Mettre à jour un projet existant — mises à jour partielles et transitions de statut",
   "mcp_tool_list_features": "Filtrer les features par projet, statut ou type — triées par score WSJF",
   "mcp_tool_get_feature": "Détails d'une feature incluant scores WSJF, dépendances, compétences requises",
   "mcp_tool_create_feature": "Créer une nouvelle feature avec nom, projet, type, description etc.",
