@@ -182,7 +182,7 @@ export default function Index({ templates, projects }: { templates: Template[]; 
 
                 {/* Preview Dialog */}
                 <Dialog open={!!previewTemplate} onOpenChange={(o) => !o && setPreviewTemplate(null)}>
-                    <DialogContent className="max-w-3xl flex flex-col" style={{ maxHeight: '90vh' }}>
+                    <DialogContent className="max-w-7xl w-full flex flex-col" style={{ maxHeight: '90vh' }}>
                         <DialogHeader className="shrink-0">
                             <DialogTitle className="flex items-center gap-2">
                                 {previewTemplate?.title}
@@ -218,7 +218,7 @@ export default function Index({ templates, projects }: { templates: Template[]; 
 
                 {/* Create/Edit Dialog */}
                 <Dialog open={editDialog.open} onOpenChange={(o) => !o && setEditDialog({ open: false, template: null })}>
-                    <DialogContent className="max-w-2xl flex flex-col" style={{ maxHeight: '90vh' }}>
+                    <DialogContent className="max-w-7xl w-full flex flex-col" style={{ maxHeight: '90vh' }}>
                         <DialogHeader className="shrink-0">
                             <DialogTitle>
                                 {editDialog.template ? 'Template bearbeiten' : 'Neues Template erstellen'}
