@@ -5,11 +5,10 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Pencil, Trash2, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Save, X } from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog-provider';
 import MarkdownEditor from '@/components/markdown-editor';
 import MarkdownViewer from '@/components/markdown-viewer';
@@ -37,15 +36,23 @@ const TYPE_LABELS: Record<TemplateType, string> = {
     ust: 'User Story Template',
 };
 
+const TYPE_SHORT: Record<TemplateType, string> = {
+    dor: 'DoR',
+    dod: 'DoD',
+    ust: 'UST',
+};
+
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Startseite', href: '/' },
     { title: 'Templates', href: '#' },
 ];
 
+type PanelMode = 'preview' | 'edit' | 'create';
+
 export default function Index({ templates }: { templates: Template[] }) {
     const confirm = useConfirm();
-    const [editDialog, setEditDialog] = useState<{ open: boolean; template: Template | null }>({ open: false, template: null });
-    const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
+    const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+    const [panelMode, setPanelMode] = useState<PanelMode | null>(null);
     const [form, setForm] = useState({
         type: 'dor' as TemplateType,
         title: '',
@@ -58,12 +65,13 @@ export default function Index({ templates }: { templates: Template[] }) {
     const dodTemplates = templates.filter((t) => t.type === 'dod');
     const ustTemplates = templates.filter((t) => t.type === 'ust');
 
-    const openCreate = (type: TemplateType) => {
-        setForm({ type, title: '', description: '', body: '', is_active: true });
-        setEditDialog({ open: true, template: null });
+    const openPreview = (template: Template) => {
+        setSelectedTemplate(template);
+        setPanelMode('preview');
     };
 
     const openEdit = (template: Template) => {
+        setSelectedTemplate(template);
         setForm({
             type: template.type,
             title: template.title,
@@ -71,7 +79,18 @@ export default function Index({ templates }: { templates: Template[] }) {
             body: template.body || '',
             is_active: template.is_active,
         });
-        setEditDialog({ open: true, template });
+        setPanelMode('edit');
+    };
+
+    const openCreate = (type: TemplateType) => {
+        setSelectedTemplate(null);
+        setForm({ type, title: '', description: '', body: '', is_active: true });
+        setPanelMode('create');
+    };
+
+    const closePanel = () => {
+        setPanelMode(null);
+        setSelectedTemplate(null);
     };
 
     const submit = () => {
@@ -83,15 +102,15 @@ export default function Index({ templates }: { templates: Template[] }) {
             is_active: form.is_active,
         };
 
-        if (editDialog.template) {
-            router.put(route('definitions.update', editDialog.template.id), payload as never, {
+        if (panelMode === 'edit' && selectedTemplate) {
+            router.put(route('definitions.update', selectedTemplate.id), payload as never, {
                 preserveScroll: true,
-                onSuccess: () => setEditDialog({ open: false, template: null }),
+                onSuccess: () => closePanel(),
             });
-        } else {
+        } else if (panelMode === 'create') {
             router.post(route('definitions.store'), payload as never, {
                 preserveScroll: true,
-                onSuccess: () => setEditDialog({ open: false, template: null }),
+                onSuccess: () => closePanel(),
             });
         }
     };
@@ -101,160 +120,196 @@ export default function Index({ templates }: { templates: Template[] }) {
             title: 'Template löschen',
             description: `"${template.title}" wirklich löschen?`,
         });
-        if (ok) router.delete(route('definitions.destroy', template.id), { preserveScroll: true });
+        if (ok) {
+            if (selectedTemplate?.id === template.id) closePanel();
+            router.delete(route('definitions.destroy', template.id), { preserveScroll: true });
+        }
     };
 
-    const renderTemplate = (template: Template) => (
-        <div key={template.id} className="rounded-lg border p-3">
-            <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-sm font-semibold">{template.title}</h3>
-                        {!template.is_active && <Badge variant="secondary" className="text-xs">Inaktiv</Badge>}
+    const renderSidebarItem = (template: Template) => {
+        const isActive = selectedTemplate?.id === template.id;
+        return (
+            <div
+                key={template.id}
+                className={`group cursor-pointer rounded-md border px-3 py-2 transition-colors ${
+                    isActive ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
+                }`}
+                onClick={() => openPreview(template)}
+            >
+                <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-medium truncate">{template.title}</span>
+                            {!template.is_active && <Badge variant="secondary" className="text-[10px] px-1 py-0">Inaktiv</Badge>}
+                        </div>
                     </div>
-                    {template.description && (
-                        <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{template.description}</p>
-                    )}
+                    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); openEdit(template); }} title="Bearbeiten">
+                            <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleDelete(template); }} title="Löschen">
+                            <Trash2 className="h-3 w-3" />
+                        </Button>
+                    </div>
                 </div>
-                <div className="flex gap-0.5 shrink-0">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPreviewTemplate(template)} title="Vorschau">
-                        <Eye className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(template)} title="Bearbeiten">
-                        <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(template)} title="Löschen">
-                        <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                </div>
+                {template.projects.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                        {template.projects.map((p) => (
+                            <Badge key={p.id} variant="outline" className="text-[10px] px-1 py-0">{p.name}</Badge>
+                        ))}
+                    </div>
+                )}
             </div>
-            {template.projects.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                    {template.projects.map((p) => (
-                        <Badge key={p.id} variant="outline" className="text-[10px] px-1.5 py-0">
-                            {p.name}
-                        </Badge>
-                    ))}
-                </div>
+        );
+    };
+
+    const renderTypeGroup = (type: TemplateType, items: Template[]) => (
+        <div key={type}>
+            <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{TYPE_SHORT[type]}</h3>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openCreate(type)} title={`Neues ${TYPE_SHORT[type]} Template`}>
+                    <Plus className="h-3.5 w-3.5" />
+                </Button>
+            </div>
+            {items.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic pl-1">Keine Templates</p>
+            ) : (
+                <div className="space-y-1.5">{items.map(renderSidebarItem)}</div>
             )}
         </div>
     );
 
-    const renderColumn = (type: TemplateType, items: Template[]) => (
-        <Card>
-            <CardHeader>
-                <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">{TYPE_LABELS[type]}</CardTitle>
-                    <Button size="sm" onClick={() => openCreate(type)}>
-                        <Plus className="mr-1 h-4 w-4" /> Neu
-                    </Button>
+    const renderPanel = () => {
+        if (!panelMode) {
+            return (
+                <div className="flex h-full items-center justify-center text-muted-foreground">
+                    <div className="text-center space-y-2">
+                        <Eye className="h-10 w-10 mx-auto opacity-30" />
+                        <p className="text-sm">Template auswählen oder neues erstellen</p>
+                    </div>
                 </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-                {items.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Keine Templates vorhanden.</p>
-                ) : (
-                    items.map(renderTemplate)
-                )}
-            </CardContent>
-        </Card>
-    );
+            );
+        }
+
+        if (panelMode === 'preview' && selectedTemplate) {
+            return (
+                <div className="flex h-full flex-col">
+                    <div className="flex items-center justify-between border-b px-4 py-3 shrink-0">
+                        <div>
+                            <h2 className="text-lg font-semibold flex items-center gap-2">
+                                {selectedTemplate.title}
+                                <Badge variant="outline" className="text-xs font-normal">{TYPE_LABELS[selectedTemplate.type]}</Badge>
+                                {!selectedTemplate.is_active && <Badge variant="secondary" className="text-xs">Inaktiv</Badge>}
+                            </h2>
+                            {selectedTemplate.description && (
+                                <p className="text-sm text-muted-foreground mt-0.5">{selectedTemplate.description}</p>
+                            )}
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                            <Button size="sm" variant="outline" onClick={() => openEdit(selectedTemplate)}>
+                                <Pencil className="mr-1 h-3.5 w-3.5" /> Bearbeiten
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={closePanel}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-6">
+                        {selectedTemplate.body && (
+                            <MarkdownViewer content={selectedTemplate.body} className="prose prose-sm max-w-none" />
+                        )}
+                    </div>
+                    {selectedTemplate.projects.length > 0 && (
+                        <div className="shrink-0 border-t px-4 py-2 flex flex-wrap gap-1">
+                            <span className="text-xs text-muted-foreground mr-1">Projekte:</span>
+                            {selectedTemplate.projects.map((p) => (
+                                <Badge key={p.id} variant="outline" className="text-xs">{p.name}</Badge>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Edit or Create mode
+        return (
+            <div className="flex h-full flex-col">
+                <div className="flex items-center justify-between border-b px-4 py-3 shrink-0">
+                    <h2 className="text-lg font-semibold">
+                        {panelMode === 'edit' ? 'Template bearbeiten' : 'Neues Template erstellen'}
+                    </h2>
+                    <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={closePanel}>
+                            <X className="mr-1 h-3.5 w-3.5" /> Abbrechen
+                        </Button>
+                        <Button size="sm" onClick={submit} disabled={!form.title.trim() || !form.body.trim()}>
+                            <Save className="mr-1 h-3.5 w-3.5" /> Speichern
+                        </Button>
+                    </div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Label>Typ</Label>
+                            <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as TemplateType })}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="dor">Definition of Ready</SelectItem>
+                                    <SelectItem value="dod">Definition of Done</SelectItem>
+                                    <SelectItem value="ust">User Story Template</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label>Titel</Label>
+                            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                        </div>
+                    </div>
+                    <div>
+                        <Label>Kurzbeschreibung</Label>
+                        <Input
+                            value={form.description}
+                            onChange={(e) => setForm({ ...form, description: e.target.value })}
+                            placeholder="Optionale Kurzbeschreibung"
+                        />
+                    </div>
+                    <div className="flex-1">
+                        <Label>Inhalt (Markdown)</Label>
+                        <MarkdownEditor
+                            value={form.body}
+                            onChange={(md) => setForm({ ...form, body: md })}
+                            placeholder="Template-Inhalt in Markdown …"
+                            minHeight={300}
+                            height={500}
+                        />
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Templates — DoR / DoD / UST" />
-            <div className="mx-auto w-full max-w-7xl p-4 space-y-6">
-                <div className="grid gap-6 md:grid-cols-3">
-                    {renderColumn('dor', dorTemplates)}
-                    {renderColumn('dod', dodTemplates)}
-                    {renderColumn('ust', ustTemplates)}
+            <div className="mx-auto w-full max-w-7xl p-4">
+                <div className="grid grid-cols-[280px_1fr] gap-4" style={{ height: 'calc(100vh - 8rem)' }}>
+                    {/* Left sidebar */}
+                    <Card className="flex flex-col overflow-hidden">
+                        <CardHeader className="shrink-0 pb-3">
+                            <CardTitle className="text-base">Templates</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-1 overflow-y-auto space-y-5 pb-4">
+                            {renderTypeGroup('dor', dorTemplates)}
+                            {renderTypeGroup('dod', dodTemplates)}
+                            {renderTypeGroup('ust', ustTemplates)}
+                        </CardContent>
+                    </Card>
+
+                    {/* Right content area */}
+                    <Card className="overflow-hidden">
+                        {renderPanel()}
+                    </Card>
                 </div>
-
-                {/* Preview Dialog */}
-                <Dialog open={!!previewTemplate} onOpenChange={(o) => !o && setPreviewTemplate(null)}>
-                    <DialogContent className="w-[80vw] max-w-[80vw] flex flex-col" style={{ maxHeight: '90vh' }}>
-                        <DialogHeader className="shrink-0">
-                            <DialogTitle className="flex items-center gap-2">
-                                {previewTemplate?.title}
-                                <Badge variant="outline" className="text-xs font-normal">
-                                    {previewTemplate ? TYPE_LABELS[previewTemplate.type] : ''}
-                                </Badge>
-                            </DialogTitle>
-                            {previewTemplate?.description && (
-                                <p className="text-sm text-muted-foreground">{previewTemplate.description}</p>
-                            )}
-                        </DialogHeader>
-                        <div className="flex-1 overflow-y-auto rounded border bg-muted/30 p-4">
-                            {previewTemplate?.body && (
-                                <MarkdownViewer content={previewTemplate.body} className="prose prose-sm max-w-none" />
-                            )}
-                        </div>
-                        {previewTemplate && previewTemplate.projects.length > 0 && (
-                            <div className="shrink-0 flex flex-wrap gap-1 pt-2">
-                                <span className="text-xs text-muted-foreground mr-1">Projekte:</span>
-                                {previewTemplate.projects.map((p) => (
-                                    <Badge key={p.id} variant="outline" className="text-xs">{p.name}</Badge>
-                                ))}
-                            </div>
-                        )}
-                        <DialogFooter className="shrink-0">
-                            <Button variant="outline" onClick={() => { if (previewTemplate) { openEdit(previewTemplate); setPreviewTemplate(null); } }}>
-                                <Pencil className="mr-1 h-4 w-4" /> Bearbeiten
-                            </Button>
-                            <Button onClick={() => setPreviewTemplate(null)}>Schließen</Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                {/* Create/Edit Dialog */}
-                <Dialog open={editDialog.open} onOpenChange={(o) => !o && setEditDialog({ open: false, template: null })}>
-                    <DialogContent className="w-[80vw] max-w-[80vw] flex flex-col" style={{ maxHeight: '90vh' }}>
-                        <DialogHeader className="shrink-0">
-                            <DialogTitle>
-                                {editDialog.template ? 'Template bearbeiten' : 'Neues Template erstellen'}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-                            <div>
-                                <Label>Typ</Label>
-                                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as TemplateType })}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="dor">Definition of Ready</SelectItem>
-                                        <SelectItem value="dod">Definition of Done</SelectItem>
-                                        <SelectItem value="ust">User Story Template</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <Label>Titel</Label>
-                                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-                            </div>
-                            <div>
-                                <Label>Kurzbeschreibung</Label>
-                                <Input
-                                    value={form.description}
-                                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                                    placeholder="Optionale Kurzbeschreibung"
-                                />
-                            </div>
-                            <div>
-                                <Label>Inhalt (Markdown)</Label>
-                                <MarkdownEditor
-                                    value={form.body}
-                                    onChange={(md) => setForm({ ...form, body: md })}
-                                    placeholder="Template-Inhalt in Markdown …"
-                                    minHeight={200}
-                                    height={350}
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter className="shrink-0">
-                            <Button variant="outline" onClick={() => setEditDialog({ open: false, template: null })}>Abbrechen</Button>
-                            <Button onClick={submit} disabled={!form.title.trim() || !form.body.trim()}>Speichern</Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
             </div>
         </AppLayout>
     );
