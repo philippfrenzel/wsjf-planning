@@ -1,14 +1,15 @@
 import InputError from '@/components/input-error';
 import { MemberSkillsPicker } from '@/components/member-skills-picker';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/app-layout';
 import { router, useForm } from '@inertiajs/react';
-import { LoaderCircle, Save, X, Zap } from 'lucide-react';
+import { LoaderCircle, Save, X, Users, Zap } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
 import { useState } from 'react';
 
@@ -118,81 +119,97 @@ export default function Edit({ team, users, skills }: { team: Team; users: User[
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <div className="mx-auto w-full max-w-3xl space-y-6 p-5">
+            <div className="mx-auto w-full max-w-3xl p-5">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Team bearbeiten</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <Label htmlFor="name">Name</Label>
-                                <Input id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} required />
-                                <InputError message={errors.name} />
-                            </div>
-                            <div>
-                                <Label htmlFor="description">Beschreibung</Label>
-                                <Textarea id="description" value={data.description} onChange={(e) => setData('description', e.target.value)} rows={3} />
-                                <InputError message={errors.description} />
-                            </div>
-                            <div>
-                                <Label>Mitglieder</Label>
-                                <div className="mt-2 max-h-60 space-y-2 overflow-y-auto rounded-md border p-3">
-                                    {users.map((user) => (
-                                        <label key={user.id} className="flex items-center gap-2 text-sm">
-                                            <Checkbox
-                                                checked={data.members.includes(user.id)}
-                                                onCheckedChange={() => toggleMember(user.id)}
-                                            />
-                                            {user.name} <span className="text-muted-foreground">({user.email})</span>
-                                        </label>
-                                    ))}
-                                </div>
-                                <InputError message={errors.members} />
-                            </div>
-                            <div className="flex gap-2">
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? <LoaderCircle className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
-                                    Speichern
-                                </Button>
-                                <Button type="button" variant="outline" onClick={() => history.back()}>
-                                    <X className="mr-1 h-4 w-4" /> Abbrechen
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
+                    <Tabs defaultValue="team">
+                        <div className="border-b px-6 pt-4">
+                            <TabsList>
+                                <TabsTrigger value="team" className="gap-1.5">
+                                    <Users className="h-4 w-4" /> Team
+                                </TabsTrigger>
+                                <TabsTrigger value="skills" className="gap-1.5">
+                                    <Zap className="h-4 w-4" /> Skills pro Mitglied
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
 
-                {/* Skill assignment per member */}
-                {skills.length > 0 && selectedMembers.length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Zap className="h-5 w-5" /> Skills pro Mitglied
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {selectedMembers.map((member) => {
-                                const userSkills = memberSkills[member.id] ?? {};
-                                return (
-                                    <div key={member.id}>
-                                        <div className="mb-2 font-medium">{member.name}</div>
-                                        <MemberSkillsPicker
-                                            skills={skills}
-                                            userSkills={userSkills}
-                                            onToggle={(skillId) => toggleSkill(member.id, skillId)}
-                                            onLevelChange={(skillId, level) => setSkillLevel(member.id, skillId, level)}
-                                        />
+                        <TabsContent value="team" className="m-0">
+                            <CardContent className="pt-6">
+                                <form onSubmit={handleSubmit} className="space-y-4">
+                                    <div>
+                                        <Label htmlFor="name">Name</Label>
+                                        <Input id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} required />
+                                        <InputError message={errors.name} />
                                     </div>
-                                );
-                            })}
-                            <Button onClick={saveSkills} disabled={savingSkills}>
-                                {savingSkills ? <LoaderCircle className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
-                                Skills speichern
-                            </Button>
-                        </CardContent>
-                    </Card>
-                )}
+                                    <div>
+                                        <Label htmlFor="description">Beschreibung</Label>
+                                        <Textarea id="description" value={data.description} onChange={(e) => setData('description', e.target.value)} rows={3} />
+                                        <InputError message={errors.description} />
+                                    </div>
+                                    <div>
+                                        <Label>Mitglieder</Label>
+                                        <div className="mt-2 max-h-60 space-y-2 overflow-y-auto rounded-md border p-3">
+                                            {users.map((user) => (
+                                                <label key={user.id} className="flex items-center gap-2 text-sm">
+                                                    <Checkbox
+                                                        checked={data.members.includes(user.id)}
+                                                        onCheckedChange={() => toggleMember(user.id)}
+                                                    />
+                                                    {user.name} <span className="text-muted-foreground">({user.email})</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                        <InputError message={errors.members} />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button type="submit" disabled={processing}>
+                                            {processing ? <LoaderCircle className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
+                                            Speichern
+                                        </Button>
+                                        <Button type="button" variant="outline" onClick={() => history.back()}>
+                                            <X className="mr-1 h-4 w-4" /> Abbrechen
+                                        </Button>
+                                    </div>
+                                </form>
+                            </CardContent>
+                        </TabsContent>
+
+                        <TabsContent value="skills" className="m-0">
+                            <CardContent className="space-y-4 pt-6">
+                                {selectedMembers.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">
+                                        Bitte zuerst Mitglieder im Tab «Team» zuweisen.
+                                    </p>
+                                ) : skills.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">
+                                        Keine Skills vorhanden. Bitte zuerst Skills anlegen.
+                                    </p>
+                                ) : (
+                                    <>
+                                        {selectedMembers.map((member) => {
+                                            const userSkills = memberSkills[member.id] ?? {};
+                                            return (
+                                                <div key={member.id}>
+                                                    <div className="mb-2 font-medium">{member.name}</div>
+                                                    <MemberSkillsPicker
+                                                        skills={skills}
+                                                        userSkills={userSkills}
+                                                        onToggle={(skillId) => toggleSkill(member.id, skillId)}
+                                                        onLevelChange={(skillId, level) => setSkillLevel(member.id, skillId, level)}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
+                                        <Button onClick={saveSkills} disabled={savingSkills}>
+                                            {savingSkills ? <LoaderCircle className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
+                                            Skills speichern
+                                        </Button>
+                                    </>
+                                )}
+                            </CardContent>
+                        </TabsContent>
+                    </Tabs>
+                </Card>
             </div>
         </AppLayout>
     );
