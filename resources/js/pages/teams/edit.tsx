@@ -1,12 +1,11 @@
 import InputError from '@/components/input-error';
-import { Badge } from '@/components/ui/badge';
+import { MemberSkillsPicker } from '@/components/member-skills-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { router, useForm } from '@inertiajs/react';
 import { LoaderCircle, Save, X, Zap } from 'lucide-react';
@@ -44,12 +43,6 @@ interface Team {
     description: string | null;
     members: Member[];
 }
-
-const LEVELS = [
-    { value: 'basic', label: 'Grundkenntnisse' },
-    { value: 'intermediate', label: 'Fortgeschritten' },
-    { value: 'expert', label: 'Experte' },
-];
 
 export default function Edit({ team, users, skills }: { team: Team; users: User[]; skills: SkillOption[] }) {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -182,42 +175,14 @@ export default function Edit({ team, users, skills }: { team: Team; users: User[
                             {selectedMembers.map((member) => {
                                 const userSkills = memberSkills[member.id] ?? {};
                                 return (
-                                    <div key={member.id} className="rounded-md border p-3">
+                                    <div key={member.id}>
                                         <div className="mb-2 font-medium">{member.name}</div>
-                                        <div className="flex flex-wrap gap-x-4 gap-y-2">
-                                            {skills.map((skill) => {
-                                                const assigned = !!userSkills[skill.id];
-                                                return (
-                                                    <div key={skill.id} className="flex items-center gap-1.5">
-                                                        <Checkbox
-                                                            checked={assigned}
-                                                            onCheckedChange={() => toggleSkill(member.id, skill.id)}
-                                                        />
-                                                        <span className="text-sm">{skill.name}</span>
-                                                        {skill.category && (
-                                                            <Badge variant="outline" className="text-[10px] px-1">{skill.category}</Badge>
-                                                        )}
-                                                        {assigned && (
-                                                            <Select
-                                                                value={userSkills[skill.id]}
-                                                                onValueChange={(v) => setSkillLevel(member.id, skill.id, v)}
-                                                            >
-                                                                <SelectTrigger className="h-6 w-[130px] text-xs">
-                                                                    <SelectValue />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    {LEVELS.map((l) => (
-                                                                        <SelectItem key={l.value} value={l.value} className="text-xs">
-                                                                            {l.label}
-                                                                        </SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                            </Select>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
+                                        <MemberSkillsPicker
+                                            skills={skills}
+                                            userSkills={userSkills}
+                                            onToggle={(skillId) => toggleSkill(member.id, skillId)}
+                                            onLevelChange={(skillId, level) => setSkillLevel(member.id, skillId, level)}
+                                        />
                                     </div>
                                 );
                             })}

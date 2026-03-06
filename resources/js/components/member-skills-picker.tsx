@@ -2,18 +2,12 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Zap } from 'lucide-react';
 import { useState } from 'react';
 
-export interface SkillOption {
+interface SkillOption {
     id: number;
     name: string;
     category: string | null;
-}
-
-export interface SkillRequirement {
-    skill_id: number;
-    level: string;
 }
 
 const LEVELS = [
@@ -30,13 +24,13 @@ const LEVEL_COLORS: Record<string, string> = {
 
 interface Props {
     skills: SkillOption[];
-    requirements: SkillRequirement[];
+    /** Current skills for this member: { skillId: level } */
+    userSkills: Record<number, string>;
     onToggle: (skillId: number) => void;
     onLevelChange: (skillId: number, level: string) => void;
-    label?: string;
 }
 
-export function SkillRequirementsPicker({ skills, requirements, onToggle, onLevelChange, label = 'Benötigte Skills' }: Props) {
+export function MemberSkillsPicker({ skills, userSkills, onToggle, onLevelChange }: Props) {
     const grouped = skills.reduce<Record<string, SkillOption[]>>((acc, s) => {
         const cat = s.category || 'Allgemein';
         (acc[cat] ??= []).push(s);
@@ -48,28 +42,26 @@ export function SkillRequirementsPicker({ skills, requirements, onToggle, onLeve
 
     if (skills.length === 0) return null;
 
-    const selectedCount = requirements.length;
+    const selectedCount = Object.keys(userSkills).length;
 
     return (
         <div className="rounded-md border">
-            <div className="flex items-center gap-2 border-b px-4 py-3">
-                <Zap className="h-4 w-4" />
-                <span className="text-base font-semibold">{label}</span>
+            <div className="flex items-center gap-2 border-b px-3 py-2">
                 {selectedCount > 0 && (
-                    <Badge variant="secondary" className="ml-1">{selectedCount} ausgewählt</Badge>
+                    <Badge variant="secondary" className="text-[10px]">{selectedCount} Skills</Badge>
                 )}
             </div>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <div className="border-b px-4 pt-2">
+                <div className="border-b px-3 pt-1">
                     <TabsList className="h-auto flex-wrap gap-1">
                         {categories.map((cat) => {
-                            const catReqs = grouped[cat].filter((s) => requirements.some((r) => r.skill_id === s.id));
+                            const catAssigned = grouped[cat].filter((s) => !!userSkills[s.id]).length;
                             return (
-                                <TabsTrigger key={cat} value={cat} className="text-xs px-2.5 py-1.5">
+                                <TabsTrigger key={cat} value={cat} className="text-xs px-2 py-1">
                                     {cat}
-                                    {catReqs.length > 0 && (
-                                        <Badge variant="secondary" className="ml-1.5 h-4 min-w-4 px-1 text-[10px]">
-                                            {catReqs.length}
+                                    {catAssigned > 0 && (
+                                        <Badge variant="secondary" className="ml-1 h-4 min-w-4 px-1 text-[10px]">
+                                            {catAssigned}
                                         </Badge>
                                     )}
                                 </TabsTrigger>
@@ -84,31 +76,31 @@ export function SkillRequirementsPicker({ skills, requirements, onToggle, onLeve
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b bg-muted/50 text-xs text-muted-foreground">
-                                        <th className="w-10 px-4 py-2"></th>
-                                        <th className="px-4 py-2 text-left font-medium">Skill</th>
-                                        <th className="w-40 px-4 py-2 text-right font-medium">Level</th>
+                                        <th className="w-10 px-3 py-1.5"></th>
+                                        <th className="px-3 py-1.5 text-left font-medium">Skill</th>
+                                        <th className="w-40 px-3 py-1.5 text-right font-medium">Level</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {catSkills.map((skill) => {
-                                        const req = requirements.find((r) => r.skill_id === skill.id);
+                                        const assigned = !!userSkills[skill.id];
                                         return (
                                             <tr
                                                 key={skill.id}
-                                                className={`border-b last:border-0 transition-colors ${req ? 'bg-primary/5' : 'hover:bg-muted/30'}`}
+                                                className={`border-b last:border-0 transition-colors ${assigned ? 'bg-primary/5' : 'hover:bg-muted/30'}`}
                                             >
-                                                <td className="px-4 py-2 text-center">
+                                                <td className="px-3 py-1.5 text-center">
                                                     <Checkbox
-                                                        checked={!!req}
+                                                        checked={assigned}
                                                         onCheckedChange={() => onToggle(skill.id)}
                                                     />
                                                 </td>
-                                                <td className="px-4 py-2">
-                                                    <span className={`text-sm ${req ? 'font-medium' : ''}`}>{skill.name}</span>
+                                                <td className="px-3 py-1.5">
+                                                    <span className={`text-sm ${assigned ? 'font-medium' : ''}`}>{skill.name}</span>
                                                 </td>
-                                                <td className="px-4 py-2 text-right">
-                                                    {req ? (
-                                                        <Select value={req.level} onValueChange={(v) => onLevelChange(skill.id, v)}>
+                                                <td className="px-3 py-1.5 text-right">
+                                                    {assigned ? (
+                                                        <Select value={userSkills[skill.id]} onValueChange={(v) => onLevelChange(skill.id, v)}>
                                                             <SelectTrigger className="ml-auto h-7 w-[140px] text-xs">
                                                                 <SelectValue />
                                                             </SelectTrigger>
