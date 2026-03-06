@@ -21,6 +21,7 @@ use App\Models\Concerns\HasComments;
 use App\Models\FeatureDependency;
 use App\Models\FeatureStateHistory;
 use App\Support\StatusMapper;
+use Illuminate\Support\Facades\DB;
 
 class Feature extends Model
 {
@@ -29,6 +30,33 @@ class Feature extends Model
     use BelongsToTenant;
     use SoftDeletesWithUser;
     use HasComments;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Feature $feature) {
+            if (empty($feature->jira_key) && $feature->project_id) {
+                $feature->jira_key = static::generateNextJiraKey($feature->project_id, $feature->tenant_id);
+            }
+        });
+    }
+
+    /**
+     * Generate the next sequential jira_key for a project (e.g. WSJF-4).
+     */
+    public static function generateNextJiraKey(int $projectId, ?int $tenantId = null): string
+    {
+        $project = Project::find($projectId);
+        $prefix = $project?->project_number ?? 'FEAT';
+
+        $maxNum = (int) DB::table('features')
+            ->where('project_id', $projectId)
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->whereRaw("jira_key LIKE ?", ["{$prefix}-%"])
+            ->selectRaw("MAX(CAST(SUBSTR(jira_key, ?) AS INTEGER)) as max_num", [strlen($prefix) + 2])
+            ->value('max_num');
+
+        return "{$prefix}-" . ($maxNum + 1);
+    }
 
     protected $fillable = [
         'jira_key',

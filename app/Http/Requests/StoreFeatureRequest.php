@@ -18,7 +18,7 @@ class StoreFeatureRequest extends FormRequest
         $tenantId = $this->user()?->current_tenant_id;
 
         return [
-            'jira_key' => ['required', 'string', 'max:255'],
+            'jira_key' => ['nullable', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'type' => ['nullable', 'string', 'in:business,enabler,tech_debt,nfr'],
             'description' => ['nullable', 'string'],

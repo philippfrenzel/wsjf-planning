@@ -127,8 +127,8 @@ export default function Create({ projects, users, skills }: CreateProps) {
                                 <InputError message={errors.project_id} className="mt-1" />
                             </div>
                             <div>
-                                <Label htmlFor="jira_key">Feature-Key <span className="text-destructive">*</span></Label>
-                                <Input id="jira_key" name="jira_key" value={data.jira_key} onChange={handleChange} className="w-full" required />
+                                <Label htmlFor="jira_key">Feature-Key</Label>
+                                <Input id="jira_key" name="jira_key" value={data.jira_key} onChange={handleChange} className="w-full" placeholder="Wird automatisch generiert" />
                                 <InputError message={errors.jira_key} className="mt-1" />
                             </div>
                         </div>

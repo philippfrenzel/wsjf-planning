@@ -22,7 +22,7 @@ class CreateFeature extends Tool
         return [
             'name' => $schema->string()->description('Feature name')->required(),
             'project_id' => $schema->integer()->description('Project ID this feature belongs to')->required(),
-            'jira_key' => $schema->string()->description('Feature key (e.g. PROJ-123)'),
+            'jira_key' => $schema->string()->description('Feature key (e.g. PROJ-123). Auto-generated from project number if omitted.'),
             'type' => $schema->string()->description('Feature type: business, enabler, tech_debt, nfr')->enum(['business', 'enabler', 'tech_debt', 'nfr']),
             'description' => $schema->string()->description('Feature description (plain text or markdown)'),
             'requester_id' => $schema->integer()->description('User ID of the requester'),
