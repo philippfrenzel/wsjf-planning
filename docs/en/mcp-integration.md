@@ -80,6 +80,8 @@ The MCP server provides the following tools:
 |---|---|---|---|
 | `list-projects` | All projects of the tenant with managers and team count | — | `status` |
 | `get-project` | Project details with teams, skills, and feature count | `project_id` | — |
+| `create-project` | Create a new project | `project_number`, `name`, `start_date`, `project_leader_id` | `description`, `jira_base_uri`, `deputy_leader_id` |
+| `update-project` | Partially update a project (including status transitions) | `project_id` | `project_number`, `name`, `description`, `jira_base_uri`, `start_date`, `project_leader_id`, `deputy_leader_id`, `new_status` |
 
 ### Features
 
@@ -120,6 +122,8 @@ In addition to tools, the server provides an MCP resource:
 After a successful connection, you can send prompts like the following to the AI assistant:
 
 - *"Show me all projects with their WSJF scores"*
+- *"Create a new project with number P-2026-01 called 'Platform Relaunch'"*
+- *"Update project 5 to set its status to in-realization"*
 - *"Create a new feature 'Login Optimization' in project 3"*
 - *"Which team has the most open features?"*
 - *"Give me a summary of the dashboard"*

@@ -82,6 +82,8 @@ Der MCP-Server stellt folgende Tools bereit:
 |---|---|---|---|
 | `list-projects` | Alle Projekte des Mandanten mit Leitern und Teamanzahl | — | `status` |
 | `get-project` | Projektdetails mit Teams, Skills und Feature-Anzahl | `project_id` | — |
+| `create-project` | Neues Projekt anlegen | `project_number`, `name`, `start_date`, `project_leader_id` | `description`, `jira_base_uri`, `deputy_leader_id` |
+| `update-project` | Projekt teilweise aktualisieren (inkl. Statusübergänge) | `project_id` | `project_number`, `name`, `description`, `jira_base_uri`, `start_date`, `project_leader_id`, `deputy_leader_id`, `new_status` |
 
 ### Features
 
@@ -122,6 +124,8 @@ Neben Tools stellt der Server eine MCP-Ressource bereit:
 Nach erfolgreicher Verbindung können Sie z. B. folgende Anfragen an den KI-Assistenten stellen:
 
 - *„Zeige mir alle Projekte mit ihren WSJF-Scores"*
+- *„Erstelle ein neues Projekt mit Nummer P-2026-01 namens ‚Plattform Relaunch'"*
+- *„Aktualisiere Projekt 5 auf den Status In Realisierung"*
 - *„Erstelle ein neues Feature ‚Login-Optimierung' im Projekt 3"*
 - *„Welches Team hat die meisten offenen Features?"*
 - *„Gib mir eine Zusammenfassung des Dashboards"*

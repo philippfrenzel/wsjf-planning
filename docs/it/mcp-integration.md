@@ -80,6 +80,8 @@ Il server MCP mette a disposizione i seguenti tool:
 |---|---|---|---|
 | `list-projects` | Tutti i progetti del mandante con responsabili e numero di team | — | `status` |
 | `get-project` | Dettagli progetto con team, skill e numero di feature | `project_id` | — |
+| `create-project` | Creare un nuovo progetto | `project_number`, `name`, `start_date`, `project_leader_id` | `description`, `jira_base_uri`, `deputy_leader_id` |
+| `update-project` | Aggiornare parzialmente un progetto (incluse transizioni di stato) | `project_id` | `project_number`, `name`, `description`, `jira_base_uri`, `start_date`, `project_leader_id`, `deputy_leader_id`, `new_status` |
 
 ### Feature
 
@@ -120,6 +122,8 @@ Oltre ai tool, il server mette a disposizione una risorsa MCP:
 Dopo una connessione riuscita, potete ad esempio inviare le seguenti richieste all'assistente IA:
 
 - *"Mostrami tutti i progetti con i loro punteggi WSJF"*
+- *"Crea un nuovo progetto con numero P-2026-01 chiamato 'Rilancio Piattaforma'"*
+- *"Aggiorna il progetto 5 con stato in realizzazione"*
 - *"Crea una nuova feature 'Ottimizzazione Login' nel progetto 3"*
 - *"Quale team ha il maggior numero di feature aperte?"*
 - *"Dammi un riepilogo della dashboard"*
