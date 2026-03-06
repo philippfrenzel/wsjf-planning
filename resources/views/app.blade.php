@@ -71,6 +71,9 @@
             @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         @endunless
         @inertiaHead
+
+        {{-- Umami Analytics --}}
+        <script defer src="https://analytics.goldtaler.at/script.js" data-website-id="85e5d4a1-ed01-442a-aacb-6fdd25f400a5"></script>
     </head>
     <body class="font-sans antialiased">
         @inertia
