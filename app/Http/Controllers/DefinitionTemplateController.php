@@ -31,12 +31,10 @@ class DefinitionTemplateController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'body' => ['required', 'string'],
+            'is_active' => ['sometimes', 'boolean'],
         ]);
 
-        DefinitionTemplate::create([
-            'tenant_id' => Auth::user()->current_tenant_id,
-            ...$validated,
-        ]);
+        DefinitionTemplate::create($validated);
 
         return redirect()->back()->with('success', 'Template erstellt.');
     }
@@ -48,7 +46,7 @@ class DefinitionTemplateController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'body' => ['required', 'string'],
-            'is_active' => ['boolean'],
+            'is_active' => ['sometimes', 'boolean'],
         ]);
 
         $definitionTemplate->update($validated);
