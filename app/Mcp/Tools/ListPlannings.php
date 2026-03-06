@@ -25,29 +25,33 @@ class ListPlannings extends Tool
 
     public function handle(Request $request): Response
     {
-        $query = Planning::with([
-            'project:id,name',
-            'owner:id,name',
-            'deputy:id,name',
-        ])->withCount(['features', 'iterations']);
+        try {
+            $query = Planning::with([
+                'project:id,name',
+                'owner:id,name',
+                'deputy:id,name',
+            ])->withCount(['features', 'iterations']);
 
-        if ($projectId = $request->get('project_id')) {
-            $query->where('project_id', $projectId);
+            if ($projectId = $request->get('project_id')) {
+                $query->where('project_id', $projectId);
+            }
+
+            $plannings = $query->orderByDesc('created_at')->get();
+
+            return Response::json($plannings->map(fn (Planning $p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'status' => (string) $p->status,
+                'project' => $p->project?->name,
+                'owner' => $p->owner?->name,
+                'deputy' => $p->deputy?->name,
+                'features_count' => $p->features_count,
+                'iterations_count' => $p->iterations_count,
+                'start_date' => $p->start_date,
+                'end_date' => $p->end_date,
+            ])->values());
+        } catch (\Throwable $e) {
+            return Response::error('list-plannings failed: ' . $e->getMessage());
         }
-
-        $plannings = $query->orderByDesc('created_at')->get();
-
-        return Response::json($plannings->map(fn (Planning $p) => [
-            'id' => $p->id,
-            'name' => $p->name,
-            'status' => $p->status,
-            'project' => $p->project?->name,
-            'owner' => $p->owner?->name,
-            'deputy' => $p->deputy?->name,
-            'features_count' => $p->features_count,
-            'iterations_count' => $p->iterations_count,
-            'start_date' => $p->start_date,
-            'end_date' => $p->end_date,
-        ]));
     }
 }

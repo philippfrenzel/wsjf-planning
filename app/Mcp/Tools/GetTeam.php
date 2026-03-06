@@ -25,29 +25,33 @@ class GetTeam extends Tool
 
     public function handle(Request $request): Response
     {
-        $data = $request->validate(['team_id' => 'required|integer']);
+        try {
+            $data = $request->validate(['team_id' => 'required|integer']);
 
-        $team = Team::with(['members' => fn ($q) => $q->with('skills:id,name,category')])->find($data['team_id']);
+            $team = Team::with(['members' => fn ($q) => $q->with('skills:id,name,category')])->find($data['team_id']);
 
-        if (! $team) {
-            return Response::error("Team {$data['team_id']} not found.");
-        }
+            if (! $team) {
+                return Response::error("Team {$data['team_id']} not found.");
+            }
 
-        return Response::json([
-            'id' => $team->id,
-            'name' => $team->name,
-            'description' => $team->description,
-            'members' => $team->members->map(fn ($m) => [
-                'id' => $m->id,
-                'name' => $m->name,
-                'email' => $m->email,
-                'skills' => $m->skills->map(fn ($s) => [
-                    'id' => $s->id,
-                    'name' => $s->name,
-                    'category' => $s->category,
-                    'level' => $s->pivot->level ?? null,
+            return Response::json([
+                'id' => $team->id,
+                'name' => $team->name,
+                'description' => $team->description,
+                'members' => $team->members->map(fn ($m) => [
+                    'id' => $m->id,
+                    'name' => $m->name,
+                    'email' => $m->email,
+                    'skills' => $m->skills->map(fn ($s) => [
+                        'id' => $s->id,
+                        'name' => $s->name,
+                        'category' => $s->category,
+                        'level' => $s->pivot->level ?? null,
+                    ]),
                 ]),
-            ]),
-        ]);
+            ]);
+        } catch (\Throwable $e) {
+            return Response::error('get-team failed: ' . $e->getMessage());
+        }
     }
 }

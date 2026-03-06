@@ -25,23 +25,27 @@ class ListSkills extends Tool
 
     public function handle(Request $request): Response
     {
-        $query = Skill::orderBy('category')->orderBy('name');
+        try {
+            $query = Skill::orderBy('category')->orderBy('name');
 
-        if ($category = $request->get('category')) {
-            $query->where('category', $category);
+            if ($category = $request->get('category')) {
+                $query->where('category', $category);
+            }
+
+            $skills = $query->get();
+
+            $grouped = $skills->groupBy(fn ($s) => $s->category ?? 'Allgemein')
+                ->map(fn ($group, $cat) => [
+                    'category' => $cat,
+                    'skills' => $group->map->only('id', 'name', 'category')->values(),
+                ])->values();
+
+            return Response::json([
+                'total' => $skills->count(),
+                'categories' => $grouped,
+            ]);
+        } catch (\Throwable $e) {
+            return Response::error('list-skills failed: ' . $e->getMessage());
         }
-
-        $skills = $query->get();
-
-        $grouped = $skills->groupBy(fn ($s) => $s->category ?? 'Allgemein')
-            ->map(fn ($group, $cat) => [
-                'category' => $cat,
-                'skills' => $group->map->only('id', 'name', 'category')->values(),
-            ])->values();
-
-        return Response::json([
-            'total' => $skills->count(),
-            'categories' => $grouped,
-        ]);
     }
 }

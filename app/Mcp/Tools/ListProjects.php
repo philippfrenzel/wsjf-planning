@@ -25,24 +25,28 @@ class ListProjects extends Tool
 
     public function handle(Request $request): Response
     {
-        $query = Project::with(['projectLeader:id,name', 'deputyLeader:id,name'])
-            ->withCount('teams');
+        try {
+            $query = Project::with(['projectLeader:id,name', 'deputyLeader:id,name'])
+                ->withCount('teams');
 
-        if ($status = $request->get('status')) {
-            $query->where('status', $status);
+            if ($status = $request->get('status')) {
+                $query->where('status', $status);
+            }
+
+            $projects = $query->get()->map(fn (Project $p) => [
+                'id' => $p->id,
+                'project_number' => $p->project_number,
+                'name' => $p->name,
+                'status' => (string) $p->status,
+                'start_date' => $p->start_date,
+                'project_leader' => $p->projectLeader?->name,
+                'deputy_leader' => $p->deputyLeader?->name,
+                'teams_count' => $p->teams_count,
+            ]);
+
+            return Response::json($projects->values());
+        } catch (\Throwable $e) {
+            return Response::error('list-projects failed: ' . $e->getMessage());
         }
-
-        $projects = $query->get()->map(fn (Project $p) => [
-            'id' => $p->id,
-            'project_number' => $p->project_number,
-            'name' => $p->name,
-            'status' => $p->status,
-            'start_date' => $p->start_date,
-            'project_leader' => $p->projectLeader?->name,
-            'deputy_leader' => $p->deputyLeader?->name,
-            'teams_count' => $p->teams_count,
-        ]);
-
-        return Response::json($projects);
     }
 }
