@@ -36,9 +36,14 @@ Route::get('/impressum', function () {
     return Inertia::render('legal/impressum');
 })->name('imprint');
 
+Route::get('/docs/mcp', function () {
+    return Inertia::render('docs/mcp');
+})->name('docs.mcp');
+
 Route::get('/sitemap.xml', function () {
     $urls = [
         ['loc' => url('/'), 'changefreq' => 'weekly', 'priority' => '1.0'],
+        ['loc' => url('/docs/mcp'), 'changefreq' => 'weekly', 'priority' => '0.8'],
         ['loc' => url('/impressum'), 'changefreq' => 'monthly', 'priority' => '0.3'],
         ['loc' => url('/login'), 'changefreq' => 'monthly', 'priority' => '0.5'],
         ['loc' => url('/register'), 'changefreq' => 'monthly', 'priority' => '0.7'],

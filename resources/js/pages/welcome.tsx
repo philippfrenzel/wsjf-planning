@@ -376,6 +376,7 @@ export default function Welcome() {
                         <nav className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400">
                             <Link href={route('login')} className="hover:text-white transition-colors">{t('login')}</Link>
                             <Link href={route('register')} className="hover:text-white transition-colors">{t('register')}</Link>
+                            <Link href={route('docs.mcp')} className="hover:text-white transition-colors">MCP Docs</Link>
                             <Link href={route('imprint')} className="hover:text-white transition-colors">{t('imprint_link')}</Link>
                         </nav>
                     </div>

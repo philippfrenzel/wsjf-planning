@@ -13,11 +13,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMan
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Concerns\SoftDeletesWithUser;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletesWithUser;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletesWithUser;
 
     /**
      * The attributes that are mass assignable.
