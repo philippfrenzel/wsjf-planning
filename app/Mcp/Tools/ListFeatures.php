@@ -33,7 +33,6 @@ class ListFeatures extends Tool
                 ->select([
                     'id', 'jira_key', 'name', 'type', 'status',
                     'project_id', 'requester_id', 'team_id', 'iteration_id',
-                    'business_value', 'time_criticality', 'risk_reduction', 'job_size', 'wsjf_score',
                     'created_at',
                 ]);
 
@@ -49,7 +48,7 @@ class ListFeatures extends Tool
 
             $limit = min((int) ($request->get('limit') ?? 50), 200);
 
-            $features = $query->orderByDesc('wsjf_score')->limit($limit)->get();
+            $features = $query->orderByDesc('created_at')->limit($limit)->get();
 
             return Response::json($features->map(fn (Feature $f) => [
                 'id' => $f->id,
@@ -60,11 +59,6 @@ class ListFeatures extends Tool
                 'project' => $f->project?->name,
                 'requester' => $f->requester?->name,
                 'team' => $f->team?->name,
-                'wsjf_score' => $f->wsjf_score,
-                'business_value' => $f->business_value,
-                'time_criticality' => $f->time_criticality,
-                'risk_reduction' => $f->risk_reduction,
-                'job_size' => $f->job_size,
             ])->values());
         } catch (\Throwable $e) {
             return Response::error('list-features failed: ' . $e->getMessage());

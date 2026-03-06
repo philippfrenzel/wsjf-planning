@@ -53,13 +53,6 @@ class GetFeature extends Tool
                 'requester' => $feature->requester?->only('id', 'name', 'email'),
                 'team' => $feature->team?->only('id', 'name'),
                 'iteration' => $feature->iteration?->only('id', 'name'),
-                'wsjf' => [
-                    'score' => $feature->wsjf_score,
-                    'business_value' => $feature->business_value,
-                    'time_criticality' => $feature->time_criticality,
-                    'risk_reduction' => $feature->risk_reduction,
-                    'job_size' => $feature->job_size,
-                ],
                 'required_skills' => $feature->requiredSkills->map->only('id', 'name', 'category'),
                 'dependencies' => $feature->dependencies->map(fn ($d) => $d->related?->only('id', 'jira_key', 'name'))->filter()->values(),
                 'dependents' => $feature->dependents->map(fn ($d) => $d->feature?->only('id', 'jira_key', 'name'))->filter()->values(),
