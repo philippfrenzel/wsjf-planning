@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { WorkflowStateBadge } from '@/components/workflow-state-badge';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { useForm, router } from '@inertiajs/react';
@@ -94,6 +96,11 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
 
     const [chatOpen, setChatOpen] = useState(false);
 
+    const currentStatusOption = statusOptions.find((o) => o.current);
+    const currentStatusDetails = currentStatusOption
+        ? { value: currentStatusOption.value, name: currentStatusOption.label, color: currentStatusOption.color }
+        : null;
+
     React.useEffect(() => {
         const removeListener = router.on('before', (event) => {
             if (isDirty && !confirm('Sie haben ungespeicherte Änderungen. Möchten Sie die Seite wirklich verlassen?')) {
@@ -141,24 +148,45 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <div className="mt-8">
-                <Card className="w-full">
-                    <CardHeader>
-                        <div className="space-y-1">
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
+                <Card className="flex h-full flex-1 flex-col">
+                    {/* Header — matches show.tsx */}
+                    <div className="flex items-center justify-between gap-4 px-6 pt-6">
+                        <div className="min-w-0 flex-1">
                             {feature.jira_key && (
-                                <p className="text-muted-foreground text-sm font-medium">{feature.jira_key}</p>
+                                <p className="text-muted-foreground mb-1 text-sm font-medium">{feature.jira_key}</p>
                             )}
-                            <CardTitle className="truncate">{feature.name} <span className="text-muted-foreground font-normal">bearbeiten</span></CardTitle>
+                            <h1 className="text-2xl font-bold tracking-tight break-words">
+                                {feature.name} <span className="text-muted-foreground font-normal">bearbeiten</span>
+                            </h1>
                         </div>
-                    </CardHeader>
+                        <div className="flex shrink-0 items-center gap-3">
+                            {currentStatusDetails && (
+                                <WorkflowStateBadge statusDetails={currentStatusDetails} />
+                            )}
+                            <Button type="button" variant="cancel" size="sm" onClick={() => router.visit(route('features.show', feature.id))}>
+                                <X className="h-4 w-4" />
+                                Abbrechen
+                            </Button>
+                            <Button type="submit" form="edit-feature-form" variant="success" size="sm" disabled={processing}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                                <Save className="h-4 w-4" />
+                                Speichern
+                            </Button>
+                        </div>
+                    </div>
+
                     <CardContent>
-                        {/* Two-column layout: 60% left, 40% right */}
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[60%_1fr]">
-                            {/* Left Column - Feature Edit Form */}
-                            <div>
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    {/* Main Form Fields */}
-                                    <div className="space-y-6">
+                        <Tabs defaultValue="stammdaten" className="space-y-6">
+                            <TabsList>
+                                <TabsTrigger value="stammdaten">Stammdaten</TabsTrigger>
+                                <TabsTrigger value="erweitert">Abhängigkeiten &amp; Skills</TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="stammdaten" className="space-y-6">
+                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[60%_1fr]">
+                                    {/* Left — form fields */}
+                                    <form id="edit-feature-form" onSubmit={handleSubmit} className="space-y-6">
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <div>
                                                 <Label htmlFor="project_id">Projekt <span className="text-destructive">*</span></Label>
@@ -265,65 +293,63 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                             />
                                             <InputError message={errors.description} className="mt-1" />
                                         </div>
-                                    </div>
+                                    </form>
 
-                                    {/* Skill Requirements */}
-                                    <SkillRequirementsPicker
-                                        skills={skills}
-                                        requirements={data.skill_requirements}
-                                        onToggle={toggleSkillRequirement}
-                                        onLevelChange={setSkillLevel}
-                                    />
-
-                                    <div className="flex justify-end gap-2 border-t pt-4">
-                                        <Button type="button" variant="cancel" onClick={() => router.visit(route('features.show', feature.id))}>
-                                            <X />
-                                            Abbrechen
-                                        </Button>
-                                        <Button type="submit" variant="success" disabled={processing}>
-                                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                            <Save />
-                                            Änderungen speichern
-                                        </Button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            {/* Right Column - All Components */}
-                            <div className="space-y-6">
-                                {/* Workflow - Outside the form to avoid nested form issues */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Status</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <WorkflowManager
-                                            featureId={feature.id}
-                                            statusOptions={statusOptions}
-                                            currentStatus={statusOptions.find((option) => option.current)?.value || ''}
+                                    {/* Right — Status + Comments */}
+                                    <div className="space-y-6">
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Status</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <WorkflowManager
+                                                    featureId={feature.id}
+                                                    statusOptions={statusOptions}
+                                                    currentStatus={statusOptions.find((option) => option.current)?.value || ''}
+                                                />
+                                            </CardContent>
+                                        </Card>
+                                        <Comments
+                                            entity={{
+                                                type: 'App\\Models\\Feature',
+                                                id: feature.id,
+                                            }}
                                         />
-                                    </CardContent>
-                                </Card>
+                                    </div>
+                                </div>
+                            </TabsContent>
 
-                                {/* Abhängigkeiten - Outside the form to avoid nested form issues */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Abhängigkeiten</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <DependenciesSection featureId={feature.id} featureOptions={featureOptions} dependencies={dependencies} />
-                                    </CardContent>
-                                </Card>
-
-                                {/* Kommentare - Outside the form to avoid nested form issues */}
-                                <Comments
-                                    entity={{
-                                        type: 'App\\Models\\Feature',
-                                        id: feature.id,
-                                    }}
-                                />
-                            </div>
-                        </div>
+                            <TabsContent value="erweitert" className="space-y-6">
+                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[60%_1fr]">
+                                    {/* Left — Dependencies + Skills */}
+                                    <div className="space-y-6">
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Abhängigkeiten</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <DependenciesSection featureId={feature.id} featureOptions={featureOptions} dependencies={dependencies} />
+                                            </CardContent>
+                                        </Card>
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Benötigte Skills</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <SkillRequirementsPicker
+                                                    skills={skills}
+                                                    requirements={data.skill_requirements}
+                                                    onToggle={toggleSkillRequirement}
+                                                    onLevelChange={setSkillLevel}
+                                                />
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+                                    {/* Right — empty for now, keeps grid consistent */}
+                                    <div />
+                                </div>
+                            </TabsContent>
+                        </Tabs>
                     </CardContent>
                 </Card>
             </div>
