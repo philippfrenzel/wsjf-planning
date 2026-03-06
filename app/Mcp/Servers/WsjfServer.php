@@ -6,6 +6,7 @@ namespace App\Mcp\Servers;
 
 use App\Mcp\Resources\DashboardSummary;
 use App\Mcp\Tools\CreateFeature;
+use App\Mcp\Tools\CreateProject;
 use App\Mcp\Tools\DeleteFeature;
 use App\Mcp\Tools\GetFeature;
 use App\Mcp\Tools\GetProject;
@@ -16,6 +17,7 @@ use App\Mcp\Tools\ListProjects;
 use App\Mcp\Tools\ListSkills;
 use App\Mcp\Tools\ListTeams;
 use App\Mcp\Tools\UpdateFeature;
+use App\Mcp\Tools\UpdateProject;
 use Laravel\Mcp\Server;
 
 class WsjfServer extends Server
@@ -33,6 +35,8 @@ class WsjfServer extends Server
     protected array $tools = [
         ListProjects::class,
         GetProject::class,
+        CreateProject::class,
+        UpdateProject::class,
         ListFeatures::class,
         GetFeature::class,
         CreateFeature::class,
