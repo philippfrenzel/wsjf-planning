@@ -132,3 +132,4 @@ Après une connexion réussie, vous pouvez par exemple adresser les requêtes su
 | `401 Unauthorized` | Jeton invalide ou expiré. Créez un nouveau jeton dans le profil utilisateur. |
 | Aucun outil visible | Redémarrez la CLI. Vérifiez la configuration avec `/mcp` dans la Copilot CLI. |
 | Données manquantes / vides | Le jeton est lié au locataire. Assurez-vous de travailler dans le bon Tenant. |
+| `Failed to read configuration` / `mcpServers: Required` | La clé de premier niveau dans `mcp-config.json` doit être `"mcpServers"` (et non `"servers"`). |

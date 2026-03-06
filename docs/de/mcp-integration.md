@@ -134,3 +134,4 @@ Nach erfolgreicher Verbindung können Sie z. B. folgende Anfragen an den KI-Assi
 | `401 Unauthorized` | Token ungültig oder abgelaufen. Erstellen Sie einen neuen Token im Benutzerprofil. |
 | Keine Tools sichtbar | CLI neu starten. Prüfen Sie die Konfiguration mit `/mcp` in der Copilot CLI. |
 | Daten fehlen / leer | Der Token ist mandantengebunden. Stellen Sie sicher, dass Sie im richtigen Tenant arbeiten. |
+| `Failed to read configuration` / `mcpServers: Required` | Der Top-Level-Key in `mcp-config.json` muss `"mcpServers"` lauten (nicht `"servers"`). |

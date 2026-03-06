@@ -132,3 +132,4 @@ After a successful connection, you can send prompts like the following to the AI
 | `401 Unauthorized` | Token is invalid or expired. Create a new token in your user profile. |
 | No tools visible | Restart the CLI. Check the configuration with `/mcp` in the Copilot CLI. |
 | Data missing / empty | The token is tenant-scoped. Make sure you are working in the correct tenant. |
+| `Failed to read configuration` / `mcpServers: Required` | The top-level key in `mcp-config.json` must be `"mcpServers"` (not `"servers"`). |

@@ -22,7 +22,7 @@
   "mcp_claude_hint": "Dopo il riavvio di Claude Code, gli strumenti WSJF Planning sono disponibili nel contesto. Puoi ad esempio chiedere: \"Mostrami tutte le feature nel progetto X ordinate per punteggio WSJF.\"",
   "mcp_copilot_cli_title": "GitHub Copilot CLI",
   "mcp_copilot_cli_text": "L'agente GitHub Copilot CLI supporta anche i server MCP. Modifica il file ~/.copilot/mcp-config.json (configurazione a livello utente) oppure usa il comando /mcp add all'interno della CLI.",
-  "mcp_copilot_cli_hint": "Importante: Usa il tipo \"sse\" invece di \"http\". Con il tipo \"http\", la CLI tenta un'autenticazione OAuth che fallisce. Con \"sse\", il token Bearer viene utilizzato direttamente.",
+  "mcp_copilot_cli_hint": "Importante: Usa il tipo \"sse\" invece di \"http\". Con il tipo \"http\", la CLI tenta un'autenticazione OAuth che fallisce. Con \"sse\", il token Bearer viene utilizzato direttamente. Assicurati inoltre che la chiave di primo livello sia \"mcpServers\" (non \"servers\") — altrimenti la CLI non si avvierà.",
   "mcp_test_title": "Testa la connessione",
   "mcp_test_text": "Puoi testare la connessione in anticipo con curl:",
   "mcp_test_success": "Una risposta riuscita contiene un risultato JSON-RPC con le capacità del server e l'elenco degli strumenti.",

@@ -132,3 +132,4 @@ Dopo una connessione riuscita, potete ad esempio inviare le seguenti richieste a
 | `401 Unauthorized` | Token non valido o scaduto. Creare un nuovo token nel profilo utente. |
 | Nessun tool visibile | Riavviare la CLI. Verificare la configurazione con `/mcp` nella Copilot CLI. |
 | Dati mancanti / vuoti | Il token è legato al mandante. Assicurarsi di lavorare nel Tenant corretto. |
+| `Failed to read configuration` / `mcpServers: Required` | La chiave di primo livello in `mcp-config.json` deve essere `"mcpServers"` (non `"servers"`). |
