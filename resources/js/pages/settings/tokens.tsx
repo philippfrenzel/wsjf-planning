@@ -1,5 +1,5 @@
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 
 import InputError from '@/components/input-error';
@@ -26,8 +26,7 @@ interface Token {
     created_at: string;
 }
 
-export default function Tokens({ tokens }: { tokens: Token[] }) {
-    const { flash } = usePage<{ flash: { newToken?: string } }>().props;
+export default function Tokens({ tokens, newToken }: { tokens: Token[]; newToken?: string }) {
     const [copied, setCopied] = useState(false);
 
     const { data, setData, post, errors, processing, reset } = useForm({ name: '' });
@@ -41,8 +40,8 @@ export default function Tokens({ tokens }: { tokens: Token[] }) {
     };
 
     const copyToken = () => {
-        if (flash?.newToken) {
-            navigator.clipboard.writeText(flash.newToken);
+        if (newToken) {
+            navigator.clipboard.writeText(newToken);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         }
@@ -59,7 +58,7 @@ export default function Tokens({ tokens }: { tokens: Token[] }) {
             <Head title="API Tokens" />
 
             <SettingsLayout>
-                {flash?.newToken && (
+                {newToken && (
                     <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
                         <CardHeader>
                             <CardTitle className="text-green-800 dark:text-green-200">Token erstellt</CardTitle>
@@ -70,7 +69,7 @@ export default function Tokens({ tokens }: { tokens: Token[] }) {
                         <CardContent>
                             <div className="flex items-center gap-2">
                                 <code className="bg-green-100 dark:bg-green-900 text-green-900 dark:text-green-100 flex-1 rounded px-3 py-2 text-sm font-mono break-all">
-                                    {flash.newToken}
+                                    {newToken}
                                 </code>
                                 <Button size="icon" variant="outline" onClick={copyToken} title="Kopieren">
                                     {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}

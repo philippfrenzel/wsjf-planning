@@ -29,7 +29,16 @@ class TokenController extends Controller
 
         $token = $request->user()->createToken($validated['name'], ['mcp:use']);
 
-        return back()->with('newToken', $token->plainTextToken);
+        return Inertia::render('settings/tokens', [
+            'tokens' => $request->user()->tokens()->orderByDesc('created_at')->get()->map(fn ($t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+                'abilities' => $t->abilities,
+                'last_used_at' => $t->last_used_at?->toIso8601String(),
+                'created_at' => $t->created_at->toIso8601String(),
+            ]),
+            'newToken' => $token->plainTextToken,
+        ]);
     }
 
     public function destroy(Request $request, int $tokenId)
