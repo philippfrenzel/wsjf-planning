@@ -41,11 +41,111 @@ export default function Welcome() {
     const year = new Date().getFullYear();
     const copyright = (t('footer_copyright') as string).replace('{year}', String(year));
 
+    const seoDescription = 'WSJF Planning — Das PI-Planning- und Priorisierungs-Tool für SAFe-Teams. Features bewerten, Kapazitäten planen, Skill-Matrix nutzen, Abhängigkeiten visualisieren.';
+    const siteUrl = 'https://safenavigator.online';
+
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'WebSite',
+                name: 'WSJF Planning',
+                url: siteUrl,
+                description: seoDescription,
+                inLanguage: ['de', 'en', 'fr', 'it'],
+            },
+            {
+                '@type': 'SoftwareApplication',
+                name: 'WSJF Planning',
+                url: siteUrl,
+                applicationCategory: 'BusinessApplication',
+                operatingSystem: 'Web',
+                description: seoDescription,
+                offers: {
+                    '@type': 'Offer',
+                    price: '1.00',
+                    priceCurrency: 'CHF',
+                    priceValidUntil: `${new Date().getFullYear() + 1}-12-31`,
+                    url: `${siteUrl}/register`,
+                },
+                aggregateRating: undefined,
+                featureList: [
+                    'WSJF Scoring',
+                    'PI Planning Board',
+                    'Team Voting',
+                    'Skill Matrix',
+                    'Feature Dependencies',
+                    'Definition of Ready / Done',
+                    'Roadmap Visualization',
+                    'Multi-Tenant SaaS',
+                    'SSO with Google',
+                ],
+            },
+            {
+                '@type': 'Organization',
+                name: 'WSJF Planning',
+                url: siteUrl,
+                logo: `${siteUrl}/logo.svg`,
+                contactPoint: {
+                    '@type': 'ContactPoint',
+                    contactType: 'customer support',
+                    availableLanguage: ['German', 'English', 'French', 'Italian'],
+                },
+            },
+            {
+                '@type': 'FAQPage',
+                mainEntity: [
+                    {
+                        '@type': 'Question',
+                        name: 'Was ist WSJF?',
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: 'WSJF (Weighted Shortest Job First) ist eine Priorisierungsmethode aus dem SAFe-Framework. Sie berechnet die Priorität aus Business Value, Time Criticality und Risk Reduction geteilt durch den Job Size.',
+                        },
+                    },
+                    {
+                        '@type': 'Question',
+                        name: 'Was kostet WSJF Planning?',
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: 'WSJF Planning kostet CHF 1 pro Benutzer und Monat. Es gibt eine kostenlose 14-tägige Testphase ohne Kreditkarte.',
+                        },
+                    },
+                    {
+                        '@type': 'Question',
+                        name: 'Unterstützt WSJF Planning PI Planning nach SAFe?',
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: 'Ja, WSJF Planning bietet vollständige PI-Planning-Unterstützung mit Iterationsplanung, Kapazitätsmanagement, Team-Voting, PI-Objectives und Abhängigkeitsvisualisierung.',
+                        },
+                    },
+                    {
+                        '@type': 'Question',
+                        name: 'Kann ich Features aus Jira importieren?',
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: 'Ja, der CSV-Import-Wizard unterstützt den Import von Jira-Vorgängen. Ein JQL-Snippet wird bereitgestellt, um die passende Abfrage in Jira auszuführen.',
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+
     return (
         <>
-            <Head title="WSJF Planning — PI Planning for SAFe Teams">
+            <Head title="WSJF Planning — PI Planning & Priorisierung für SAFe Teams">
+                <meta head-key="description" name="description" content={seoDescription} />
+                <meta head-key="og:title" property="og:title" content="WSJF Planning — PI Planning & Priorisierung für SAFe Teams" />
+                <meta head-key="og:description" property="og:description" content={seoDescription} />
+                <meta head-key="og:url" property="og:url" content={siteUrl} />
+                <meta head-key="og:image" property="og:image" content={`${siteUrl}/gfx/wsjf_planning_teaser.png`} />
+                <meta head-key="twitter:title" name="twitter:title" content="WSJF Planning — PI Planning für SAFe Teams" />
+                <meta head-key="twitter:description" name="twitter:description" content={seoDescription} />
+                <meta head-key="twitter:image" name="twitter:image" content={`${siteUrl}/gfx/wsjf_planning_teaser.png`} />
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
+                <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
             </Head>
 
             {/* NAV */}
@@ -96,7 +196,8 @@ export default function Welcome() {
             </header>
 
             {/* HERO */}
-            <section className="bg-gradient-to-b from-[#0f172a] to-[#1e293b] py-24 lg:py-32">
+            <main>
+            <section id="hero" className="bg-gradient-to-b from-[#0f172a] to-[#1e293b] py-24 lg:py-32">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
                     <span className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-sm text-indigo-300 mb-8">
                         <CheckCircle2 className="h-4 w-4" />
@@ -172,7 +273,7 @@ export default function Welcome() {
             </section>
 
             {/* CORE FEATURES */}
-            <section className="bg-slate-50 py-20">
+            <section id="features" className="bg-slate-50 py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <span className="text-xs font-semibold uppercase tracking-widest text-indigo-600">{t('features_eyebrow')}</span>
@@ -213,7 +314,7 @@ export default function Welcome() {
             </section>
 
             {/* PRICING */}
-            <section className="bg-[#0f172a] py-20">
+            <section id="pricing" className="bg-[#0f172a] py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <span className="text-xs font-semibold uppercase tracking-widest text-indigo-400">{t('pricing_eyebrow')}</span>
@@ -245,7 +346,7 @@ export default function Welcome() {
             </section>
 
             {/* SECURITY */}
-            <section className="bg-slate-50 py-20">
+            <section id="security" className="bg-slate-50 py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <span className="text-xs font-semibold uppercase tracking-widest text-indigo-600">{t('security_eyebrow')}</span>
@@ -262,6 +363,7 @@ export default function Welcome() {
                     </div>
                 </div>
             </section>
+            </main>
 
             {/* FOOTER */}
             <footer className="bg-[#0f172a] border-t border-slate-800 py-10">

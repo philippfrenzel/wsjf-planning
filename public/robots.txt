@@ -1,2 +1,17 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /dashboard
+Disallow: /projects
+Disallow: /features
+Disallow: /plannings
+Disallow: /teams
+Disallow: /skills
+Disallow: /users
+Disallow: /billing
+Disallow: /settings
+Disallow: /estimations
+Disallow: /estimation-components
+Disallow: /commitments
+Disallow: /votes
+
+Sitemap: https://safenavigator.online/sitemap.xml

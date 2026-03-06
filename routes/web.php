@@ -36,6 +36,28 @@ Route::get('/impressum', function () {
     return Inertia::render('legal/impressum');
 })->name('imprint');
 
+Route::get('/sitemap.xml', function () {
+    $urls = [
+        ['loc' => url('/'), 'changefreq' => 'weekly', 'priority' => '1.0'],
+        ['loc' => url('/impressum'), 'changefreq' => 'monthly', 'priority' => '0.3'],
+        ['loc' => url('/login'), 'changefreq' => 'monthly', 'priority' => '0.5'],
+        ['loc' => url('/register'), 'changefreq' => 'monthly', 'priority' => '0.7'],
+    ];
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    foreach ($urls as $u) {
+        $xml .= '  <url>' . "\n";
+        $xml .= '    <loc>' . htmlspecialchars($u['loc']) . '</loc>' . "\n";
+        $xml .= '    <changefreq>' . $u['changefreq'] . '</changefreq>' . "\n";
+        $xml .= '    <priority>' . $u['priority'] . '</priority>' . "\n";
+        $xml .= '  </url>' . "\n";
+    }
+    $xml .= '</urlset>';
+
+    return response($xml, 200, ['Content-Type' => 'application/xml']);
+})->name('sitemap');
+
 // Core feature routes — require active subscription or trial (ENF-01)
 Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     // Dashboard-Route auf den neuen DashboardController umleiten
