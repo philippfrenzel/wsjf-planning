@@ -4,7 +4,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { Copy, Check, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
-function CodeBlock({ code, title }: { code: string; title?: string }) {
+function CodeBlock({ code, title, copyTooltip }: { code: string; title?: string; copyTooltip?: string }) {
     const [copied, setCopied] = useState(false);
     const copy = () => {
         navigator.clipboard.writeText(code);
@@ -20,7 +20,7 @@ function CodeBlock({ code, title }: { code: string; title?: string }) {
             <button
                 onClick={copy}
                 className="absolute top-2 right-2 p-1.5 rounded bg-slate-800 text-slate-400 opacity-0 group-hover:opacity-100 hover:text-white transition-all"
-                title="Kopieren"
+                title={copyTooltip}
             >
                 {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
             </button>
@@ -62,7 +62,7 @@ export default function McpDocs() {
     const copilotCliConfig = `{
   "mcpServers": {
     "wsjf-planning": {
-      "type": "http",
+      "type": "sse",
       "url": "${baseUrl}/mcp/wsjf",
       "headers": {
         "Authorization": "Bearer YOUR_API_TOKEN"
@@ -87,25 +87,25 @@ export default function McpDocs() {
   }'`;
 
     const tools = [
-        { name: 'list-projects', desc: 'Alle Projekte mit Projektleitern und Team-Anzahl auflisten', rw: 'read' },
-        { name: 'get-project', desc: 'Detailinformationen zu einem Projekt inkl. Teams, Skills, Beschreibung', rw: 'read' },
-        { name: 'list-features', desc: 'Features filtern nach Projekt, Status oder Typ — sortiert nach WSJF-Score', rw: 'read' },
-        { name: 'get-feature', desc: 'Feature-Details inkl. WSJF-Scores, Abhängigkeiten, Skill-Anforderungen', rw: 'read' },
-        { name: 'create-feature', desc: 'Neues Feature erstellen mit Name, Projekt, Typ, Beschreibung usw.', rw: 'write' },
-        { name: 'update-feature', desc: 'Bestehendes Feature aktualisieren — nur übergebene Felder werden geändert', rw: 'write' },
-        { name: 'delete-feature', desc: 'Feature löschen (Soft-Delete, kann rückgängig gemacht werden)', rw: 'write' },
-        { name: 'list-teams', desc: 'Alle Teams mit Mitgliederanzahl', rw: 'read' },
-        { name: 'get-team', desc: 'Team-Details mit Mitgliedern und deren Skills', rw: 'read' },
-        { name: 'list-skills', desc: 'Alle Skills gruppiert nach Kategorie', rw: 'read' },
-        { name: 'list-plannings', desc: 'PI-Planungen mit Projekt, Owner, Feature-/Iterations-Anzahl', rw: 'read' },
+        { name: 'list-projects', descKey: 'mcp_tool_list_projects', rw: 'read' },
+        { name: 'get-project', descKey: 'mcp_tool_get_project', rw: 'read' },
+        { name: 'list-features', descKey: 'mcp_tool_list_features', rw: 'read' },
+        { name: 'get-feature', descKey: 'mcp_tool_get_feature', rw: 'read' },
+        { name: 'create-feature', descKey: 'mcp_tool_create_feature', rw: 'write' },
+        { name: 'update-feature', descKey: 'mcp_tool_update_feature', rw: 'write' },
+        { name: 'delete-feature', descKey: 'mcp_tool_delete_feature', rw: 'write' },
+        { name: 'list-teams', descKey: 'mcp_tool_list_teams', rw: 'read' },
+        { name: 'get-team', descKey: 'mcp_tool_get_team', rw: 'read' },
+        { name: 'list-skills', descKey: 'mcp_tool_list_skills', rw: 'read' },
+        { name: 'list-plannings', descKey: 'mcp_tool_list_plannings', rw: 'read' },
     ];
 
     return (
         <>
-            <Head title="MCP Integration — WSJF Planning Docs">
-                <meta name="description" content="Dokumentation zur MCP-Integration (Model Context Protocol) für WSJF Planning. Verbinde VS Code, Claude Code oder Copilot CLI mit deinen PI-Planungsdaten." />
-                <meta property="og:title" content="MCP Integration — WSJF Planning" />
-                <meta property="og:description" content="Verbinde deine AI-Tools direkt mit deinen SAFe PI-Planungsdaten über das Model Context Protocol." />
+            <Head title={t('mcp_meta_og_title')}>
+                <meta name="description" content={t('mcp_meta_description')} />
+                <meta property="og:title" content={t('mcp_meta_og_title')} />
+                <meta property="og:description" content={t('mcp_meta_og_description')} />
             </Head>
 
             {/* NAV — same as landing page */}
@@ -142,13 +142,13 @@ export default function McpDocs() {
                             ) : (
                                 <>
                                     <Link href={route('login')} className="text-sm text-slate-300 hover:text-white transition-colors">
-                                        Login
+                                        {t('nav_login')}
                                     </Link>
                                     <Link
                                         href={route('register')}
                                         className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
                                     >
-                                        Registrieren
+                                        {t('nav_register')}
                                     </Link>
                                 </>
                             )}
@@ -165,11 +165,10 @@ export default function McpDocs() {
                             Model Context Protocol
                         </span>
                         <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
-                            MCP Integration
+                            {t('mcp_hero_title')}
                         </h1>
                         <p className="mt-4 text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                            Verbinde deine AI-Tools direkt mit deinen SAFe PI-Planungsdaten.
-                            Greife aus VS Code, Claude Code oder Copilot CLI auf Projekte, Features, Teams und Skills zu.
+                            {t('mcp_hero_description')}
                         </p>
                     </div>
                 </section>
@@ -179,36 +178,33 @@ export default function McpDocs() {
 
                     {/* What is MCP */}
                     <section>
-                        <h2 className="text-2xl font-bold text-white mb-4">Was ist MCP?</h2>
+                        <h2 className="text-2xl font-bold text-white mb-4">{t('mcp_what_is_title')}</h2>
                         <p className="text-slate-300 leading-relaxed">
-                            Das <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener" className="text-indigo-400 hover:text-indigo-300 underline">Model Context Protocol (MCP)</a> ist
-                            ein offener Standard, der es AI-Anwendungen ermöglicht, sicher auf externe Datenquellen und Tools zuzugreifen.
-                            WSJF Planning stellt einen MCP-Server bereit, über den deine AI-Tools deine PI-Planungsdaten lesen können —
-                            alles innerhalb deines Tenant-Kontexts und mit deinen Berechtigungen.
+                            {t('mcp_what_is_text')}{' '}
+                            <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener" className="text-indigo-400 hover:text-indigo-300 underline">modelcontextprotocol.io</a>
                         </p>
                     </section>
 
                     {/* Authentication */}
                     <section>
-                        <h2 className="text-2xl font-bold text-white mb-4">Authentifizierung</h2>
+                        <h2 className="text-2xl font-bold text-white mb-4">{t('mcp_auth_title')}</h2>
                         <div className="space-y-4 text-slate-300 leading-relaxed">
                             <p>
-                                Der MCP-Server verwendet <strong className="text-white">API Tokens</strong> (Bearer Authentication) zur Identifikation.
-                                Jeder Token ist an deinen Benutzer und Tenant gebunden — alle Daten werden automatisch auf deinen Tenant eingeschränkt.
+                                {t('mcp_auth_text')}
                             </p>
                             <div className="rounded-lg border border-indigo-500/30 bg-indigo-500/10 p-4">
-                                <h3 className="text-sm font-semibold text-indigo-300 mb-2">Token erstellen</h3>
+                                <h3 className="text-sm font-semibold text-indigo-300 mb-2">{t('mcp_auth_create_title')}</h3>
                                 <ol className="text-sm space-y-1 text-indigo-200 list-decimal list-inside">
-                                    <li>Melde dich bei WSJF Planning an</li>
-                                    <li>Gehe zu <strong>Settings → API Tokens</strong>{auth.user && (
-                                        <> (<Link href={route('tokens.index')} className="underline hover:text-white">direkt öffnen</Link>)</>
+                                    <li>{t('mcp_auth_step1')}</li>
+                                    <li>{t('mcp_auth_step2')}{auth.user && (
+                                        <> (<Link href={route('tokens.index')} className="underline hover:text-white">→</Link>)</>
                                     )}</li>
-                                    <li>Vergib einen beschreibenden Namen (z.B. „VS Code", „Claude Code")</li>
-                                    <li>Kopiere den Token — er wird nur einmal angezeigt!</li>
+                                    <li>{t('mcp_auth_step3')}</li>
+                                    <li>{t('mcp_auth_step4')}</li>
                                 </ol>
                             </div>
                             <p className="text-sm text-slate-400">
-                                ⚠️ Behandle deinen API Token wie ein Passwort. Teile ihn nicht und speichere ihn nicht in öffentlichen Repositories.
+                                {t('mcp_auth_warning')}
                             </p>
                         </div>
                     </section>
@@ -216,85 +212,88 @@ export default function McpDocs() {
                     {/* VS Code */}
                     <section>
                         <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                            VS Code / GitHub Copilot
+                            {t('mcp_vscode_title')}
                         </h2>
                         <div className="space-y-4 text-slate-300 leading-relaxed">
                             <p>
-                                VS Code unterstützt MCP-Server nativ über die <code className="bg-slate-800 px-1.5 py-0.5 rounded text-sm">settings.json</code> oder
-                                eine <code className="bg-slate-800 px-1.5 py-0.5 rounded text-sm">.vscode/mcp.json</code> Datei im Projektverzeichnis.
+                                {t('mcp_vscode_text')}
                             </p>
                             <CodeBlock
                                 title=".vscode/mcp.json"
                                 code={vsCodeConfig}
+                                copyTooltip={t('mcp_copy_tooltip')}
                             />
                             <p className="text-sm text-slate-400">
-                                Ersetze <code className="bg-slate-800 px-1 rounded">YOUR_API_TOKEN</code> durch deinen persönlichen Token aus den Settings.
-                                Nach dem Speichern erkennt VS Code den MCP-Server automatisch und die Tools stehen im Copilot Chat zur Verfügung.
+                                {t('mcp_vscode_hint')}
                             </p>
                         </div>
                     </section>
 
                     {/* Claude Code */}
                     <section>
-                        <h2 className="text-2xl font-bold text-white mb-4">Claude Code</h2>
+                        <h2 className="text-2xl font-bold text-white mb-4">{t('mcp_claude_title')}</h2>
                         <div className="space-y-4 text-slate-300 leading-relaxed">
                             <p>
-                                Claude Code (Anthropic CLI) unterstützt MCP-Server über eine JSON-Konfiguration.
-                                Erstelle oder ergänze die Datei <code className="bg-slate-800 px-1.5 py-0.5 rounded text-sm">~/.claude/claude_desktop_config.json</code>:
+                                {t('mcp_claude_text')}
                             </p>
                             <CodeBlock
                                 title="~/.claude/claude_desktop_config.json"
                                 code={claudeCodeConfig}
+                                copyTooltip={t('mcp_copy_tooltip')}
                             />
                             <p className="text-sm text-slate-400">
-                                Nach dem Neustart von Claude Code stehen die WSJF-Planning-Tools im Kontext zur Verfügung.
-                                Du kannst dann z.B. fragen: „Zeige mir alle Features im Projekt X sortiert nach WSJF-Score."
+                                {t('mcp_claude_hint')}
                             </p>
                         </div>
                     </section>
 
                     {/* Copilot CLI */}
                     <section>
-                        <h2 className="text-2xl font-bold text-white mb-4">GitHub Copilot CLI</h2>
+                        <h2 className="text-2xl font-bold text-white mb-4">{t('mcp_copilot_cli_title')}</h2>
                         <div className="space-y-4 text-slate-300 leading-relaxed">
                             <p>
-                                Der GitHub Copilot CLI Agent unterstützt ebenfalls MCP-Server.
-                                Ergänze die Datei <code className="bg-slate-800 px-1.5 py-0.5 rounded text-sm">.copilot/config.json</code> oder
-                                nutze die globale Konfiguration:
+                                {t('mcp_copilot_cli_text')}
                             </p>
                             <CodeBlock
-                                title=".copilot/config.json"
+                                title="~/.copilot/mcp-config.json"
                                 code={copilotCliConfig}
+                                copyTooltip={t('mcp_copy_tooltip')}
                             />
+                            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
+                                <p className="text-sm text-amber-200">
+                                    {t('mcp_copilot_cli_hint')}
+                                </p>
+                            </div>
                         </div>
                     </section>
 
                     {/* Test with curl */}
                     <section>
-                        <h2 className="text-2xl font-bold text-white mb-4">Verbindung testen</h2>
+                        <h2 className="text-2xl font-bold text-white mb-4">{t('mcp_test_title')}</h2>
                         <div className="space-y-4 text-slate-300 leading-relaxed">
                             <p>
-                                Du kannst die Verbindung vorab mit <code className="bg-slate-800 px-1.5 py-0.5 rounded text-sm">curl</code> testen:
+                                {t('mcp_test_text')}
                             </p>
                             <CodeBlock
                                 title="Terminal"
                                 code={curlTest}
+                                copyTooltip={t('mcp_copy_tooltip')}
                             />
                             <p className="text-sm text-slate-400">
-                                Eine erfolgreiche Antwort enthält ein JSON-RPC-Ergebnis mit Server-Capabilities und der Tool-Liste.
+                                {t('mcp_test_success')}
                             </p>
                         </div>
                     </section>
 
                     {/* Available Tools */}
                     <section>
-                        <h2 className="text-2xl font-bold text-white mb-6">Verfügbare Tools</h2>
+                        <h2 className="text-2xl font-bold text-white mb-6">{t('mcp_tools_title')}</h2>
                         <div className="grid gap-3">
                             {tools.map((tool) => (
                                 <div key={tool.name} className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 flex items-start justify-between gap-3">
                                     <div>
                                         <code className="text-sm font-bold text-indigo-400">{tool.name}</code>
-                                        <p className="mt-1 text-sm text-slate-300">{tool.desc}</p>
+                                        <p className="mt-1 text-sm text-slate-300">{t(tool.descKey)}</p>
                                     </div>
                                     <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
                                         tool.rw === 'write'
@@ -307,31 +306,30 @@ export default function McpDocs() {
                             ))}
                         </div>
                         <p className="mt-4 text-sm text-slate-400">
-                            Zusätzlich steht die Resource <code className="bg-slate-800 px-1 rounded text-indigo-400">dashboard-summary</code> zur Verfügung,
-                            die eine Übersicht deiner Tenant-Daten liefert (Projekt-, Feature-, Team-, Skill- und Planungsanzahl).
+                            {t('mcp_tools_resource_text')}
                         </p>
                     </section>
 
                     {/* Security */}
                     <section>
-                        <h2 className="text-2xl font-bold text-white mb-4">Sicherheit & Datenschutz</h2>
+                        <h2 className="text-2xl font-bold text-white mb-4">{t('mcp_security_title')}</h2>
                         <div className="space-y-3 text-slate-300 leading-relaxed">
                             <ul className="space-y-2 text-sm">
                                 <li className="flex gap-2">
                                     <span className="text-indigo-400">•</span>
-                                    <span><strong className="text-white">Tenant-Isolation:</strong> Alle Abfragen sind auf deinen Tenant beschränkt. Du siehst ausschliesslich die Daten deiner Organisation.</span>
+                                    <span>{t('mcp_security_tenant')}</span>
                                 </li>
                                 <li className="flex gap-2">
                                     <span className="text-indigo-400">•</span>
-                                    <span><strong className="text-white">Read & Write:</strong> Der MCP-Server bietet Lesezugriff auf alle Entitäten und Schreibzugriff auf Features (erstellen, aktualisieren, löschen). Andere Entitäten sind aktuell read-only.</span>
+                                    <span>{t('mcp_security_rw')}</span>
                                 </li>
                                 <li className="flex gap-2">
                                     <span className="text-indigo-400">•</span>
-                                    <span><strong className="text-white">Token-basiert:</strong> Jeder Token kann jederzeit in den Settings widerrufen werden. Token sind an deinen Benutzer gebunden.</span>
+                                    <span>{t('mcp_security_token')}</span>
                                 </li>
                                 <li className="flex gap-2">
                                     <span className="text-indigo-400">•</span>
-                                    <span><strong className="text-white">HTTPS:</strong> Alle Kommunikation erfolgt verschlüsselt über HTTPS.</span>
+                                    <span>{t('mcp_security_https')}</span>
                                 </li>
                             </ul>
                         </div>
@@ -344,7 +342,7 @@ export default function McpDocs() {
                                 href={route('tokens.index')}
                                 className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
                             >
-                                API Token erstellen
+                                {t('mcp_cta_create_token')}
                                 <ExternalLink className="h-4 w-4" />
                             </Link>
                         ) : (
@@ -352,7 +350,7 @@ export default function McpDocs() {
                                 href={route('register')}
                                 className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
                             >
-                                Jetzt registrieren
+                                {t('mcp_cta_register')}
                                 <ExternalLink className="h-4 w-4" />
                             </Link>
                         )}
@@ -369,15 +367,15 @@ export default function McpDocs() {
                             <p className="text-sm text-slate-400 mt-1">SAFe PI-Planning Tool</p>
                         </div>
                         <nav className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400">
-                            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+                            <Link href="/" className="hover:text-white transition-colors">{t('nav_home')}</Link>
                             <Link href={route('docs.mcp')} className="text-white font-medium">MCP Docs</Link>
-                            <Link href={route('login')} className="hover:text-white transition-colors">Login</Link>
-                            <Link href={route('register')} className="hover:text-white transition-colors">Registrieren</Link>
-                            <Link href={route('imprint')} className="hover:text-white transition-colors">Impressum</Link>
+                            <Link href={route('login')} className="hover:text-white transition-colors">{t('nav_login')}</Link>
+                            <Link href={route('register')} className="hover:text-white transition-colors">{t('nav_register')}</Link>
+                            <Link href={route('imprint')} className="hover:text-white transition-colors">{t('nav_imprint')}</Link>
                         </nav>
                     </div>
                     <div className="mt-8 border-t border-slate-800 pt-6 text-center text-sm text-slate-500">
-                        © {year} WSJF Planning. Alle Rechte vorbehalten.
+                        © {year} WSJF Planning. {t('mcp_footer_rights')}
                     </div>
                 </div>
             </footer>
