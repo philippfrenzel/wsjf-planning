@@ -217,7 +217,7 @@ export default function Index({ templates, projects }: { templates: Template[]; 
                                     value={form.body}
                                     onChange={(md) => setForm({ ...form, body: md })}
                                     placeholder="Template-Inhalt in Markdown …"
-                                    minHeight="200px"
+                                    minHeight={200}
                                 />
                             </div>
                             {projects.length > 0 && (

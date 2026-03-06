@@ -11,7 +11,7 @@ import ComponentItem from './components/ComponentItem';
 import DependencyList from './components/DependencyList';
 import EditComponentDialog from './components/EditComponentDialog';
 import EstimationDialog from './components/EstimationDialog';
-import FeatureDescription from './components/FeatureDescription';
+import MarkdownViewer from '@/components/markdown-viewer';
 import FeatureDetails from './components/FeatureDetails';
 import FeatureHeader from './components/FeatureHeader';
 
@@ -195,9 +195,7 @@ export default function Show({ feature, auth }: ShowProps) {
                                             </CardHeader>
                                             <CardContent>
                                                 {feature.description ? (
-                                                    <div className="prose prose-sm max-w-none">
-                                                        <FeatureDescription content={feature.description} />
-                                                    </div>
+                                                    <MarkdownViewer content={feature.description} className="prose prose-sm max-w-none" />
                                                 ) : (
                                                     <p className="text-muted-foreground">Keine Beschreibung vorhanden.</p>
                                                 )}

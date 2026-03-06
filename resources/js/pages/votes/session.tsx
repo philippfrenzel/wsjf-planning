@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/empty-state';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
-import DOMPurify from 'dompurify';
+import MarkdownViewer from '@/components/markdown-viewer';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -250,10 +250,9 @@ export default function VoteSession({ planning, features, types, existingVotes, 
                         </DialogTitle>
                     </DialogHeader>
 
-                    {/* Hier die Änderung: Verwenden von dangerouslySetInnerHTML */}
                     <div className="prose prose-sm max-w-none overflow-auto">
                         {selectedFeature?.description ? (
-                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedFeature.description) }} />
+                            <MarkdownViewer content={selectedFeature.description} />
                         ) : (
                             <p>Keine Beschreibung vorhanden.</p>
                         )}

@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import DOMPurify from 'dompurify';
+import MarkdownViewer from '@/components/markdown-viewer';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -89,7 +89,7 @@ const FeatureCard: React.FC<{
                 <CardContent className="pt-0 pb-2">
                     <div className="text-muted-foreground line-clamp-2 text-sm">
                         {feature.description ? (
-                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(feature.description.substring(0, 100) + '...') }} />
+                            <MarkdownViewer content={feature.description.substring(0, 100) + '...'} />
                         ) : (
                             <p>Keine Beschreibung vorhanden.</p>
                         )}
@@ -128,7 +128,7 @@ const FeatureCard: React.FC<{
 
                     <div className="prose prose-sm max-w-none overflow-auto">
                         {feature.description ? (
-                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(feature.description) }} />
+                            <MarkdownViewer content={feature.description} />
                         ) : (
                             <p>Keine Beschreibung vorhanden.</p>
                         )}
@@ -179,7 +179,7 @@ const SortableFeatureCard: React.FC<{
                     <CardContent className="pt-0 pb-2">
                         <div className="text-muted-foreground line-clamp-2 text-sm">
                             {feature.description ? (
-                                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(feature.description.substring(0, 100) + '...') }} />
+                                <MarkdownViewer content={feature.description.substring(0, 100) + '...'} />
                             ) : (
                                 <p>Keine Beschreibung vorhanden.</p>
                             )}
@@ -226,7 +226,7 @@ const SortableFeatureCard: React.FC<{
 
                     <div className="prose prose-sm max-w-none overflow-auto">
                         {feature.description ? (
-                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(feature.description) }} />
+                            <MarkdownViewer content={feature.description} />
                         ) : (
                             <p>Keine Beschreibung vorhanden.</p>
                         )}
@@ -326,9 +326,7 @@ const CategoryTabContent: React.FC<{
                                                 <CardContent className="pt-0 pb-2">
                                                     <div className="text-muted-foreground line-clamp-2 text-sm">
                                                         {feature.description ? (
-                                                            <div
-                                                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(feature.description.substring(0, 100) + '...') }}
-                                                            />
+                                                            <MarkdownViewer content={feature.description.substring(0, 100) + '...'} />
                                                         ) : (
                                                             <p>Keine Beschreibung vorhanden.</p>
                                                         )}
@@ -434,7 +432,7 @@ const CategoryTabContent: React.FC<{
 
                             <div className="prose prose-sm max-w-none overflow-auto">
                                 {detailFeature.description ? (
-                                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(detailFeature.description) }} />
+                                    <MarkdownViewer content={detailFeature.description} />
                                 ) : (
                                     <p>Keine Beschreibung vorhanden.</p>
                                 )}

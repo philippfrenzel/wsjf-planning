@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import MarkdownEditor from '@/components/markdown-editor';
 import { SkillRequirementsPicker } from '@/components/skill-requirements-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,10 +10,6 @@ import AppLayout from '@/layouts/app-layout';
 import { useForm } from '@inertiajs/react';
 import { LoaderCircle, Save, X } from 'lucide-react';
 import React from 'react';
-// TipTap Imports statt ReactQuill
-import TextAlign from '@tiptap/extension-text-align';
-import { EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
 
 interface Project {
     id: number;
@@ -47,20 +44,6 @@ export default function Create({ projects, users, skills }: CreateProps) {
         skill_requirements: [] as SkillRequirement[],
     });
 
-    // TipTap Editor initialisieren
-    const editor = useEditor({
-        extensions: [
-            StarterKit,
-            TextAlign.configure({
-                types: ['heading', 'paragraph'],
-            }),
-        ],
-        content: data.description,
-        onUpdate: ({ editor }) => {
-            setData('description', editor.getHTML());
-        },
-    });
-
     function toggleSkillRequirement(skillId: number) {
         const existing = data.skill_requirements.find((r) => r.skill_id === skillId);
         if (existing) {
@@ -75,129 +58,6 @@ export default function Create({ projects, users, skills }: CreateProps) {
             r.skill_id === skillId ? { ...r, level } : r
         ));
     }
-
-    const addToolbar = () => {
-        if (!editor) return null;
-
-        return (
-            <div className="bg-muted flex flex-wrap gap-1 border-b p-2">
-                {/* Textformatierungen */}
-                <div className="mr-2 flex gap-1 border-r pr-2">
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={editor.isActive('bold') ? 'default' : 'outline'}
-                        onClick={() => editor.chain().focus().toggleBold().run()}
-                        title="Fett"
-                    >
-                        <span className="font-bold">B</span>
-                    </Button>
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={editor.isActive('italic') ? 'default' : 'outline'}
-                        onClick={() => editor.chain().focus().toggleItalic().run()}
-                        title="Kursiv"
-                    >
-                        <span className="italic">I</span>
-                    </Button>
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={editor.isActive('strike') ? 'default' : 'outline'}
-                        onClick={() => editor.chain().focus().toggleStrike().run()}
-                        title="Durchgestrichen"
-                    >
-                        <span className="line-through">S</span>
-                    </Button>
-                </div>
-
-                {/* Überschriften */}
-                <div className="mr-2 flex gap-1 border-r pr-2">
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={editor.isActive('heading', { level: 1 }) ? 'default' : 'outline'}
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                        title="Überschrift 1"
-                    >
-                        H1
-                    </Button>
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={editor.isActive('heading', { level: 2 }) ? 'default' : 'outline'}
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                        title="Überschrift 2"
-                    >
-                        H2
-                    </Button>
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={editor.isActive('heading', { level: 3 }) ? 'default' : 'outline'}
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                        title="Überschrift 3"
-                    >
-                        H3
-                    </Button>
-                </div>
-
-                {/* Listen */}
-                <div className="mr-2 flex gap-1 border-r pr-2">
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={editor.isActive('bulletList') ? 'default' : 'outline'}
-                        onClick={() => editor.chain().focus().toggleBulletList().run()}
-                        title="Aufzählungsliste"
-                    >
-                        • Liste
-                    </Button>
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={editor.isActive('orderedList') ? 'default' : 'outline'}
-                        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                        title="Nummerierte Liste"
-                    >
-                        1. Liste
-                    </Button>
-                </div>
-
-                {/* Zitate und Code */}
-                <div className="flex gap-1">
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={editor.isActive('blockquote') ? 'default' : 'outline'}
-                        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                        title="Zitat"
-                    >
-                        "
-                    </Button>
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={editor.isActive('codeBlock') ? 'default' : 'outline'}
-                        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-                        title="Code-Block"
-                    >
-                        &lt;/&gt;
-                    </Button>
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => editor.chain().focus().setHorizontalRule().run()}
-                        title="Horizontale Linie einfügen"
-                    >
-                        ―
-                    </Button>
-                </div>
-            </div>
-        );
-    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setData(e.target.name as keyof typeof data, e.target.value);
@@ -274,10 +134,11 @@ export default function Create({ projects, users, skills }: CreateProps) {
 
                         <div>
                             <Label htmlFor="description">Beschreibung</Label>
-                            <div className="overflow-hidden rounded border">
-                                {addToolbar()}
-                                <EditorContent editor={editor} className="min-h-[120px] bg-white" />
-                            </div>
+                            <MarkdownEditor
+                                value={data.description}
+                                onChange={(md) => setData('description', md)}
+                                placeholder="Feature-Beschreibung …"
+                            />
                             <InputError message={errors.description} className="mt-1" />
                         </div>
 

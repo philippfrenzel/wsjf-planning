@@ -2,7 +2,6 @@ import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 import '../css/app.css';
 import './bootstrap';
-import '/resources/css/tiptap.css';
 
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
