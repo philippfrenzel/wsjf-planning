@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { useForm } from '@inertiajs/react';
-import { LoaderCircle, Save, X } from 'lucide-react';
-import React from 'react';
+import axios from 'axios';
+import { LoaderCircle, Save, Sparkles, X } from 'lucide-react';
+import React, { useState } from 'react';
 
 import DependenciesSection from './components/DependenciesSection';
 import WorkflowManager from './components/WorkflowManager';
@@ -88,6 +89,27 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
             level: s.pivot.level,
         })) as SkillRequirement[],
     });
+
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiError, setAiError] = useState('');
+
+    async function generateWithAi() {
+        if (!data.project_id || !data.name) return;
+        setAiLoading(true);
+        setAiError('');
+        try {
+            const res = await axios.post('/api/ai/generate-description', {
+                feature_name: data.name,
+                project_id: parseInt(data.project_id),
+                existing_description: data.description,
+            });
+            setData('description', res.data.description);
+        } catch (e: any) {
+            setAiError(e.response?.data?.error ?? 'AI generation failed');
+        } finally {
+            setAiLoading(false);
+        }
+    }
 
     // Breadcrumbs definieren
     const breadcrumbs: BreadcrumbItem[] = [
@@ -220,7 +242,21 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                         </div>
 
                                         <div>
-                                            <Label htmlFor="description">Beschreibung</Label>
+                                            <div className="mb-1 flex items-center justify-between">
+                                                <Label htmlFor="description">Beschreibung</Label>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={generateWithAi}
+                                                    disabled={aiLoading || !data.project_id || !data.name}
+                                                    title={!data.project_id || !data.name ? 'Projekt und Name erforderlich' : 'Beschreibung mit KI generieren'}
+                                                >
+                                                    {aiLoading ? <LoaderCircle className="mr-1 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1 h-3.5 w-3.5" />}
+                                                    KI generieren
+                                                </Button>
+                                            </div>
+                                            {aiError && <p className="mb-1 text-sm text-red-500">{aiError}</p>}
                                             <MarkdownEditor
                                                 value={data.description}
                                                 onChange={(md) => setData('description', md)}
