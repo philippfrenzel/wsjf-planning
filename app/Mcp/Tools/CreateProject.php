@@ -42,12 +42,16 @@ class CreateProject extends Tool
             'deputy_leader_id' => 'nullable|integer|exists:users,id',
         ]);
 
-        $data['created_by'] = Auth::id();
-        $data['tenant_id'] = Auth::user()->current_tenant_id;
+        try {
+            $data['created_by'] = Auth::id();
+            $data['tenant_id'] = Auth::user()->current_tenant_id;
 
-        $project = Project::create($data);
+            $project = Project::create($data);
 
-        cache()->increment('app.data.version', 1);
+            cache()->increment('app.data.version', 1);
+        } catch (\Throwable $e) {
+            return Response::error("Failed to create project: {$e->getMessage()}");
+        }
 
         return Response::json([
             'id' => $project->id,

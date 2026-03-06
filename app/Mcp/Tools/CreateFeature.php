@@ -42,11 +42,15 @@ class CreateFeature extends Tool
             'team_id' => 'nullable|integer|exists:teams,id',
         ]);
 
-        $data['tenant_id'] = Auth::user()->current_tenant_id;
+        try {
+            $data['tenant_id'] = Auth::user()->current_tenant_id;
 
-        $feature = Feature::create($data);
+            $feature = Feature::create($data);
 
-        cache()->increment('app.data.version', 1);
+            cache()->increment('app.data.version', 1);
+        } catch (\Throwable $e) {
+            return Response::error("Failed to create feature: {$e->getMessage()}");
+        }
 
         return Response::json([
             'id' => $feature->id,

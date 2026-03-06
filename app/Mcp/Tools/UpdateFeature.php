@@ -58,9 +58,13 @@ class UpdateFeature extends Tool
             return Response::error('No fields provided to update.');
         }
 
-        $feature->update($updateFields);
+        try {
+            $feature->update($updateFields);
 
-        cache()->increment('app.data.version', 1);
+            cache()->increment('app.data.version', 1);
+        } catch (\Throwable $e) {
+            return Response::error("Failed to update feature: {$e->getMessage()}");
+        }
 
         $feature->refresh();
 

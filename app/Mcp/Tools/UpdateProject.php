@@ -66,12 +66,16 @@ class UpdateProject extends Tool
 
             $targetClass = StatusMapper::classFor(StatusMapper::PROJECT, $newStatus);
             if ($targetClass) {
-                if ($project->status instanceof State) {
-                    $project->status->transitionTo($targetClass);
-                } else {
-                    $project->status = $targetClass;
+                try {
+                    if ($project->status instanceof State) {
+                        $project->status->transitionTo($targetClass);
+                    } else {
+                        $project->status = $targetClass;
+                    }
+                    $project->save();
+                } catch (\Throwable $e) {
+                    return Response::error("Failed to transition status: {$e->getMessage()}");
                 }
-                $project->save();
             }
         }
 
@@ -91,7 +95,11 @@ class UpdateProject extends Tool
                 }
             }
 
-            $project->update($updateFields);
+            try {
+                $project->update($updateFields);
+            } catch (\Throwable $e) {
+                return Response::error("Failed to update project: {$e->getMessage()}");
+            }
         }
 
         if (empty($updateFields) && ! $newStatus) {
