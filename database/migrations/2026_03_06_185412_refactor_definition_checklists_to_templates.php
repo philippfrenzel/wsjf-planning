@@ -32,12 +32,17 @@ return new class extends Migration
             $table->dropColumn('items');
         });
 
-        DB::statement("ALTER TABLE definition_templates MODIFY COLUMN type ENUM('dor', 'dod', 'ust') NOT NULL");
+        // Change type column to string to support dor/dod/ust across all DB drivers
+        Schema::table('definition_templates', function (Blueprint $table) {
+            $table->string('type', 10)->change();
+        });
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE definition_templates MODIFY COLUMN type ENUM('dor', 'dod') NOT NULL");
+        Schema::table('definition_templates', function (Blueprint $table) {
+            $table->string('type', 10)->change();
+        });
 
         Schema::table('definition_templates', function (Blueprint $table) {
             $table->json('items')->nullable()->after('description');
