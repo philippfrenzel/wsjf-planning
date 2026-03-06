@@ -18,7 +18,7 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 interface Planning {
@@ -151,23 +151,23 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
             },
             {
                 id: 'actions',
-                header: 'Aktionen',
+                header: () => <div className="text-right">Aktionen</div>,
                 cell: ({ row }) => {
                     const commitment = row.original;
                     return (
-                        <div className="flex gap-2">
-                            <Link href={route('commitments.show', commitment.id)}>
-                                <Button size="sm" variant="outline">
-                                    Anzeigen
-                                </Button>
-                            </Link>
-                            <Link href={route('commitments.edit', commitment.id)}>
-                                <Button size="sm" variant="outline">
-                                    Bearbeiten
-                                </Button>
-                            </Link>
+                        <div className="flex justify-end gap-2">
+                            <Button asChild size="icon" variant="outline">
+                                <Link href={route('commitments.show', commitment.id)}>
+                                    <Eye className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                            <Button asChild size="icon" variant="outline">
+                                <Link href={route('commitments.edit', commitment.id)}>
+                                    <Pencil className="h-4 w-4" />
+                                </Link>
+                            </Button>
                             <Button
-                                size="sm"
+                                size="icon"
                                 variant="destructive"
                                 onClick={async () => {
                                     const ok = await confirm({
@@ -181,7 +181,6 @@ export default function CommitmentsIndex({ commitments, plannings, selectedPlann
                                 }}
                             >
                                 <Trash2 className="h-4 w-4" />
-                                Löschen
                             </Button>
                         </div>
                     );

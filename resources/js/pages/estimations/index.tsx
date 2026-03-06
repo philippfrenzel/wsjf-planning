@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import { Eye, Pencil } from 'lucide-react';
 
 interface Estimation {
     id: number;
@@ -148,19 +149,15 @@ export default function Index({ estimations }: PageProps) {
                                                     <TableCell className="whitespace-nowrap">{formatDate(estimation.created_at)}</TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => router.visit(route('estimations.show', estimation.id))}
-                                                            >
-                                                                Details
+                                                            <Button asChild size="icon" variant="outline">
+                                                                <Link href={route('estimations.show', estimation.id)}>
+                                                                    <Eye className="h-4 w-4" />
+                                                                </Link>
                                                             </Button>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => router.visit(route('estimations.edit', estimation.id))}
-                                                            >
-                                                                Bearbeiten
+                                                            <Button asChild size="icon" variant="outline">
+                                                                <Link href={route('estimations.edit', estimation.id)}>
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Link>
                                                             </Button>
                                                         </div>
                                                     </TableCell>

@@ -2,7 +2,6 @@ import { useConfirm } from '@/components/confirm-dialog-provider';
 import { DataTable, DataTableColumnHeader, DataTableToolbar } from '@/components/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
 import {
@@ -14,7 +13,7 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { Eye, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 interface Role {
@@ -101,33 +100,24 @@ export default function Index({ users }: UsersIndexProps) {
                 cell: ({ row }) => {
                     const user = row.original;
                     return (
-                        <div className="flex justify-end">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Menü öffnen</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                        <Link href={route('users.show', user.id)} className="flex items-center">
-                                            <Eye className="mr-2 h-4 w-4" />
-                                            <span>Details</span>
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link href={route('users.edit', user.id)} className="flex items-center">
-                                            <Pencil className="mr-2 h-4 w-4" />
-                                            <span>Bearbeiten</span>
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteUser(user.id, user.name)}>
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        <span>Löschen</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                        <div className="flex justify-end gap-2">
+                            <Button asChild size="icon" variant="outline">
+                                <Link href={route('users.show', user.id)}>
+                                    <Eye className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                            <Button asChild size="icon" variant="outline">
+                                <Link href={route('users.edit', user.id)}>
+                                    <Pencil className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                            <Button
+                                size="icon"
+                                variant="destructive"
+                                onClick={() => handleDeleteUser(user.id, user.name)}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
                         </div>
                     );
                 },

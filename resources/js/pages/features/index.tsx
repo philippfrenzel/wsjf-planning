@@ -261,12 +261,12 @@ export default function Index({ features }: IndexProps) {
                     const feature = row.original;
                     return (
                         <div className="flex justify-end gap-2">
-                            <Button asChild size="icon" variant="secondary">
+                            <Button asChild size="icon" variant="outline">
                                 <Link href={route('features.show', feature.id)}>
                                     <Eye className="h-4 w-4" />
                                 </Link>
                             </Button>
-                            <Button asChild size="icon" variant="cancel">
+                            <Button asChild size="icon" variant="outline">
                                 <Link href={route('features.edit', feature.id)}>
                                     <Pencil className="h-4 w-4" />
                                 </Link>

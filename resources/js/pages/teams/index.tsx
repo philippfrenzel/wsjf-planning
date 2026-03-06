@@ -7,9 +7,7 @@ import { Link, router, usePage } from '@inertiajs/react';
 import { useConfirm } from '@/components/confirm-dialog-provider';
 import { ColumnDef, useReactTable, getCoreRowModel, getFilteredRowModel, getSortedRowModel, getPaginationRowModel, ColumnFiltersState, SortingState } from '@tanstack/react-table';
 import { useState } from 'react';
-import { Eye, Pencil, Trash2, Plus, Users } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
+import { Pencil, Trash2, Plus, Users } from 'lucide-react';
 
 interface Team {
     id: number;
@@ -67,36 +65,32 @@ export default function Index({ teams }: { teams: Team[] }) {
             cell: ({ row }: { row: { original: Team } }) => {
                 const team = row.original;
                 return (
-                    <div className="flex justify-end">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
-                                    <Link href={route('teams.edit', team.id)}>
-                                        <Pencil className="mr-2 h-4 w-4" /> Bearbeiten
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    className="text-destructive"
-                                    onClick={async () => {
-                                        const ok = await confirm({
-                                            title: 'Team löschen',
-                                            description: `Möchten Sie "${team.name}" wirklich löschen?`,
-                                            confirmLabel: 'Löschen',
-                                            cancelLabel: 'Abbrechen',
-                                        });
-                                        if (ok) router.delete(route('teams.destroy', team.id));
-                                    }}
-                                >
-                                    <Trash2 className="mr-2 h-4 w-4" /> Löschen
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                    <div className="flex justify-end gap-2">
+                        <Button asChild size="icon" variant="outline">
+                            <Link href={route('teams.edit', team.id)}>
+                                <Pencil className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                        <Button
+                            size="icon"
+                            variant="destructive"
+                            onClick={async () => {
+                                const ok = await confirm({
+                                    title: 'Team löschen',
+                                    description: `Möchten Sie "${team.name}" wirklich löschen?`,
+                                    confirmLabel: 'Löschen',
+                                    cancelLabel: 'Abbrechen',
+                                });
+                                if (ok) router.delete(route('teams.destroy', team.id));
+                            }}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
                     </div>
                 );
             },
+            enableSorting: false,
+            enableHiding: false,
         } as ColumnDef<Team>] : []),
     ];
 
