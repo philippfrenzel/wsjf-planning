@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye } from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog-provider';
 import MarkdownEditor from '@/components/markdown-editor';
 import MarkdownViewer from '@/components/markdown-viewer';
@@ -44,7 +44,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Index({ templates, projects }: { templates: Template[]; projects: ProjectOption[] }) {
     const confirm = useConfirm();
-    const [dialog, setDialog] = useState<{ open: boolean; template: Template | null }>({ open: false, template: null });
+    const [editDialog, setEditDialog] = useState<{ open: boolean; template: Template | null }>({ open: false, template: null });
+    const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
     const [form, setForm] = useState({
         type: 'dor' as TemplateType,
         title: '',
@@ -60,7 +61,7 @@ export default function Index({ templates, projects }: { templates: Template[]; 
 
     const openCreate = (type: TemplateType) => {
         setForm({ type, title: '', description: '', body: '', is_active: true, project_ids: [] });
-        setDialog({ open: true, template: null });
+        setEditDialog({ open: true, template: null });
     };
 
     const openEdit = (template: Template) => {
@@ -72,7 +73,7 @@ export default function Index({ templates, projects }: { templates: Template[]; 
             is_active: template.is_active,
             project_ids: template.projects.map((p) => p.id),
         });
-        setDialog({ open: true, template });
+        setEditDialog({ open: true, template });
     };
 
     const toggleProject = (id: number) => {
@@ -92,15 +93,15 @@ export default function Index({ templates, projects }: { templates: Template[]; 
             project_ids: form.project_ids as unknown as string,
         };
 
-        if (dialog.template) {
-            router.put(route('definitions.update', dialog.template.id), payload as never, {
+        if (editDialog.template) {
+            router.put(route('definitions.update', editDialog.template.id), payload as never, {
                 preserveScroll: true,
-                onSuccess: () => setDialog({ open: false, template: null }),
+                onSuccess: () => setEditDialog({ open: false, template: null }),
             });
         } else {
             router.post(route('definitions.store'), payload as never, {
                 preserveScroll: true,
-                onSuccess: () => setDialog({ open: false, template: null }),
+                onSuccess: () => setEditDialog({ open: false, template: null }),
             });
         }
     };
@@ -114,33 +115,33 @@ export default function Index({ templates, projects }: { templates: Template[]; 
     };
 
     const renderTemplate = (template: Template) => (
-        <div key={template.id} className="rounded-lg border p-4">
-            <div className="flex items-start justify-between">
+        <div key={template.id} className="rounded-lg border p-3">
+            <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold">{template.title}</h3>
-                        {!template.is_active && <Badge variant="secondary">Inaktiv</Badge>}
+                        <h3 className="text-sm font-semibold">{template.title}</h3>
+                        {!template.is_active && <Badge variant="secondary" className="text-xs">Inaktiv</Badge>}
                     </div>
-                    {template.description && <MarkdownViewer content={template.description} className="mt-1 text-sm text-muted-foreground" />}
+                    {template.description && (
+                        <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{template.description}</p>
+                    )}
                 </div>
-                <div className="flex gap-1 shrink-0">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(template)}>
-                        <Pencil className="h-4 w-4" />
+                <div className="flex gap-0.5 shrink-0">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPreviewTemplate(template)} title="Vorschau">
+                        <Eye className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(template)}>
-                        <Trash2 className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(template)} title="Bearbeiten">
+                        <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(template)} title="Löschen">
+                        <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                 </div>
             </div>
-            {template.body && (
-                <div className="mt-3 rounded border bg-muted/30 p-3">
-                    <MarkdownViewer content={template.body} className="prose-sm" />
-                </div>
-            )}
             {template.projects.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1">
+                <div className="mt-2 flex flex-wrap gap-1">
                     {template.projects.map((p) => (
-                        <Badge key={p.id} variant="outline" className="text-xs">
+                        <Badge key={p.id} variant="outline" className="text-[10px] px-1.5 py-0">
                             {p.name}
                         </Badge>
                     ))}
@@ -159,7 +160,7 @@ export default function Index({ templates, projects }: { templates: Template[]; 
                     </Button>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
                 {items.length === 0 ? (
                     <p className="text-sm text-muted-foreground">Keine Templates vorhanden.</p>
                 ) : (
@@ -179,15 +180,51 @@ export default function Index({ templates, projects }: { templates: Template[]; 
                     {renderColumn('ust', ustTemplates)}
                 </div>
 
+                {/* Preview Dialog */}
+                <Dialog open={!!previewTemplate} onOpenChange={(o) => !o && setPreviewTemplate(null)}>
+                    <DialogContent className="max-w-3xl flex flex-col" style={{ maxHeight: '90vh' }}>
+                        <DialogHeader className="shrink-0">
+                            <DialogTitle className="flex items-center gap-2">
+                                {previewTemplate?.title}
+                                <Badge variant="outline" className="text-xs font-normal">
+                                    {previewTemplate ? TYPE_LABELS[previewTemplate.type] : ''}
+                                </Badge>
+                            </DialogTitle>
+                            {previewTemplate?.description && (
+                                <p className="text-sm text-muted-foreground">{previewTemplate.description}</p>
+                            )}
+                        </DialogHeader>
+                        <div className="flex-1 overflow-y-auto rounded border bg-muted/30 p-4">
+                            {previewTemplate?.body && (
+                                <MarkdownViewer content={previewTemplate.body} className="prose prose-sm max-w-none" />
+                            )}
+                        </div>
+                        {previewTemplate && previewTemplate.projects.length > 0 && (
+                            <div className="shrink-0 flex flex-wrap gap-1 pt-2">
+                                <span className="text-xs text-muted-foreground mr-1">Projekte:</span>
+                                {previewTemplate.projects.map((p) => (
+                                    <Badge key={p.id} variant="outline" className="text-xs">{p.name}</Badge>
+                                ))}
+                            </div>
+                        )}
+                        <DialogFooter className="shrink-0">
+                            <Button variant="outline" onClick={() => { if (previewTemplate) { openEdit(previewTemplate); setPreviewTemplate(null); } }}>
+                                <Pencil className="mr-1 h-4 w-4" /> Bearbeiten
+                            </Button>
+                            <Button onClick={() => setPreviewTemplate(null)}>Schließen</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
                 {/* Create/Edit Dialog */}
-                <Dialog open={dialog.open} onOpenChange={(o) => !o && setDialog({ open: false, template: null })}>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
+                <Dialog open={editDialog.open} onOpenChange={(o) => !o && setEditDialog({ open: false, template: null })}>
+                    <DialogContent className="max-w-2xl flex flex-col" style={{ maxHeight: '90vh' }}>
+                        <DialogHeader className="shrink-0">
                             <DialogTitle>
-                                {dialog.template ? 'Template bearbeiten' : 'Neues Template erstellen'}
+                                {editDialog.template ? 'Template bearbeiten' : 'Neues Template erstellen'}
                             </DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-4">
+                        <div className="flex-1 overflow-y-auto space-y-4 pr-1">
                             <div>
                                 <Label>Typ</Label>
                                 <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as TemplateType })}>
@@ -218,6 +255,7 @@ export default function Index({ templates, projects }: { templates: Template[]; 
                                     onChange={(md) => setForm({ ...form, body: md })}
                                     placeholder="Template-Inhalt in Markdown …"
                                     minHeight={200}
+                                    height={350}
                                 />
                             </div>
                             {projects.length > 0 && (
@@ -245,8 +283,8 @@ export default function Index({ templates, projects }: { templates: Template[]; 
                                 </div>
                             )}
                         </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setDialog({ open: false, template: null })}>Abbrechen</Button>
+                        <DialogFooter className="shrink-0">
+                            <Button variant="outline" onClick={() => setEditDialog({ open: false, template: null })}>Abbrechen</Button>
                             <Button onClick={submit} disabled={!form.title.trim() || !form.body.trim()}>Speichern</Button>
                         </DialogFooter>
                     </DialogContent>
