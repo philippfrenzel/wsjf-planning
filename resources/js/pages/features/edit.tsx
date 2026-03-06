@@ -10,10 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { useForm } from '@inertiajs/react';
-import axios from 'axios';
-import { LoaderCircle, Save, Sparkles, X } from 'lucide-react';
+import { LoaderCircle, MessageSquareText, Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 
+import AiChatPanel from '@/components/ai-chat-panel';
 import DependenciesSection from './components/DependenciesSection';
 import WorkflowManager from './components/WorkflowManager';
 
@@ -90,26 +90,7 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
         })) as SkillRequirement[],
     });
 
-    const [aiLoading, setAiLoading] = useState(false);
-    const [aiError, setAiError] = useState('');
-
-    async function generateWithAi() {
-        if (!data.project_id || !data.name) return;
-        setAiLoading(true);
-        setAiError('');
-        try {
-            const res = await axios.post('/api/ai/generate-description', {
-                feature_name: data.name,
-                project_id: parseInt(data.project_id),
-                existing_description: data.description,
-            });
-            setData('description', res.data.description);
-        } catch (e: any) {
-            setAiError(e.response?.data?.error ?? 'AI generation failed');
-        } finally {
-            setAiLoading(false);
-        }
-    }
+    const [chatOpen, setChatOpen] = useState(false);
 
     // Breadcrumbs definieren
     const breadcrumbs: BreadcrumbItem[] = [
@@ -248,15 +229,14 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                                     type="button"
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={generateWithAi}
-                                                    disabled={aiLoading || !data.project_id || !data.name}
-                                                    title={!data.project_id || !data.name ? 'Projekt und Name erforderlich' : 'Beschreibung mit KI generieren'}
+                                                    onClick={() => setChatOpen(true)}
+                                                    disabled={!data.project_id || !data.name}
+                                                    title={!data.project_id || !data.name ? 'Projekt und Name erforderlich' : 'Beschreibung mit KI verfeinern'}
                                                 >
-                                                    {aiLoading ? <LoaderCircle className="mr-1 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1 h-3.5 w-3.5" />}
-                                                    KI generieren
+                                                    <MessageSquareText className="mr-1 h-3.5 w-3.5" />
+                                                    KI Assistent
                                                 </Button>
                                             </div>
-                                            {aiError && <p className="mb-1 text-sm text-red-500">{aiError}</p>}
                                             <MarkdownEditor
                                                 value={data.description}
                                                 onChange={(md) => setData('description', md)}
@@ -326,6 +306,15 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                     </CardContent>
                 </Card>
             </div>
+
+            <AiChatPanel
+                open={chatOpen}
+                onOpenChange={setChatOpen}
+                featureName={data.name}
+                projectId={data.project_id}
+                currentDescription={data.description}
+                onApplyDescription={(md) => setData('description', md)}
+            />
         </AppLayout>
     );
 }

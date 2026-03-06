@@ -10,4 +10,5 @@ Route::get('/user', function (Request $request) {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/ai/generate-description', [AiController::class, 'generateDescription']);
+    Route::post('/ai/chat', [AiController::class, 'chat']);
 });
