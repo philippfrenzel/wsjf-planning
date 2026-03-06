@@ -13,8 +13,6 @@ import EditComponentDialog from './components/EditComponentDialog';
 import EstimationDialog from './components/EstimationDialog';
 import MarkdownViewer from '@/components/markdown-viewer';
 import FeatureDetails from './components/FeatureDetails';
-import FeatureHeader from './components/FeatureHeader';
-
 import { Comments } from '@/components/comments';
 import { useConfirm } from '@/components/confirm-dialog-provider';
 import { useComponentManagement } from '@/hooks/useComponentManagement';
@@ -68,7 +66,7 @@ interface Feature {
     name: string;
     description: string;
     requester?: { id: number; name: string } | null;
-    project?: { id: number; name: string } | null;
+    project?: { id: number; name: string; jira_base_uri?: string } | null;
     estimation_components: EstimationComponent[];
     dependencies?: DependencyItem[];
     dependents?: DependencyItem[];
@@ -154,17 +152,25 @@ export default function Show({ feature, auth }: ShowProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
-                <Card className="flex h-full flex-1 flex-col gap-4 rounded-xl p-5">
-                    <div className="flex items-center justify-between gap-3">
+                <Card className="flex h-full flex-1 flex-col">
+                    <div className="flex items-center justify-between gap-4 px-6 pt-6">
                         <div className="min-w-0 flex-1">
-                            <FeatureHeader featureName={feature.name} />
+                            {feature.jira_key && (
+                                <p className="text-muted-foreground mb-1 text-sm font-medium">{feature.jira_key}</p>
+                            )}
+                            <h1 className="text-2xl font-bold tracking-tight break-words">{feature.name}</h1>
                         </div>
-                        <Link href={route('features.edit', feature.id)} className="shrink-0">
-                            <Button size="sm" variant="outline" className="inline-flex items-center gap-2 whitespace-nowrap">
-                                <Edit2 className="h-4 w-4" />
-                                Bearbeiten
-                            </Button>
-                        </Link>
+                        <div className="flex shrink-0 items-center gap-3">
+                            {feature.status_details && (
+                                <WorkflowStateBadge statusDetails={feature.status_details} />
+                            )}
+                            <Link href={route('features.edit', feature.id)}>
+                                <Button size="sm" variant="outline" className="inline-flex items-center gap-2 whitespace-nowrap">
+                                    <Edit2 className="h-4 w-4" />
+                                    Bearbeiten
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
 
                     <CardContent>
@@ -182,6 +188,7 @@ export default function Show({ feature, auth }: ShowProps) {
                                         {/* Feature-Details anzeigen */}
                                         <FeatureDetails
                                             jiraKey={feature.jira_key}
+                                            jiraBaseUri={feature.project?.jira_base_uri}
                                             projectName={feature.project?.name}
                                             requesterName={feature.requester?.name}
                                             type={feature.type}
@@ -207,20 +214,6 @@ export default function Show({ feature, auth }: ShowProps) {
 
                                     {/* Right Column - Status and Comments */}
                                     <div className="space-y-6">
-                                        {/* Status anzeigen */}
-                                        {feature.status_details && (
-                                            <Card>
-                                                <CardHeader>
-                                                    <CardTitle>Status</CardTitle>
-                                                </CardHeader>
-                                                <CardContent>
-                                                    <div className="flex items-center">
-                                                        <WorkflowStateBadge statusDetails={feature.status_details} />
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        )}
-
                                         {/* Kommentare */}
                                         <Comments
                                             entity={{
@@ -233,16 +226,6 @@ export default function Show({ feature, auth }: ShowProps) {
                             </TabsContent>
 
                             <TabsContent value="schaetzungen" className="space-y-6">
-                                {/* Formular zum Erstellen einer neuen Komponente */}
-                                {showComponentForm && (
-                                    <ComponentForm
-                                        componentData={componentData}
-                                        onNameChange={(name) => setComponentData({ ...componentData, name })}
-                                        onDescriptionChange={(description) => setComponentData({ ...componentData, description })}
-                                        onSubmit={handleComponentSubmit}
-                                    />
-                                )}
-
                                 <div className="pt-2">
                                     <div className="mb-4 flex items-center justify-between">
                                         <h3 className="text-lg font-medium">Schätzungskomponenten</h3>
@@ -260,6 +243,16 @@ export default function Show({ feature, auth }: ShowProps) {
                                             <ArchiveToggle showArchived={showArchived} toggleArchived={toggleArchivedVisibility} />
                                         </div>
                                     </div>
+
+                                    {/* Formular zum Erstellen einer neuen Komponente */}
+                                    {showComponentForm && (
+                                        <ComponentForm
+                                            componentData={componentData}
+                                            onNameChange={(name) => setComponentData({ ...componentData, name })}
+                                            onDescriptionChange={(description) => setComponentData({ ...componentData, description })}
+                                            onSubmit={handleComponentSubmit}
+                                        />
+                                    )}
 
                                     {feature.estimation_components && feature.estimation_components.length > 0 ? (
                                         <div className="space-y-4">

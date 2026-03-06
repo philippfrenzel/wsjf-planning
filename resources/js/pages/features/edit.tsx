@@ -79,7 +79,7 @@ interface EditProps {
 }
 
 export default function Edit({ feature, projects, users, skills, statusOptions, featureOptions = [], dependencies = [] }: EditProps) {
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, put, processing, errors, isDirty } = useForm({
         jira_key: feature.jira_key || '',
         name: feature.name || '',
         description: feature.description || '',
@@ -93,6 +93,15 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
     });
 
     const [chatOpen, setChatOpen] = useState(false);
+
+    React.useEffect(() => {
+        const removeListener = router.on('before', (event) => {
+            if (isDirty && !confirm('Sie haben ungespeicherte Änderungen. Möchten Sie die Seite wirklich verlassen?')) {
+                event.preventDefault();
+            }
+        });
+        return () => removeListener();
+    }, [isDirty]);
 
     // Breadcrumbs definieren
     const breadcrumbs: BreadcrumbItem[] = [
@@ -135,7 +144,12 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
             <div className="mt-8">
                 <Card className="w-full">
                     <CardHeader>
-                        <CardTitle>Feature bearbeiten</CardTitle>
+                        <div className="space-y-1">
+                            {feature.jira_key && (
+                                <p className="text-muted-foreground text-sm font-medium">{feature.jira_key}</p>
+                            )}
+                            <CardTitle className="truncate">{feature.name} <span className="text-muted-foreground font-normal">bearbeiten</span></CardTitle>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {/* Two-column layout: 60% left, 40% right */}
@@ -143,24 +157,11 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                             {/* Left Column - Feature Edit Form */}
                             <div>
                                 <form onSubmit={handleSubmit} className="space-y-6">
-                                    {/* Action buttons at top */}
-                                    <div className="flex justify-end gap-2 border-b pb-4">
-                                        <Button type="button" variant="cancel" onClick={() => router.visit(route('features.show', feature.id))}>
-                                            <X />
-                                            Abbrechen
-                                        </Button>
-                                        <Button type="submit" variant="success" disabled={processing}>
-                                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                            <Save />
-                                            Änderungen speichern
-                                        </Button>
-                                    </div>
-
                                     {/* Main Form Fields */}
                                     <div className="space-y-6">
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <div>
-                                                <Label htmlFor="project_id">Projekt</Label>
+                                                <Label htmlFor="project_id">Projekt <span className="text-destructive">*</span></Label>
                                                 <Select value={data.project_id} onValueChange={(value) => handleSelectChange('project_id', value)}>
                                                     <SelectTrigger id="project_id" className="w-full">
                                                         <SelectValue placeholder="Projekt wählen" />
@@ -176,7 +177,7 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                                 <InputError message={errors.project_id} className="mt-1" />
                                             </div>
                                             <div>
-                                                <Label htmlFor="jira_key">Feature-Key</Label>
+                                                <Label htmlFor="jira_key">Feature-Key <span className="text-destructive">*</span></Label>
                                                 <Input
                                                     id="jira_key"
                                                     name="jira_key"
@@ -191,7 +192,7 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
 
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <div>
-                                                <Label htmlFor="name">Name</Label>
+                                                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
                                                 <Input
                                                     id="name"
                                                     name="name"
@@ -202,6 +203,24 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                                 />
                                                 <InputError message={errors.name} className="mt-1" />
                                             </div>
+                                            <div>
+                                                <Label htmlFor="type">Typ</Label>
+                                                <Select value={data.type} onValueChange={(value) => handleSelectChange('type', value)}>
+                                                    <SelectTrigger id="type" className="w-full">
+                                                        <SelectValue placeholder="Typ wählen" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="business">Business</SelectItem>
+                                                        <SelectItem value="enabler">Enabler</SelectItem>
+                                                        <SelectItem value="tech_debt">Tech Debt</SelectItem>
+                                                        <SelectItem value="nfr">NFR</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <InputError message={errors.type} className="mt-1" />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <div>
                                                 <Label htmlFor="requester_id">Anforderer (optional)</Label>
                                                 <Select
@@ -221,24 +240,6 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                                     </SelectContent>
                                                 </Select>
                                                 <InputError message={errors.requester_id} className="mt-1" />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                            <div>
-                                                <Label htmlFor="type">Typ</Label>
-                                                <Select value={data.type} onValueChange={(value) => handleSelectChange('type', value)}>
-                                                    <SelectTrigger id="type" className="w-full">
-                                                        <SelectValue placeholder="Typ wählen" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="business">Business</SelectItem>
-                                                        <SelectItem value="enabler">Enabler</SelectItem>
-                                                        <SelectItem value="tech_debt">Tech Debt</SelectItem>
-                                                        <SelectItem value="nfr">NFR</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                <InputError message={errors.type} className="mt-1" />
                                             </div>
                                         </div>
 

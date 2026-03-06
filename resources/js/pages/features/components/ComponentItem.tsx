@@ -34,7 +34,7 @@ export default function ComponentItem({
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-2">
                         <span>{component.name}</span>
                         {component.status === 'archived' && (
@@ -43,7 +43,7 @@ export default function ComponentItem({
                             </Badge>
                         )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         {component.status === 'active' ? (
                             <>
                                 <Button variant="secondary" size="sm" onClick={() => onEdit(component)}>
@@ -54,6 +54,10 @@ export default function ComponentItem({
                                     <ArchiveIcon className="mr-1 h-4 w-4" />
                                     Archivieren
                                 </Button>
+                                <Button onClick={() => onAddEstimation(component.id)} variant="success" size="sm">
+                                    <PlusIcon className="mr-1 h-4 w-4" />
+                                    Schätzung hinzufügen
+                                </Button>
                             </>
                         ) : (
                             <Button variant="success" size="sm" onClick={() => onActivate(component.id)}>
@@ -61,15 +65,13 @@ export default function ComponentItem({
                                 Wiederherstellen
                             </Button>
                         )}
-                        <Button onClick={() => onAddEstimation(component.id)} variant="success" size="sm">
-                            <PlusIcon className="mr-1 h-4 w-4" />
-                            Schätzung hinzufügen
-                        </Button>
                     </div>
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="mb-4">{component.description}</p>
+                {component.description && (
+                    <p className="text-muted-foreground mb-4 text-sm">{component.description}</p>
+                )}
 
                 {component.estimations && component.estimations.length > 0 ? (
                     <EstimationTable

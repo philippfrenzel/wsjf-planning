@@ -111,7 +111,7 @@ export default function Create({ projects, users, skills }: CreateProps) {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
-                                <Label htmlFor="project_id">Projekt</Label>
+                                <Label htmlFor="project_id">Projekt <span className="text-destructive">*</span></Label>
                                 <Select value={data.project_id} onValueChange={(value) => handleSelectChange('project_id', value)}>
                                     <SelectTrigger id="project_id" className="w-full">
                                         <SelectValue placeholder="Projekt wählen" />
@@ -127,7 +127,7 @@ export default function Create({ projects, users, skills }: CreateProps) {
                                 <InputError message={errors.project_id} className="mt-1" />
                             </div>
                             <div>
-                                <Label htmlFor="jira_key">Feature-Key</Label>
+                                <Label htmlFor="jira_key">Feature-Key <span className="text-destructive">*</span></Label>
                                 <Input id="jira_key" name="jira_key" value={data.jira_key} onChange={handleChange} className="w-full" required />
                                 <InputError message={errors.jira_key} className="mt-1" />
                             </div>
@@ -135,10 +135,28 @@ export default function Create({ projects, users, skills }: CreateProps) {
 
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
                                 <Input id="name" name="name" value={data.name} onChange={handleChange} className="w-full" required />
                                 <InputError message={errors.name} className="mt-1" />
                             </div>
+                            <div>
+                                <Label htmlFor="type">Typ</Label>
+                                <Select value={data.type} onValueChange={(value) => handleSelectChange('type', value)}>
+                                    <SelectTrigger id="type" className="w-full">
+                                        <SelectValue placeholder="Typ wählen" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="business">Business</SelectItem>
+                                        <SelectItem value="enabler">Enabler</SelectItem>
+                                        <SelectItem value="tech_debt">Tech Debt</SelectItem>
+                                        <SelectItem value="nfr">NFR</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.type} className="mt-1" />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
                                 <Label htmlFor="requester_id">Anforderer (optional)</Label>
                                 <Select
@@ -158,24 +176,6 @@ export default function Create({ projects, users, skills }: CreateProps) {
                                     </SelectContent>
                                 </Select>
                                 <InputError message={errors.requester_id} className="mt-1" />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            <div>
-                                <Label htmlFor="type">Typ</Label>
-                                <Select value={data.type} onValueChange={(value) => handleSelectChange('type', value)}>
-                                    <SelectTrigger id="type" className="w-full">
-                                        <SelectValue placeholder="Typ wählen" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="business">Business</SelectItem>
-                                        <SelectItem value="enabler">Enabler</SelectItem>
-                                        <SelectItem value="tech_debt">Tech Debt</SelectItem>
-                                        <SelectItem value="nfr">NFR</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.type} className="mt-1" />
                             </div>
                         </div>
 

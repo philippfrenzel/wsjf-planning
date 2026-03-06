@@ -46,9 +46,19 @@ export default function EstimationTable({ estimations, onEdit, onDelete }: Estim
         return decimals > 0 ? parsedValue.toFixed(decimals) : parsedValue.toString();
     };
 
+    const formatUnit = (unit: string): string => {
+        switch (unit) {
+            case 'hours': return 'Stunden';
+            case 'days': return 'Tage';
+            case 'story_points': return 'Story Points';
+            default: return unit;
+        }
+    };
+
     return (
         <div>
             <h4 className="text-md mb-3 font-medium">Erfasste Schätzungen ({estimations.length})</h4>
+            <div className="overflow-x-auto -mx-2">
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -74,7 +84,7 @@ export default function EstimationTable({ estimations, onEdit, onDelete }: Estim
                                         ? safeNumberDisplay(estimation.weighted_estimate, 2)
                                         : safeNumberDisplay(estimation.weighted_case, 2)}
                                 </TableCell>
-                                <TableCell>{estimation.unit}</TableCell>
+                                <TableCell>{formatUnit(estimation.unit)}</TableCell>
                                 <TableCell>{estimation.creator.name}</TableCell>
                                 <TableCell>{new Date(estimation.created_at).toLocaleDateString()}</TableCell>
                                 <TableCell className="space-x-2 text-right">
@@ -105,6 +115,7 @@ export default function EstimationTable({ estimations, onEdit, onDelete }: Estim
                     ))}
                 </TableBody>
             </Table>
+            </div>
         </div>
     );
 }
