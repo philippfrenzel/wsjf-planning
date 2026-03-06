@@ -4,9 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Concerns\BelongsToTenant;
 
-class DefinitionChecklist extends Model
+class DefinitionTemplate extends Model
 {
     use HasFactory, BelongsToTenant;
 
@@ -15,15 +16,21 @@ class DefinitionChecklist extends Model
         'type',
         'title',
         'description',
-        'items',
+        'body',
         'is_active',
     ];
 
     protected $casts = [
-        'items' => 'array',
         'is_active' => 'boolean',
     ];
 
     public const TYPE_DOR = 'dor';
     public const TYPE_DOD = 'dod';
+    public const TYPE_UST = 'ust';
+
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class, 'definition_template_project')
+            ->withTimestamps();
+    }
 }

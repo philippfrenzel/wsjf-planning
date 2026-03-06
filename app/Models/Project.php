@@ -121,4 +121,10 @@ class Project extends Model
             ->withPivot('level')
             ->withTimestamps();
     }
+
+    public function definitionTemplates(): BelongsToMany
+    {
+        return $this->belongsToMany(DefinitionTemplate::class, 'definition_template_project')
+            ->withTimestamps();
+    }
 }

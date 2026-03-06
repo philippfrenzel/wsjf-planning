@@ -8,192 +8,194 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Pencil, Trash2, X } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog-provider';
 import MarkdownEditor from '@/components/markdown-editor';
 import MarkdownViewer from '@/components/markdown-viewer';
 
-interface ChecklistItem {
-    text: string;
-    required: boolean;
+interface ProjectOption {
+    id: number;
+    name: string;
 }
 
-interface Checklist {
+interface Template {
     id: number;
-    type: 'dor' | 'dod';
+    type: 'dor' | 'dod' | 'ust';
     title: string;
     description: string | null;
-    items: ChecklistItem[];
+    body: string;
     is_active: boolean;
+    projects: ProjectOption[];
 }
+
+type TemplateType = 'dor' | 'dod' | 'ust';
+
+const TYPE_LABELS: Record<TemplateType, string> = {
+    dor: 'Definition of Ready (DoR)',
+    dod: 'Definition of Done (DoD)',
+    ust: 'User Story Template',
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Startseite', href: '/' },
-    { title: 'DoR / DoD', href: '#' },
+    { title: 'Templates', href: '#' },
 ];
 
-export default function Index({ checklists }: { checklists: Checklist[] }) {
+export default function Index({ templates, projects }: { templates: Template[]; projects: ProjectOption[] }) {
     const confirm = useConfirm();
-    const [dialog, setDialog] = useState<{ open: boolean; checklist: Checklist | null }>({ open: false, checklist: null });
+    const [dialog, setDialog] = useState<{ open: boolean; template: Template | null }>({ open: false, template: null });
     const [form, setForm] = useState({
-        type: 'dor' as 'dor' | 'dod',
+        type: 'dor' as TemplateType,
         title: '',
         description: '',
-        items: [{ text: '', required: true }] as ChecklistItem[],
+        body: '',
         is_active: true,
+        project_ids: [] as number[],
     });
 
-    const dorChecklists = checklists.filter((c) => c.type === 'dor');
-    const dodChecklists = checklists.filter((c) => c.type === 'dod');
+    const dorTemplates = templates.filter((t) => t.type === 'dor');
+    const dodTemplates = templates.filter((t) => t.type === 'dod');
+    const ustTemplates = templates.filter((t) => t.type === 'ust');
 
-    const openCreate = (type: 'dor' | 'dod') => {
-        setForm({ type, title: '', description: '', items: [{ text: '', required: true }], is_active: true });
-        setDialog({ open: true, checklist: null });
+    const openCreate = (type: TemplateType) => {
+        setForm({ type, title: '', description: '', body: '', is_active: true, project_ids: [] });
+        setDialog({ open: true, template: null });
     };
 
-    const openEdit = (checklist: Checklist) => {
+    const openEdit = (template: Template) => {
         setForm({
-            type: checklist.type,
-            title: checklist.title,
-            description: checklist.description || '',
-            items: checklist.items.length > 0 ? checklist.items : [{ text: '', required: true }],
-            is_active: checklist.is_active,
+            type: template.type,
+            title: template.title,
+            description: template.description || '',
+            body: template.body || '',
+            is_active: template.is_active,
+            project_ids: template.projects.map((p) => p.id),
         });
-        setDialog({ open: true, checklist });
+        setDialog({ open: true, template });
     };
 
-    const addItem = () => setForm({ ...form, items: [...form.items, { text: '', required: false }] });
-    const removeItem = (idx: number) => setForm({ ...form, items: form.items.filter((_, i) => i !== idx) });
-    const updateItem = (idx: number, field: keyof ChecklistItem, value: string | boolean) => {
-        const items = [...form.items];
-        items[idx] = { ...items[idx], [field]: value };
-        setForm({ ...form, items });
+    const toggleProject = (id: number) => {
+        setForm((f) => ({
+            ...f,
+            project_ids: f.project_ids.includes(id) ? f.project_ids.filter((p) => p !== id) : [...f.project_ids, id],
+        }));
     };
 
     const submit = () => {
-        const validItems = form.items.filter((i) => i.text.trim());
         const payload = {
             type: form.type,
             title: form.title,
             description: form.description || '',
-            items: validItems as unknown as string,
+            body: form.body,
             is_active: form.is_active,
+            project_ids: form.project_ids as unknown as string,
         };
 
-        if (dialog.checklist) {
-            router.put(route('definitions.update', dialog.checklist.id), payload as never, {
+        if (dialog.template) {
+            router.put(route('definitions.update', dialog.template.id), payload as never, {
                 preserveScroll: true,
-                onSuccess: () => setDialog({ open: false, checklist: null }),
+                onSuccess: () => setDialog({ open: false, template: null }),
             });
         } else {
             router.post(route('definitions.store'), payload as never, {
                 preserveScroll: true,
-                onSuccess: () => setDialog({ open: false, checklist: null }),
+                onSuccess: () => setDialog({ open: false, template: null }),
             });
         }
     };
 
-    const handleDelete = async (checklist: Checklist) => {
+    const handleDelete = async (template: Template) => {
         const ok = await confirm({
-            title: 'Definition löschen',
-            description: `"${checklist.title}" wirklich löschen?`,
+            title: 'Template löschen',
+            description: `"${template.title}" wirklich löschen?`,
         });
-        if (ok) router.delete(route('definitions.destroy', checklist.id), { preserveScroll: true });
+        if (ok) router.delete(route('definitions.destroy', template.id), { preserveScroll: true });
     };
 
-    const renderChecklist = (checklist: Checklist) => (
-        <div key={checklist.id} className="rounded-lg border p-4">
+    const renderTemplate = (template: Template) => (
+        <div key={template.id} className="rounded-lg border p-4">
             <div className="flex items-start justify-between">
-                <div>
-                    <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{checklist.title}</h3>
-                        {!checklist.is_active && <Badge variant="secondary">Inaktiv</Badge>}
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold">{template.title}</h3>
+                        {!template.is_active && <Badge variant="secondary">Inaktiv</Badge>}
                     </div>
-                    {checklist.description && <MarkdownViewer content={checklist.description} className="mt-1" />}
+                    {template.description && <MarkdownViewer content={template.description} className="mt-1 text-sm text-muted-foreground" />}
                 </div>
-                <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(checklist)}>
+                <div className="flex gap-1 shrink-0">
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(template)}>
                         <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(checklist)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(template)}>
                         <Trash2 className="h-4 w-4" />
                     </Button>
                 </div>
             </div>
-            <ul className="mt-3 space-y-1">
-                {checklist.items.map((item, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm">
-                        <span className={`inline-block h-2 w-2 rounded-full ${item.required ? 'bg-red-500' : 'bg-gray-300'}`} />
-                        <span>{item.text}</span>
-                        {item.required && <span className="text-[10px] text-red-500">Pflicht</span>}
-                    </li>
-                ))}
-            </ul>
+            {template.body && (
+                <div className="mt-3 rounded border bg-muted/30 p-3">
+                    <MarkdownViewer content={template.body} className="prose-sm" />
+                </div>
+            )}
+            {template.projects.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1">
+                    {template.projects.map((p) => (
+                        <Badge key={p.id} variant="outline" className="text-xs">
+                            {p.name}
+                        </Badge>
+                    ))}
+                </div>
+            )}
         </div>
+    );
+
+    const renderColumn = (type: TemplateType, items: Template[]) => (
+        <Card>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">{TYPE_LABELS[type]}</CardTitle>
+                    <Button size="sm" onClick={() => openCreate(type)}>
+                        <Plus className="mr-1 h-4 w-4" /> Neu
+                    </Button>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {items.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Keine Templates vorhanden.</p>
+                ) : (
+                    items.map(renderTemplate)
+                )}
+            </CardContent>
+        </Card>
     );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="DoR / DoD" />
-            <div className="mx-auto w-full max-w-5xl p-4 space-y-6">
-                <div className="grid gap-6 md:grid-cols-2">
-                    {/* DoR */}
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle>Definition of Ready (DoR)</CardTitle>
-                                <Button size="sm" onClick={() => openCreate('dor')}>
-                                    <Plus className="mr-1 h-4 w-4" /> Neu
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {dorChecklists.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">Keine DoR-Checklisten vorhanden.</p>
-                            ) : (
-                                dorChecklists.map(renderChecklist)
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* DoD */}
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle>Definition of Done (DoD)</CardTitle>
-                                <Button size="sm" onClick={() => openCreate('dod')}>
-                                    <Plus className="mr-1 h-4 w-4" /> Neu
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {dodChecklists.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">Keine DoD-Checklisten vorhanden.</p>
-                            ) : (
-                                dodChecklists.map(renderChecklist)
-                            )}
-                        </CardContent>
-                    </Card>
+            <Head title="Templates — DoR / DoD / UST" />
+            <div className="mx-auto w-full max-w-7xl p-4 space-y-6">
+                <div className="grid gap-6 md:grid-cols-3">
+                    {renderColumn('dor', dorTemplates)}
+                    {renderColumn('dod', dodTemplates)}
+                    {renderColumn('ust', ustTemplates)}
                 </div>
 
                 {/* Create/Edit Dialog */}
-                <Dialog open={dialog.open} onOpenChange={(o) => !o && setDialog({ open: false, checklist: null })}>
-                    <DialogContent className="max-w-lg">
+                <Dialog open={dialog.open} onOpenChange={(o) => !o && setDialog({ open: false, template: null })}>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>
-                                {dialog.checklist ? 'Definition bearbeiten' : 'Neue Definition erstellen'}
+                                {dialog.template ? 'Template bearbeiten' : 'Neues Template erstellen'}
                             </DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                             <div>
                                 <Label>Typ</Label>
-                                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as 'dor' | 'dod' })}>
+                                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as TemplateType })}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="dor">Definition of Ready</SelectItem>
                                         <SelectItem value="dod">Definition of Done</SelectItem>
+                                        <SelectItem value="ust">User Story Template</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -202,44 +204,50 @@ export default function Index({ checklists }: { checklists: Checklist[] }) {
                                 <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
                             </div>
                             <div>
-                                <Label>Beschreibung</Label>
-                                <MarkdownEditor value={form.description} onChange={(md) => setForm({ ...form, description: md })} placeholder="Beschreibung (Markdown)" minHeight="100px" />
+                                <Label>Kurzbeschreibung</Label>
+                                <Input
+                                    value={form.description}
+                                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                                    placeholder="Optionale Kurzbeschreibung"
+                                />
                             </div>
                             <div>
-                                <Label>Checklist-Punkte</Label>
-                                <div className="mt-2 space-y-2">
-                                    {form.items.map((item, i) => (
-                                        <div key={i} className="flex items-center gap-2">
-                                            <Input
-                                                className="flex-1"
-                                                placeholder={`Punkt ${i + 1}`}
-                                                value={item.text}
-                                                onChange={(e) => updateItem(i, 'text', e.target.value)}
-                                            />
-                                            <label className="flex items-center gap-1 text-xs whitespace-nowrap">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={item.required}
-                                                    onChange={(e) => updateItem(i, 'required', e.target.checked)}
-                                                />
-                                                Pflicht
-                                            </label>
-                                            {form.items.length > 1 && (
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeItem(i)}>
-                                                    <X className="h-3 w-3" />
-                                                </Button>
-                                            )}
-                                        </div>
-                                    ))}
-                                    <Button variant="outline" size="sm" onClick={addItem}>
-                                        <Plus className="mr-1 h-3 w-3" /> Punkt hinzufügen
-                                    </Button>
-                                </div>
+                                <Label>Inhalt (Markdown)</Label>
+                                <MarkdownEditor
+                                    value={form.body}
+                                    onChange={(md) => setForm({ ...form, body: md })}
+                                    placeholder="Template-Inhalt in Markdown …"
+                                    minHeight="200px"
+                                />
                             </div>
+                            {projects.length > 0 && (
+                                <div>
+                                    <Label>Projekt-Zuweisung</Label>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        {projects.map((p) => (
+                                            <button
+                                                key={p.id}
+                                                type="button"
+                                                onClick={() => toggleProject(p.id)}
+                                                className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                                                    form.project_ids.includes(p.id)
+                                                        ? 'border-primary bg-primary text-primary-foreground'
+                                                        : 'border-input bg-background hover:bg-accent'
+                                                }`}
+                                            >
+                                                {p.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        Klicken um Projekte zuzuweisen. Ohne Auswahl gilt das Template für alle.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setDialog({ open: false, checklist: null })}>Abbrechen</Button>
-                            <Button onClick={submit}>Speichern</Button>
+                            <Button variant="outline" onClick={() => setDialog({ open: false, template: null })}>Abbrechen</Button>
+                            <Button onClick={submit} disabled={!form.title.trim() || !form.body.trim()}>Speichern</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

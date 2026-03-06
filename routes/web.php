@@ -23,7 +23,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\IterationController;
 use App\Http\Controllers\RiskController;
 use App\Http\Controllers\CapacityController;
-use App\Http\Controllers\DefinitionChecklistController;
+use App\Http\Controllers\DefinitionTemplateController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\RoadmapController;
 use App\Http\Controllers\SuperAdminController;
@@ -149,10 +149,10 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
         ->name('plannings.capacities.upsert');
 
     // Definition of Ready / Definition of Done checklists
-    Route::get('definitions', [DefinitionChecklistController::class, 'index'])->name('definitions.index');
-    Route::post('definitions', [DefinitionChecklistController::class, 'store'])->name('definitions.store');
-    Route::put('definitions/{definitionChecklist}', [DefinitionChecklistController::class, 'update'])->name('definitions.update');
-    Route::delete('definitions/{definitionChecklist}', [DefinitionChecklistController::class, 'destroy'])->name('definitions.destroy');
+    Route::get('definitions', [DefinitionTemplateController::class, 'index'])->name('definitions.index');
+    Route::post('definitions', [DefinitionTemplateController::class, 'store'])->name('definitions.store');
+    Route::put('definitions/{definitionTemplate}', [DefinitionTemplateController::class, 'update'])->name('definitions.update');
+    Route::delete('definitions/{definitionTemplate}', [DefinitionTemplateController::class, 'destroy'])->name('definitions.destroy');
 
     // Roadmap
     Route::get('roadmap', [RoadmapController::class, 'index'])->name('roadmap.index');
