@@ -87,14 +87,17 @@ export default function McpDocs() {
   }'`;
 
     const tools = [
-        { name: 'list-projects', desc: 'Alle Projekte mit Projektleitern und Team-Anzahl auflisten' },
-        { name: 'get-project', desc: 'Detailinformationen zu einem Projekt inkl. Teams, Skills, Beschreibung' },
-        { name: 'list-features', desc: 'Features filtern nach Projekt, Status oder Typ — sortiert nach WSJF-Score' },
-        { name: 'get-feature', desc: 'Feature-Details inkl. WSJF-Scores, Abhängigkeiten, Skill-Anforderungen' },
-        { name: 'list-teams', desc: 'Alle Teams mit Mitgliederanzahl' },
-        { name: 'get-team', desc: 'Team-Details mit Mitgliedern und deren Skills' },
-        { name: 'list-skills', desc: 'Alle Skills gruppiert nach Kategorie' },
-        { name: 'list-plannings', desc: 'PI-Planungen mit Projekt, Owner, Feature-/Iterations-Anzahl' },
+        { name: 'list-projects', desc: 'Alle Projekte mit Projektleitern und Team-Anzahl auflisten', rw: 'read' },
+        { name: 'get-project', desc: 'Detailinformationen zu einem Projekt inkl. Teams, Skills, Beschreibung', rw: 'read' },
+        { name: 'list-features', desc: 'Features filtern nach Projekt, Status oder Typ — sortiert nach WSJF-Score', rw: 'read' },
+        { name: 'get-feature', desc: 'Feature-Details inkl. WSJF-Scores, Abhängigkeiten, Skill-Anforderungen', rw: 'read' },
+        { name: 'create-feature', desc: 'Neues Feature erstellen mit Name, Projekt, Typ, Beschreibung usw.', rw: 'write' },
+        { name: 'update-feature', desc: 'Bestehendes Feature aktualisieren — nur übergebene Felder werden geändert', rw: 'write' },
+        { name: 'delete-feature', desc: 'Feature löschen (Soft-Delete, kann rückgängig gemacht werden)', rw: 'write' },
+        { name: 'list-teams', desc: 'Alle Teams mit Mitgliederanzahl', rw: 'read' },
+        { name: 'get-team', desc: 'Team-Details mit Mitgliedern und deren Skills', rw: 'read' },
+        { name: 'list-skills', desc: 'Alle Skills gruppiert nach Kategorie', rw: 'read' },
+        { name: 'list-plannings', desc: 'PI-Planungen mit Projekt, Owner, Feature-/Iterations-Anzahl', rw: 'read' },
     ];
 
     return (
@@ -288,9 +291,18 @@ export default function McpDocs() {
                         <h2 className="text-2xl font-bold text-white mb-6">Verfügbare Tools</h2>
                         <div className="grid gap-3">
                             {tools.map((tool) => (
-                                <div key={tool.name} className="rounded-lg border border-slate-700 bg-slate-800/50 p-4">
-                                    <code className="text-sm font-bold text-indigo-400">{tool.name}</code>
-                                    <p className="mt-1 text-sm text-slate-300">{tool.desc}</p>
+                                <div key={tool.name} className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 flex items-start justify-between gap-3">
+                                    <div>
+                                        <code className="text-sm font-bold text-indigo-400">{tool.name}</code>
+                                        <p className="mt-1 text-sm text-slate-300">{tool.desc}</p>
+                                    </div>
+                                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                                        tool.rw === 'write'
+                                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                            : 'bg-slate-700 text-slate-400'
+                                    }`}>
+                                        {tool.rw === 'write' ? 'write' : 'read'}
+                                    </span>
                                 </div>
                             ))}
                         </div>
@@ -311,7 +323,7 @@ export default function McpDocs() {
                                 </li>
                                 <li className="flex gap-2">
                                     <span className="text-indigo-400">•</span>
-                                    <span><strong className="text-white">Read-Only:</strong> Der MCP-Server bietet ausschliesslich Lesezugriff. Es können keine Daten verändert, erstellt oder gelöscht werden.</span>
+                                    <span><strong className="text-white">Read & Write:</strong> Der MCP-Server bietet Lesezugriff auf alle Entitäten und Schreibzugriff auf Features (erstellen, aktualisieren, löschen). Andere Entitäten sind aktuell read-only.</span>
                                 </li>
                                 <li className="flex gap-2">
                                     <span className="text-indigo-400">•</span>
