@@ -2,9 +2,11 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { router } from '@inertiajs/react';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import axios from 'axios';
+import { LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface StatusOption {
     value: string;
@@ -23,6 +25,7 @@ export default function WorkflowManager({ featureId, statusOptions, currentStatu
     const { errors } = usePage().props as { errors: Record<string, string> };
     const [status, setStatus] = useState<string>(currentStatus);
     const [hasChanges, setHasChanges] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const handleStatusChange = (value: string) => {
         setStatus(value);
@@ -30,17 +33,20 @@ export default function WorkflowManager({ featureId, statusOptions, currentStatu
     };
 
     const handleSave = () => {
-        router.put(
-            route('features.update', featureId),
-            { status },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: () => {
-                    setHasChanges(false);
-                },
-            },
-        );
+        setSaving(true);
+        axios
+            .post(`/features/${featureId}/status`, { status })
+            .then(() => {
+                toast.success('Status wurde aktualisiert.');
+                setHasChanges(false);
+                router.reload({ only: ['feature', 'statusOptions'] });
+            })
+            .catch((err) => {
+                toast.error(err.response?.data?.message ?? 'Status konnte nicht geändert werden.');
+            })
+            .finally(() => {
+                setSaving(false);
+            });
     };
 
     return (
@@ -84,7 +90,8 @@ export default function WorkflowManager({ featureId, statusOptions, currentStatu
                     <Button type="button" variant="outline" size="sm" onClick={() => handleStatusChange(currentStatus)}>
                         Abbrechen
                     </Button>
-                    <Button type="button" variant="default" size="sm" onClick={handleSave}>
+                    <Button type="button" variant="default" size="sm" onClick={handleSave} disabled={saving}>
+                        {saving && <LoaderCircle className="h-4 w-4 animate-spin" />}
                         Status speichern
                     </Button>
                 </div>

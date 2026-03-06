@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import axios from 'axios';
 import { LoaderCircle, Save, Sparkles, X } from 'lucide-react';
 import React, { useState } from 'react';
@@ -40,6 +40,7 @@ export default function Create({ projects, users, skills }: CreateProps) {
         jira_key: '',
         name: '',
         description: '',
+        type: 'business',
         requester_id: '',
         project_id: '',
         skill_requirements: [] as SkillRequirement[],
@@ -94,8 +95,14 @@ export default function Create({ projects, users, skills }: CreateProps) {
         post(route('features.store'));
     };
 
+    const breadcrumbs = [
+        { title: 'Startseite', href: '/' },
+        { title: 'Features', href: route('features.index') },
+        { title: 'Neues Feature', href: '#' },
+    ];
+
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Card className="mt-8 w-full">
                 <CardHeader>
                     <CardTitle>Neues Feature anlegen</CardTitle>
@@ -154,6 +161,24 @@ export default function Create({ projects, users, skills }: CreateProps) {
                             </div>
                         </div>
 
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div>
+                                <Label htmlFor="type">Typ</Label>
+                                <Select value={data.type} onValueChange={(value) => handleSelectChange('type', value)}>
+                                    <SelectTrigger id="type" className="w-full">
+                                        <SelectValue placeholder="Typ wählen" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="business">Business</SelectItem>
+                                        <SelectItem value="enabler">Enabler</SelectItem>
+                                        <SelectItem value="tech_debt">Tech Debt</SelectItem>
+                                        <SelectItem value="nfr">NFR</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.type} className="mt-1" />
+                            </div>
+                        </div>
+
                         <div>
                             <div className="mb-1 flex items-center justify-between">
                                 <Label htmlFor="description">Beschreibung</Label>
@@ -187,7 +212,7 @@ export default function Create({ projects, users, skills }: CreateProps) {
                         />
 
                         <div className="flex justify-end gap-2 pt-4">
-                            <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                            <Button type="button" variant="cancel" onClick={() => router.visit(route('features.index'))}>
                                 <X />
                                 Abbrechen
                             </Button>

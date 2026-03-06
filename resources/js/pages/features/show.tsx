@@ -72,6 +72,7 @@ interface Feature {
     estimation_components: EstimationComponent[];
     dependencies?: DependencyItem[];
     dependents?: DependencyItem[];
+    type?: string;
     status_details?: {
         value: string;
         name: string;
@@ -183,6 +184,7 @@ export default function Show({ feature, auth }: ShowProps) {
                                             jiraKey={feature.jira_key}
                                             projectName={feature.project?.name}
                                             requesterName={feature.requester?.name}
+                                            type={feature.type}
                                         />
 
                                         {/* Abhängigkeiten anzeigen */}

@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import { LoaderCircle, MessageSquareText, Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -38,6 +38,7 @@ interface Feature {
     description: string;
     requester_id: string | null;
     project_id: string;
+    type?: string;
     project?: {
         id: number;
         name: string;
@@ -84,6 +85,7 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
         description: feature.description || '',
         requester_id: feature.requester_id ? String(feature.requester_id) : '',
         project_id: feature.project_id ? String(feature.project_id) : '',
+        type: feature.type || 'business',
         skill_requirements: (feature.required_skills || []).map((s) => ({
             skill_id: s.id,
             level: s.pivot.level,
@@ -143,7 +145,7 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     {/* Action buttons at top */}
                                     <div className="flex justify-end gap-2 border-b pb-4">
-                                        <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                        <Button type="button" variant="cancel" onClick={() => router.visit(route('features.show', feature.id))}>
                                             <X />
                                             Abbrechen
                                         </Button>
@@ -222,6 +224,24 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                             </div>
                                         </div>
 
+                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                            <div>
+                                                <Label htmlFor="type">Typ</Label>
+                                                <Select value={data.type} onValueChange={(value) => handleSelectChange('type', value)}>
+                                                    <SelectTrigger id="type" className="w-full">
+                                                        <SelectValue placeholder="Typ wählen" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="business">Business</SelectItem>
+                                                        <SelectItem value="enabler">Enabler</SelectItem>
+                                                        <SelectItem value="tech_debt">Tech Debt</SelectItem>
+                                                        <SelectItem value="nfr">NFR</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <InputError message={errors.type} className="mt-1" />
+                                            </div>
+                                        </div>
+
                                         <div>
                                             <div className="mb-1 flex items-center justify-between">
                                                 <Label htmlFor="description">Beschreibung</Label>
@@ -255,7 +275,7 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                     />
 
                                     <div className="flex justify-end gap-2 border-t pt-4">
-                                        <Button type="button" variant="cancel" onClick={() => window.history.back()}>
+                                        <Button type="button" variant="cancel" onClick={() => router.visit(route('features.show', feature.id))}>
                                             <X />
                                             Abbrechen
                                         </Button>

@@ -19,7 +19,11 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { EmptyState } from '@/components/empty-state';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { Eye, FolderOpen, LayoutGrid, LayoutList, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 interface Feature {
@@ -85,6 +89,13 @@ export default function Index({ features }: IndexProps) {
     }>;
 
     const confirm = useConfirm();
+
+    const userId = (usePage().props as any)?.auth?.user?.id ?? 'guest';
+    const [viewMode, setViewMode] = useLocalStorage<'table' | 'card'>(
+        `viewPrefs:${userId}:features.index:viewMode`,
+        'table'
+    );
+
     const featureData = Array.isArray(features) ? features : features.data;
 
     const uniqueStatuses = useMemo(() => {
@@ -261,12 +272,12 @@ export default function Index({ features }: IndexProps) {
                     const feature = row.original;
                     return (
                         <div className="flex justify-end gap-2">
-                            <Button asChild size="icon" variant="outline">
+                            <Button asChild size="icon" variant="outline" aria-label="Feature anzeigen">
                                 <Link href={route('features.show', feature.id)}>
                                     <Eye className="h-4 w-4" />
                                 </Link>
                             </Button>
-                            <Button asChild size="icon" variant="outline">
+                            <Button asChild size="icon" variant="outline" aria-label="Feature bearbeiten">
                                 <Link href={route('features.edit', feature.id)}>
                                     <Pencil className="h-4 w-4" />
                                 </Link>
@@ -274,6 +285,7 @@ export default function Index({ features }: IndexProps) {
                             <Button
                                 size="icon"
                                 variant="destructive"
+                                aria-label="Feature löschen"
                                 onClick={async () => {
                                     const ok = await confirm({
                                         title: 'Feature löschen',
@@ -326,7 +338,19 @@ export default function Index({ features }: IndexProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="mb-6 flex items-center justify-between p-5">
                 <h1 className="text-2xl font-bold">Features</h1>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                    <ToggleGroup
+                        type="single"
+                        value={viewMode}
+                        onValueChange={(value) => value && setViewMode(value as 'table' | 'card')}
+                    >
+                        <ToggleGroupItem value="table" aria-label="Tabellenansicht">
+                            <LayoutList className="h-4 w-4" />
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="card" aria-label="Kartenansicht">
+                            <LayoutGrid className="h-4 w-4" />
+                        </ToggleGroupItem>
+                    </ToggleGroup>
                     <Button asChild variant="success">
                         <Link href={route('features.create')}>
                             <Plus className="mr-2 h-4 w-4" />
@@ -340,9 +364,106 @@ export default function Index({ features }: IndexProps) {
             </div>
 
             <div className="flex flex-col gap-4 p-5">
-                <DataTable table={table} emptyMessage="Keine Features gefunden.">
-                    <DataTableToolbar table={table} />
-                </DataTable>
+                {viewMode === 'table' ? (
+                    <DataTable table={table} emptyMessage="Keine Features gefunden.">
+                        <DataTableToolbar table={table} />
+                    </DataTable>
+                ) : (
+                    <>
+                        <DataTableToolbar table={table} />
+                        {featureData.length === 0 ? (
+                            <EmptyState
+                                icon={FolderOpen}
+                                title="Noch keine Features"
+                                description="Erstellen Sie Ihr erstes Feature, um loszulegen."
+                                action={{ label: 'Neues Feature erstellen', href: route('features.create') }}
+                            />
+                        ) : table.getFilteredRowModel().rows.length === 0 ? (
+                            <div className="py-10 text-center">
+                                <p className="text-muted-foreground">Keine Features für die aktuelle Filterauswahl.</p>
+                                <Button variant="link" onClick={() => table.resetColumnFilters()} className="mt-2">
+                                    Filter zurücksetzen
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                {table.getFilteredRowModel().rows.map((row) => {
+                                    const feature = row.original;
+                                    const typeLabels: Record<string, string> = { business: 'Business', enabler: 'Enabler', tech_debt: 'Tech Debt', nfr: 'NFR' };
+                                    const typeColors: Record<string, string> = { business: 'bg-blue-100 text-blue-800', enabler: 'bg-purple-100 text-purple-800', tech_debt: 'bg-orange-100 text-orange-800', nfr: 'bg-teal-100 text-teal-800' };
+                                    return (
+                                        <Card key={feature.id} className="flex flex-col justify-between">
+                                            <CardHeader className="pb-3">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-muted-foreground text-xs font-medium">{feature.jira_key}</p>
+                                                        <h3 className="text-sm font-semibold leading-snug break-words">{feature.name}</h3>
+                                                    </div>
+                                                    {feature.status && (
+                                                        <span className={`shrink-0 rounded-md px-2 py-1 text-xs ${feature.status.color}`}>
+                                                            {feature.status.name}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent className="pt-0">
+                                                <div className="flex flex-wrap items-center gap-2 text-xs">
+                                                    {feature.type && (
+                                                        <Badge className={typeColors[feature.type] ?? ''}>
+                                                            {typeLabels[feature.type] ?? feature.type}
+                                                        </Badge>
+                                                    )}
+                                                    {feature.project && (
+                                                        <span className="text-muted-foreground truncate">{feature.project.name}</span>
+                                                    )}
+                                                    {feature.requester && (
+                                                        <span className="text-muted-foreground">· {feature.requester.name}</span>
+                                                    )}
+                                                </div>
+                                                {feature.total_weighted_case != null && feature.estimation_components_count ? (
+                                                    <div className="mt-2 flex items-center gap-2 text-xs">
+                                                        <Badge variant="outline" className="bg-blue-50">{feature.estimation_components_count} Komp.</Badge>
+                                                        <span className="font-medium">{feature.total_weighted_case.toFixed(2)} {formatUnits(feature.estimation_units)}</span>
+                                                    </div>
+                                                ) : null}
+                                                <div className="mt-3 flex justify-end gap-1">
+                                                    <Button asChild size="icon" variant="ghost" aria-label="Feature anzeigen">
+                                                        <Link href={route('features.show', feature.id)}>
+                                                            <Eye className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                    <Button asChild size="icon" variant="ghost" aria-label="Feature bearbeiten">
+                                                        <Link href={route('features.edit', feature.id)}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        aria-label="Feature löschen"
+                                                        className="text-destructive hover:text-destructive"
+                                                        onClick={async () => {
+                                                            const ok = await confirm({
+                                                                title: 'Feature löschen',
+                                                                description: 'Möchten Sie dieses Feature wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+                                                                confirmLabel: 'Löschen',
+                                                                cancelLabel: 'Abbrechen',
+                                                            });
+                                                            if (!ok) return;
+                                                            router.delete(route('features.destroy', feature.id));
+                                                        }}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
         </AppLayout>
     );

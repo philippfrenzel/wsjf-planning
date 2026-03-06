@@ -1,4 +1,5 @@
 import axios from '@/bootstrap';
+import { EmptyState } from '@/components/empty-state';
 import { IndexFilterPanel } from '@/components/index-filter-panel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,8 +18,9 @@ import {
     useSensor,
     useSensors,
 } from '@dnd-kit/core';
-import { Link } from '@inertiajs/react';
-import { Loader2 } from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
+import { Kanban, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import React, { useState } from 'react';
 
 interface Feature {
@@ -234,8 +236,8 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
             })
             .catch(() => {
                 setLoadingFeatureId(null);
-                // Bei Fehler den State zurücksetzen
                 setLaneState(laneState);
+                toast.error('Status konnte nicht geändert werden. Der Übergang ist möglicherweise nicht erlaubt.');
             });
     };
 
@@ -254,37 +256,36 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
     const handleProjectChange = (value: string) => {
         const newProjectId = value && value !== '__all' ? Number(value) : null;
         setSelectedProjectId(newProjectId);
-        // Reset Planning Filter wenn Projekt wechselt
         setSelectedPlanningId(null);
 
-        // Zum Board mit Projektfilter navigieren
-        const params = new URLSearchParams();
-        if (newProjectId) params.set('project_id', String(newProjectId));
-        if (selectedClosedStatusDays) params.set('closed_status_days', selectedClosedStatusDays);
-        const qs = params.toString();
+        const data: Record<string, string | number> = {};
+        if (newProjectId) data.project_id = newProjectId;
+        if (selectedClosedStatusDays) data.closed_status_days = selectedClosedStatusDays;
 
-        window.location.href = qs ? `/features/board?${qs}` : '/features/board';
+        router.visit(route('features.board'), { data, preserveState: false });
     };
 
     const handlePlanningChange = (value: string) => {
         const newPlanningId = value && value !== '__all' ? Number(value) : null;
         setSelectedPlanningId(newPlanningId);
-        const params = new URLSearchParams();
-        if (selectedProjectId) params.set('project_id', String(selectedProjectId));
-        if (newPlanningId) params.set('planning_id', String(newPlanningId));
-        if (selectedClosedStatusDays) params.set('closed_status_days', selectedClosedStatusDays);
-        const qs = params.toString();
-        window.location.href = qs ? `/features/board?${qs}` : '/features/board';
+
+        const data: Record<string, string | number> = {};
+        if (selectedProjectId) data.project_id = selectedProjectId;
+        if (newPlanningId) data.planning_id = newPlanningId;
+        if (selectedClosedStatusDays) data.closed_status_days = selectedClosedStatusDays;
+
+        router.visit(route('features.board'), { data, preserveState: false });
     };
 
     const handleClosedStatusDaysChange = (newDays: string) => {
         setSelectedClosedStatusDays(newDays);
-        const params = new URLSearchParams();
-        if (selectedProjectId) params.set('project_id', String(selectedProjectId));
-        if (selectedPlanningId) params.set('planning_id', String(selectedPlanningId));
-        params.set('closed_status_days', newDays);
-        const qs = params.toString();
-        window.location.href = `/features/board?${qs}`;
+
+        const data: Record<string, string | number> = {};
+        if (selectedProjectId) data.project_id = selectedProjectId;
+        if (selectedPlanningId) data.planning_id = selectedPlanningId;
+        data.closed_status_days = newDays;
+
+        router.visit(route('features.board'), { data, preserveState: false });
     };
 
     return (
@@ -346,54 +347,63 @@ export default function Board({ lanes, projects, plannings, filters }: BoardProp
                     </IndexFilterPanel>
                 </div>
 
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
-                    onDragStart={handleDragStart}
-                    onDragOver={handleDragOver}
-                >
-                    <div className="flex gap-4 overflow-x-auto pt-2 pb-4">
-                        {laneState.map((lane: Lane) => (
-                            <LaneColumn key={lane.key} lane={lane} highlight={overLaneKey === lane.key || selectedStatus === lane.key}>
-                                {lane.features.map((feature: Feature) => (
-                                    <div key={feature.id} className="mb-2">
-                                        <FeatureCard feature={feature} isLoading={loadingFeatureId === feature.id} />
-                                    </div>
-                                ))}
-                            </LaneColumn>
-                        ))}
-                    </div>
-                    {/* DragOverlay für verbessertes visuelles Feedback */}
-                    <DragOverlay
-                        adjustScale={false}
-                        zIndex={1000}
-                        dropAnimation={{
-                            duration: 200,
-                            easing: 'ease',
-                        }}
+                {laneState.every((lane: Lane) => lane.features.length === 0) ? (
+                    <EmptyState
+                        icon={Kanban}
+                        title="Keine Features vorhanden"
+                        description="Es sind keine Features für die aktuelle Filterauswahl vorhanden."
+                        action={{ label: 'Neues Feature erstellen', href: route('features.create') }}
+                    />
+                ) : (
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                        onDragStart={handleDragStart}
+                        onDragOver={handleDragOver}
                     >
-                        {activeFeatureId !== null &&
-                            (() => {
-                                const feature = laneState.flatMap((l: Lane) => l.features).find((f: Feature) => f.id === activeFeatureId);
-                                if (!feature) return null;
-                                return (
-                                    <div className="pointer-events-none w-full max-w-[300px] min-w-[250px]">
-                                        <Card className="border-2 border-blue-500 shadow-lg">
-                                            <CardHeader className="p-3 pb-2">
-                                                <CardTitle className="text-sm">
-                                                    {feature.jira_key} - {feature.name}
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="p-3 pt-0">
-                                                {feature.project && <p className="text-muted-foreground text-xs">{feature.project.name}</p>}
-                                            </CardContent>
-                                        </Card>
-                                    </div>
-                                );
-                            })()}
-                    </DragOverlay>
-                </DndContext>
+                        <div className="flex gap-4 overflow-x-auto pt-2 pb-4">
+                            {laneState.map((lane: Lane) => (
+                                <LaneColumn key={lane.key} lane={lane} highlight={overLaneKey === lane.key || selectedStatus === lane.key}>
+                                    {lane.features.map((feature: Feature) => (
+                                        <div key={feature.id} className="mb-2">
+                                            <FeatureCard feature={feature} isLoading={loadingFeatureId === feature.id} />
+                                        </div>
+                                    ))}
+                                </LaneColumn>
+                            ))}
+                        </div>
+                        {/* DragOverlay für verbessertes visuelles Feedback */}
+                        <DragOverlay
+                            adjustScale={false}
+                            zIndex={1000}
+                            dropAnimation={{
+                                duration: 200,
+                                easing: 'ease',
+                            }}
+                        >
+                            {activeFeatureId !== null &&
+                                (() => {
+                                    const feature = laneState.flatMap((l: Lane) => l.features).find((f: Feature) => f.id === activeFeatureId);
+                                    if (!feature) return null;
+                                    return (
+                                        <div className="pointer-events-none w-full max-w-[300px] min-w-[250px]">
+                                            <Card className="border-2 border-blue-500 shadow-lg">
+                                                <CardHeader className="p-3 pb-2">
+                                                    <CardTitle className="text-sm">
+                                                        {feature.jira_key} - {feature.name}
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="p-3 pt-0">
+                                                    {feature.project && <p className="text-muted-foreground text-xs">{feature.project.name}</p>}
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    );
+                                })()}
+                        </DragOverlay>
+                    </DndContext>
+                )}
             </div>
         </AppLayout>
     );
