@@ -6,17 +6,23 @@ namespace App\Mcp\Servers;
 
 use App\Mcp\Resources\DashboardSummary;
 use App\Mcp\Tools\CreateFeature;
+use App\Mcp\Tools\CreateFeaturePlan;
+use App\Mcp\Tools\CreateFeatureSpecification;
 use App\Mcp\Tools\CreateProject;
 use App\Mcp\Tools\DeleteFeature;
 use App\Mcp\Tools\GetFeature;
+use App\Mcp\Tools\GetFeatureSpecification;
 use App\Mcp\Tools\GetProject;
 use App\Mcp\Tools\GetTeam;
+use App\Mcp\Tools\ListFeaturePlans;
 use App\Mcp\Tools\ListFeatures;
 use App\Mcp\Tools\ListPlannings;
 use App\Mcp\Tools\ListProjects;
 use App\Mcp\Tools\ListSkills;
 use App\Mcp\Tools\ListTeams;
 use App\Mcp\Tools\UpdateFeature;
+use App\Mcp\Tools\UpdateFeaturePlan;
+use App\Mcp\Tools\UpdateFeatureSpecification;
 use App\Mcp\Tools\UpdateProject;
 use Laravel\Mcp\Server;
 
@@ -42,6 +48,12 @@ class WsjfServer extends Server
         CreateFeature::class,
         UpdateFeature::class,
         DeleteFeature::class,
+        GetFeatureSpecification::class,
+        CreateFeatureSpecification::class,
+        UpdateFeatureSpecification::class,
+        ListFeaturePlans::class,
+        CreateFeaturePlan::class,
+        UpdateFeaturePlan::class,
         ListTeams::class,
         GetTeam::class,
         ListSkills::class,
