@@ -320,34 +320,27 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                             </TabsContent>
 
                             <TabsContent value="erweitert" className="space-y-6">
-                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[60%_1fr]">
-                                    {/* Left — Dependencies + Skills */}
-                                    <div className="space-y-6">
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle>Abhängigkeiten</CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <DependenciesSection featureId={feature.id} featureOptions={featureOptions} dependencies={dependencies} />
-                                            </CardContent>
-                                        </Card>
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle>Benötigte Skills</CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <SkillRequirementsPicker
-                                                    skills={skills}
-                                                    requirements={data.skill_requirements}
-                                                    onToggle={toggleSkillRequirement}
-                                                    onLevelChange={setSkillLevel}
-                                                />
-                                            </CardContent>
-                                        </Card>
-                                    </div>
-                                    {/* Right — empty for now, keeps grid consistent */}
-                                    <div />
-                                </div>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Abhängigkeiten</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <DependenciesSection featureId={feature.id} featureOptions={featureOptions} dependencies={dependencies} />
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Benötigte Skills</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <SkillRequirementsPicker
+                                            skills={skills}
+                                            requirements={data.skill_requirements}
+                                            onToggle={toggleSkillRequirement}
+                                            onLevelChange={setSkillLevel}
+                                        />
+                                    </CardContent>
+                                </Card>
                             </TabsContent>
                         </Tabs>
                     </CardContent>
