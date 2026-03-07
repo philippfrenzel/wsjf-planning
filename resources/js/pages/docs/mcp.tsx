@@ -96,6 +96,13 @@ export default function McpDocs() {
         { name: 'create-feature', descKey: 'mcp_tool_create_feature', rw: 'write' },
         { name: 'update-feature', descKey: 'mcp_tool_update_feature', rw: 'write' },
         { name: 'delete-feature', descKey: 'mcp_tool_delete_feature', rw: 'write' },
+        { name: 'get-feature-specification', descKey: 'mcp_tool_get_feature_specification', rw: 'read' },
+        { name: 'create-feature-specification', descKey: 'mcp_tool_create_feature_specification', rw: 'write' },
+        { name: 'update-feature-specification', descKey: 'mcp_tool_update_feature_specification', rw: 'write' },
+        { name: 'list-feature-plans', descKey: 'mcp_tool_list_feature_plans', rw: 'read' },
+        { name: 'create-feature-plan', descKey: 'mcp_tool_create_feature_plan', rw: 'write' },
+        { name: 'update-feature-plan', descKey: 'mcp_tool_update_feature_plan', rw: 'write' },
+        { name: 'get-next-plan-step', descKey: 'mcp_tool_get_next_plan_step', rw: 'read' },
         { name: 'list-teams', descKey: 'mcp_tool_list_teams', rw: 'read' },
         { name: 'get-team', descKey: 'mcp_tool_get_team', rw: 'read' },
         { name: 'list-skills', descKey: 'mcp_tool_list_skills', rw: 'read' },
@@ -121,6 +128,20 @@ export default function McpDocs() {
                             <span className="hidden sm:inline text-xs text-slate-400 border border-slate-700 rounded-full px-2 py-0.5">
                                 Docs
                             </span>
+                            <nav className="hidden sm:flex items-center gap-1 ml-2">
+                                <Link
+                                    href={route('docs.features')}
+                                    className="px-3 py-1.5 text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                                >
+                                    {t('docs_nav_features')}
+                                </Link>
+                                <Link
+                                    href={route('docs.mcp')}
+                                    className="px-3 py-1.5 text-sm font-medium rounded-md bg-indigo-600/20 text-indigo-300 border border-indigo-500/30"
+                                >
+                                    {t('docs_nav_mcp')}
+                                </Link>
+                            </nav>
                         </div>
                         <div className="flex items-center gap-3">
                             <select
@@ -370,7 +391,8 @@ export default function McpDocs() {
                         </div>
                         <nav className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400">
                             <Link href="/" className="hover:text-white transition-colors">{t('nav_home')}</Link>
-                            <Link href={route('docs.mcp')} className="text-white font-medium">MCP Docs</Link>
+                            <Link href={route('docs.features')} className="hover:text-white transition-colors">{t('docs_nav_features')}</Link>
+                            <Link href={route('docs.mcp')} className="text-white font-medium">{t('docs_nav_mcp')}</Link>
                             <Link href={route('login')} className="hover:text-white transition-colors">{t('nav_login')}</Link>
                             <Link href={route('register')} className="hover:text-white transition-colors">{t('nav_register')}</Link>
                             <Link href={route('imprint')} className="hover:text-white transition-colors">{t('nav_imprint')}</Link>

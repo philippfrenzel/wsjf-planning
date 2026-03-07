@@ -8,7 +8,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, Kanban, LayoutGrid, ListChecks, Map, Menu, Route, Shirt, FolderKanban, Users, Zap } from 'lucide-react';
+import { BarChart3, BookOpen, Kanban, LayoutGrid, ListChecks, Map, Menu, Route, Shirt, FolderKanban, Users, Zap } from 'lucide-react';
 import AppLogoIcon from './app-logo-icon';
 
 interface AppHeaderProps {
@@ -35,6 +35,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
         { title: t('nav_skills'), href: '/skills', icon: Zap },
         { title: t('nav_dordod'), href: '/definitions', icon: ListChecks },
         hasProjects && { title: t('nav_roadmap'), href: '/roadmap', icon: Map },
+        { title: t('nav_docs'), href: '/docs/features', icon: BookOpen },
     ].filter(Boolean) as { title: string; href: string; icon: React.ElementType }[];
 
     const isActive = (href: string) => page.url.startsWith(href.split('?')[0]);
