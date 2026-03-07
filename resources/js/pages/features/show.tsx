@@ -436,8 +436,8 @@ export default function Show({ feature, auth }: ShowProps) {
                                                 <div className="flex items-center gap-2">
                                                     <Button
                                                         size="sm"
-                                                        variant="outline"
-                                                        onClick={() => setSpecChatOpen(true)}
+                                                        variant={specChatOpen ? 'default' : 'outline'}
+                                                        onClick={() => setSpecChatOpen(!specChatOpen)}
                                                     >
                                                         <MessageSquareText className="mr-1 h-4 w-4" />
                                                         KI-Chat
@@ -493,142 +493,169 @@ export default function Show({ feature, auth }: ShowProps) {
                                                 </div>
                                             </div>
 
-                                            <Card>
-                                                <CardContent className="pt-6">
-                                                    {isEditingSpec ? (
-                                                        <MarkdownEditor
-                                                            value={specContent}
-                                                            onChange={setSpecContent}
-                                                            height={400}
-                                                        />
-                                                    ) : (
-                                                        <MarkdownViewer content={specContent} className="prose prose-sm max-w-none" />
-                                                    )}
-                                                </CardContent>
-                                            </Card>
-
-                                            {/* Version History */}
-                                            {feature.specification?.versions && feature.specification.versions.length > 0 && (
-                                                <Card className="mt-6">
-                                                    <CardHeader>
-                                                        <div className="flex items-center justify-between">
-                                                            <CardTitle className="text-base">
-                                                                <History className="mr-2 inline h-4 w-4" />
-                                                                Versionshistorie ({feature.specification.versions.length})
-                                                            </CardTitle>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                onClick={() => {
-                                                                    if (!showVersionHistory) loadVersionContent([]);
-                                                                    setShowVersionHistory(!showVersionHistory);
-                                                                }}
-                                                            >
-                                                                {showVersionHistory ? 'Ausblenden' : 'Anzeigen'}
-                                                            </Button>
-                                                        </div>
-                                                    </CardHeader>
-                                                    {showVersionHistory && (
-                                                        <CardContent className="space-y-4">
-                                                            {/* Version List */}
-                                                            <div className="space-y-2">
-                                                                {feature.specification.versions.map((version, index) => {
-                                                                    const prevVersion = feature.specification!.versions![index + 1];
-                                                                    return (
-                                                                        <div
-                                                                            key={version.id}
-                                                                            className="flex items-center justify-between rounded-lg border p-3"
-                                                                        >
-                                                                            <div className="min-w-0 flex-1">
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <Badge variant="outline">v{version.version_number}</Badge>
-                                                                                    <span className="text-sm font-medium">
-                                                                                        {version.change_summary || 'Keine Beschreibung'}
-                                                                                    </span>
-                                                                                </div>
-                                                                                <p className="text-muted-foreground mt-1 text-xs">
-                                                                                    {version.creator?.name || 'System'} · {new Date(version.created_at).toLocaleString('de-DE')}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="flex gap-2">
-                                                                                {prevVersion && (
-                                                                                    <Button
-                                                                                        size="sm"
-                                                                                        variant="outline"
-                                                                                        onClick={() => handleCompareVersions(prevVersion.id, version.id)}
-                                                                                    >
-                                                                                        Diff
-                                                                                    </Button>
-                                                                                )}
-                                                                                <Button
-                                                                                    size="sm"
-                                                                                    variant="ghost"
-                                                                                    onClick={() => {
-                                                                                        if (!versionContents[version.id]) loadVersionContent([version.id]);
-                                                                                        setSelectedVersions([version.id, null]);
-                                                                                    }}
-                                                                                >
-                                                                                    Anzeigen
-                                                                                </Button>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })}
-                                                            </div>
-
-                                                            {/* Diff Viewer or Version Content */}
-                                                            {selectedVersions[0] !== null && (
-                                                                <div className="mt-4">
-                                                                    {loadingVersions ? (
-                                                                        <div className="flex items-center justify-center py-8">
-                                                                            <LoaderCircle className="h-6 w-6 animate-spin" />
-                                                                        </div>
-                                                                    ) : selectedVersions[1] !== null && versionContents[selectedVersions[0]] && versionContents[selectedVersions[1]] ? (
-                                                                        /* Diff view between two versions */
-                                                                        <div>
-                                                                            <div className="mb-2 flex items-center justify-between">
-                                                                                <p className="text-sm font-medium">
-                                                                                    Vergleich: v{feature.specification!.versions!.find(v => v.id === selectedVersions[0])?.version_number}
-                                                                                    {' → '}
-                                                                                    v{feature.specification!.versions!.find(v => v.id === selectedVersions[1])?.version_number}
-                                                                                </p>
-                                                                                <Button size="sm" variant="ghost" onClick={() => setSelectedVersions([null, null])}>
-                                                                                    Schließen
-                                                                                </Button>
-                                                                            </div>
-                                                                            <div className="overflow-hidden rounded-lg border">
-                                                                                <ReactDiffViewer
-                                                                                    oldValue={versionContents[selectedVersions[0]]}
-                                                                                    newValue={versionContents[selectedVersions[1]]}
-                                                                                    splitView={false}
-                                                                                    useDarkTheme={document.documentElement.classList.contains('dark')}
-                                                                                    leftTitle={`v${feature.specification!.versions!.find(v => v.id === selectedVersions[0])?.version_number}`}
-                                                                                    rightTitle={`v${feature.specification!.versions!.find(v => v.id === selectedVersions[1])?.version_number}`}
-                                                                                />
-                                                                            </div>
-                                                                        </div>
-                                                                    ) : versionContents[selectedVersions[0]] ? (
-                                                                        /* Single version view */
-                                                                        <div>
-                                                                            <div className="mb-2 flex items-center justify-between">
-                                                                                <p className="text-sm font-medium">
-                                                                                    Version {feature.specification!.versions!.find(v => v.id === selectedVersions[0])?.version_number}
-                                                                                </p>
-                                                                                <Button size="sm" variant="ghost" onClick={() => setSelectedVersions([null, null])}>
-                                                                                    Schließen
-                                                                                </Button>
-                                                                            </div>
-                                                                            <div className="rounded-lg border p-4">
-                                                                                <MarkdownViewer content={versionContents[selectedVersions[0]]} className="prose prose-sm max-w-none" />
-                                                                            </div>
-                                                                        </div>
-                                                                    ) : null}
+                                            {/* Side-by-side: Document + Chat */}
+                                            <div className={`flex gap-4 ${specChatOpen ? 'items-stretch' : ''}`}>
+                                                {/* Document column */}
+                                                <div className={`min-w-0 space-y-4 ${specChatOpen ? 'w-3/5' : 'w-full'}`}>
+                                                    <Card>
+                                                        <CardContent className="pt-6">
+                                                            {isEditingSpec ? (
+                                                                <MarkdownEditor
+                                                                    value={specContent}
+                                                                    onChange={setSpecContent}
+                                                                    height={specChatOpen ? 500 : 400}
+                                                                />
+                                                            ) : (
+                                                                <div className={specChatOpen ? 'max-h-[600px] overflow-y-auto' : ''}>
+                                                                    <MarkdownViewer content={specContent} className="prose prose-sm max-w-none" />
                                                                 </div>
                                                             )}
                                                         </CardContent>
+                                                    </Card>
+
+                                                    {/* Version History */}
+                                                    {!specChatOpen && feature.specification?.versions && feature.specification.versions.length > 0 && (
+                                                        <Card className="mt-6">
+                                                            <CardHeader>
+                                                                <div className="flex items-center justify-between">
+                                                                    <CardTitle className="text-base">
+                                                                        <History className="mr-2 inline h-4 w-4" />
+                                                                        Versionshistorie ({feature.specification.versions.length})
+                                                                    </CardTitle>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() => {
+                                                                            if (!showVersionHistory) loadVersionContent([]);
+                                                                            setShowVersionHistory(!showVersionHistory);
+                                                                        }}
+                                                                    >
+                                                                        {showVersionHistory ? 'Ausblenden' : 'Anzeigen'}
+                                                                    </Button>
+                                                                </div>
+                                                            </CardHeader>
+                                                            {showVersionHistory && (
+                                                                <CardContent className="space-y-4">
+                                                                    {/* Version List */}
+                                                                    <div className="space-y-2">
+                                                                        {feature.specification.versions.map((version, index) => {
+                                                                            const prevVersion = feature.specification!.versions![index + 1];
+                                                                            return (
+                                                                                <div
+                                                                                    key={version.id}
+                                                                                    className="flex items-center justify-between rounded-lg border p-3"
+                                                                                >
+                                                                                    <div className="min-w-0 flex-1">
+                                                                                        <div className="flex items-center gap-2">
+                                                                                            <Badge variant="outline">v{version.version_number}</Badge>
+                                                                                            <span className="text-sm font-medium">
+                                                                                                {version.change_summary || 'Keine Beschreibung'}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <p className="text-muted-foreground mt-1 text-xs">
+                                                                                            {version.creator?.name || 'System'} · {new Date(version.created_at).toLocaleString('de-DE')}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                    <div className="flex gap-2">
+                                                                                        {prevVersion && (
+                                                                                            <Button
+                                                                                                size="sm"
+                                                                                                variant="outline"
+                                                                                                onClick={() => handleCompareVersions(prevVersion.id, version.id)}
+                                                                                            >
+                                                                                                Diff
+                                                                                            </Button>
+                                                                                        )}
+                                                                                        <Button
+                                                                                            size="sm"
+                                                                                            variant="ghost"
+                                                                                            onClick={() => {
+                                                                                                if (!versionContents[version.id]) loadVersionContent([version.id]);
+                                                                                                setSelectedVersions([version.id, null]);
+                                                                                            }}
+                                                                                        >
+                                                                                            Anzeigen
+                                                                                        </Button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+
+                                                                    {/* Diff Viewer or Version Content */}
+                                                                    {selectedVersions[0] !== null && (
+                                                                        <div className="mt-4">
+                                                                            {loadingVersions ? (
+                                                                                <div className="flex items-center justify-center py-8">
+                                                                                    <LoaderCircle className="h-6 w-6 animate-spin" />
+                                                                                </div>
+                                                                            ) : selectedVersions[1] !== null && versionContents[selectedVersions[0]] && versionContents[selectedVersions[1]] ? (
+                                                                                /* Diff view between two versions */
+                                                                                <div>
+                                                                                    <div className="mb-2 flex items-center justify-between">
+                                                                                        <p className="text-sm font-medium">
+                                                                                            Vergleich: v{feature.specification!.versions!.find(v => v.id === selectedVersions[0])?.version_number}
+                                                                                            {' → '}
+                                                                                            v{feature.specification!.versions!.find(v => v.id === selectedVersions[1])?.version_number}
+                                                                                        </p>
+                                                                                        <Button size="sm" variant="ghost" onClick={() => setSelectedVersions([null, null])}>
+                                                                                            Schließen
+                                                                                        </Button>
+                                                                                    </div>
+                                                                                    <div className="overflow-hidden rounded-lg border">
+                                                                                        <ReactDiffViewer
+                                                                                            oldValue={versionContents[selectedVersions[0]]}
+                                                                                            newValue={versionContents[selectedVersions[1]]}
+                                                                                            splitView={false}
+                                                                                            useDarkTheme={document.documentElement.classList.contains('dark')}
+                                                                                            leftTitle={`v${feature.specification!.versions!.find(v => v.id === selectedVersions[0])?.version_number}`}
+                                                                                            rightTitle={`v${feature.specification!.versions!.find(v => v.id === selectedVersions[1])?.version_number}`}
+                                                                                        />
+                                                                                    </div>
+                                                                                </div>
+                                                                            ) : versionContents[selectedVersions[0]] ? (
+                                                                                /* Single version view */
+                                                                                <div>
+                                                                                    <div className="mb-2 flex items-center justify-between">
+                                                                                        <p className="text-sm font-medium">
+                                                                                            Version {feature.specification!.versions!.find(v => v.id === selectedVersions[0])?.version_number}
+                                                                                        </p>
+                                                                                        <Button size="sm" variant="ghost" onClick={() => setSelectedVersions([null, null])}>
+                                                                                            Schließen
+                                                                                        </Button>
+                                                                                    </div>
+                                                                                    <div className="rounded-lg border p-4">
+                                                                                        <MarkdownViewer content={versionContents[selectedVersions[0]]} className="prose prose-sm max-w-none" />
+                                                                                    </div>
+                                                                                </div>
+                                                                            ) : null}
+                                                                        </div>
+                                                                    )}
+                                                                </CardContent>
+                                                            )}
+                                                        </Card>
                                                     )}
-                                                </Card>
-                                            )}
+                                                </div>
+
+                                                {/* Chat column (inline, side-by-side) */}
+                                                {specChatOpen && (
+                                                    <div className="w-2/5 min-w-[320px]">
+                                                        <Card className="h-[660px]">
+                                                            <AiChatPanel
+                                                                open={specChatOpen}
+                                                                onOpenChange={setSpecChatOpen}
+                                                                featureName={feature.name}
+                                                                projectId={feature.project?.id?.toString() || ''}
+                                                                currentDescription={specContent}
+                                                                onApplyDescription={(md) => {
+                                                                    setSpecContent(md);
+                                                                    setIsEditingSpec(true);
+                                                                }}
+                                                            />
+                                                        </Card>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -746,19 +773,6 @@ export default function Show({ feature, auth }: ShowProps) {
                     onDescriptionChange={(description) => setEditComponentData({ ...editComponentData, description })}
                     onSubmit={handleEditComponentSubmit}
                     processing={componentIsSaving}
-                />
-
-                {/* KI-Chat für Spezifikation */}
-                <AiChatPanel
-                    open={specChatOpen}
-                    onOpenChange={setSpecChatOpen}
-                    featureName={feature.name}
-                    projectId={feature.project?.id?.toString() || ''}
-                    currentDescription={specContent}
-                    onApplyDescription={(md) => {
-                        setSpecContent(md);
-                        setIsEditingSpec(true);
-                    }}
                 />
             </div>
         </AppLayout>
