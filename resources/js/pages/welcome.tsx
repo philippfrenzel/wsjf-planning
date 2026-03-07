@@ -159,6 +159,9 @@ export default function Welcome() {
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
+                            <Link href={route('docs.features')} className="text-sm text-slate-300 hover:text-white transition-colors">
+                                {t('nav_docs')}
+                            </Link>
                             <select
                                 value={locale}
                                 onChange={(e) => setLocale(e.target.value as 'en' | 'de' | 'fr' | 'it')}
@@ -376,7 +379,8 @@ export default function Welcome() {
                         <nav className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400">
                             <Link href={route('login')} className="hover:text-white transition-colors">{t('login')}</Link>
                             <Link href={route('register')} className="hover:text-white transition-colors">{t('register')}</Link>
-                            <Link href={route('docs.mcp')} className="hover:text-white transition-colors">MCP Docs</Link>
+                            <Link href={route('docs.features')} className="hover:text-white transition-colors">{t('nav_docs')}</Link>
+                            <Link href={route('docs.mcp')} className="hover:text-white transition-colors">MCP</Link>
                             <Link href={route('imprint')} className="hover:text-white transition-colors">{t('imprint_link')}</Link>
                         </nav>
                     </div>
