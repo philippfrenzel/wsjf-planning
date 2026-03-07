@@ -13,6 +13,8 @@ class Estimation extends Model
 {
     use HasFactory, BelongsToTenant, SoftDeletesWithUser;
 
+    protected $appends = ['weighted_estimate'];
+
     protected $fillable = [
         'component_id',
         'best_case',

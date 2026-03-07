@@ -513,7 +513,7 @@ export default function Show({ feature, auth }: ShowProps) {
                                                                     <span>Likely: {plan.estimation_component.latest_estimation.most_likely}</span>
                                                                     <span>Worst: {plan.estimation_component.latest_estimation.worst_case}</span>
                                                                     <span className="font-medium">
-                                                                        Ø {plan.estimation_component.latest_estimation.weighted_estimate.toFixed(1)}
+                                                                        Ø {plan.estimation_component.latest_estimation.weighted_estimate?.toFixed(1) ?? '–'}
                                                                     </span>
                                                                 </div>
                                                             </div>
