@@ -277,6 +277,7 @@ class FeatureController extends Controller
             'specification.versions.creator:id,name',
             'plans.estimationComponent.latestEstimation',
             'plans.creator:id,name',
+            'plans.dependencies:id,title,status',
         ]);
 
         return Inertia::render('features/show', [

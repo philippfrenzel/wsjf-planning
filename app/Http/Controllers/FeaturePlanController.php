@@ -52,12 +52,15 @@ class FeaturePlanController extends Controller
 
         $maxSort = $feature->plans()->max('sort_order') ?? -1;
 
+        // First pass: create plans
+        $createdPlans = [];
         foreach ($plansData as $index => $planData) {
             $plan = FeaturePlan::create([
                 'feature_id' => $feature->id,
                 'title' => $planData['title'],
                 'description' => $planData['description'] ?? '',
                 'status' => FeaturePlan::STATUS_OPEN,
+                'priority' => $planData['priority'] ?? 'P2',
                 'sort_order' => $maxSort + 1 + $index,
                 'created_by' => Auth::id(),
             ]);
@@ -81,6 +84,23 @@ class FeaturePlanController extends Controller
             ]);
 
             $plan->update(['estimation_component_id' => $component->id]);
+            $createdPlans[$index + 1] = $plan; // 1-based index to match AI output
+        }
+
+        // Second pass: create dependency links
+        foreach ($plansData as $index => $planData) {
+            $dependsOn = $planData['depends_on'] ?? [];
+            if (is_array($dependsOn) && ! empty($dependsOn)) {
+                $depIds = [];
+                foreach ($dependsOn as $depIndex) {
+                    if (isset($createdPlans[(int) $depIndex])) {
+                        $depIds[] = $createdPlans[(int) $depIndex]->id;
+                    }
+                }
+                if (! empty($depIds)) {
+                    $createdPlans[$index + 1]->dependencies()->attach($depIds);
+                }
+            }
         }
 
         cache()->increment('app.data.version', 1);

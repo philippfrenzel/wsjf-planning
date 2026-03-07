@@ -234,7 +234,9 @@ class AiService
         $systemPrompt .= "Format:\n";
         $systemPrompt .= "[\n";
         $systemPrompt .= "  {\n";
-        $systemPrompt .= "    \"title\": \"User Story 1 - [Titel] (Priority: P1)\",\n";
+        $systemPrompt .= "    \"title\": \"User Story 1 - [Titel]\",\n";
+        $systemPrompt .= "    \"priority\": \"P1\",\n";
+        $systemPrompt .= "    \"depends_on\": [],\n";
         $systemPrompt .= "    \"description\": \"## Goal\\n[Was diese Komponente liefert]\\n\\n## Independent Test\\n[Wie man verifiziert, dass es funktioniert]\\n\\n## Acceptance Scenarios\\n1. **Given** ..., **When** ..., **Then** ...\\n\\n## Tasks\\n- [ ] T001 [P] Task description with file path\\n- [ ] T002 Next task\",\n";
         $systemPrompt .= "    \"best_case\": 3,\n";
         $systemPrompt .= "    \"most_likely\": 5,\n";
@@ -242,14 +244,18 @@ class AiService
         $systemPrompt .= "  }\n";
         $systemPrompt .= "]\n\n";
         $systemPrompt .= "WICHTIG:\n";
+        $systemPrompt .= "- \"priority\": P1 (Must Have), P2 (Should Have), P3 (Nice to Have)\n";
+        $systemPrompt .= "- \"depends_on\": Array von 1-basierten Indizes der Komponenten, die vorher erledigt sein müssen (z.B. [1] = hängt von Komponente 1 ab). Leeres Array = keine Abhängigkeiten.\n";
+        $systemPrompt .= "- Die Reihenfolge der Komponenten im Array bestimmt die Ausführungsreihenfolge (sort_order)\n";
         $systemPrompt .= "- Jede Komponente muss unabhängig umsetzbar und testbar sein\n";
         $systemPrompt .= "- Tasks in der description mit Checkbox-Format: - [ ] T001 [P] Beschreibung in datei/pfad.ext\n";
         $systemPrompt .= "- [P] markiert parallelisierbare Tasks\n";
         $systemPrompt .= "- Erstelle 3-7 Komponenten, von Setup/Foundation bis Polish\n";
+        $systemPrompt .= "- Foundation/Setup-Komponenten zuerst, danach abhängige Komponenten\n";
 
         $userPrompt = "Feature: \"{$feature->name}\"\n\n";
         $userPrompt .= "## Spezifikation\n{$feature->specification->content}\n\n";
-        $userPrompt .= "Zerlege diese Spezifikation in 3-7 Plan-Komponenten mit Schätzungen.";
+        $userPrompt .= "Zerlege diese Spezifikation in 3-7 Plan-Komponenten mit Priorität, Abhängigkeiten und Schätzungen.";
 
         try {
             $response = Groq::chat()->completions()->create([
@@ -277,9 +283,16 @@ class AiService
             }
 
             return array_map(function ($plan, $index) {
+                $priority = $plan['priority'] ?? 'P2';
+                if (! in_array($priority, ['P1', 'P2', 'P3'])) {
+                    $priority = 'P2';
+                }
+
                 return [
                     'title' => $plan['title'] ?? 'Komponente ' . ($index + 1),
                     'description' => $plan['description'] ?? '',
+                    'priority' => $priority,
+                    'depends_on' => $plan['depends_on'] ?? [],
                     'best_case' => max(1, (float) ($plan['best_case'] ?? 1)),
                     'most_likely' => max(1, (float) ($plan['most_likely'] ?? 3)),
                     'worst_case' => max(1, (float) ($plan['worst_case'] ?? 5)),

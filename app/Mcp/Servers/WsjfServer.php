@@ -12,6 +12,7 @@ use App\Mcp\Tools\CreateProject;
 use App\Mcp\Tools\DeleteFeature;
 use App\Mcp\Tools\GetFeature;
 use App\Mcp\Tools\GetFeatureSpecification;
+use App\Mcp\Tools\GetNextPlanStep;
 use App\Mcp\Tools\GetProject;
 use App\Mcp\Tools\GetTeam;
 use App\Mcp\Tools\ListFeaturePlans;
@@ -54,6 +55,7 @@ class WsjfServer extends Server
         ListFeaturePlans::class,
         CreateFeaturePlan::class,
         UpdateFeaturePlan::class,
+        GetNextPlanStep::class,
         ListTeams::class,
         GetTeam::class,
         ListSkills::class,

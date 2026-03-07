@@ -64,8 +64,10 @@ interface FeaturePlanItem {
     title: string;
     description: string;
     status: 'open' | 'implemented' | 'obsolete';
+    priority?: 'P1' | 'P2' | 'P3';
     sort_order: number;
     creator?: { id: number; name: string };
+    dependencies?: { id: number; title: string; status: string }[];
     estimation_component?: {
         id: number;
         name: string;
@@ -702,10 +704,22 @@ export default function Show({ feature, auth }: ShowProps) {
                                                     return plan.status === planStatusFilter;
                                                 })
                                                 .map((plan) => (
-                                                <Card key={plan.id}>
+                                                <Card key={plan.id} className={plan.status === 'obsolete' ? 'opacity-60' : ''}>
                                                     <CardHeader>
                                                         <div className="flex items-center justify-between">
-                                                            <CardTitle className="text-lg">{plan.title}</CardTitle>
+                                                            <div className="flex items-center gap-2">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className={
+                                                                        plan.priority === 'P1' ? 'border-red-500 text-red-700 dark:text-red-400' :
+                                                                        plan.priority === 'P2' ? 'border-amber-500 text-amber-700 dark:text-amber-400' :
+                                                                        'border-blue-500 text-blue-700 dark:text-blue-400'
+                                                                    }
+                                                                >
+                                                                    {plan.priority || 'P2'}
+                                                                </Badge>
+                                                                <CardTitle className="text-lg">{plan.title}</CardTitle>
+                                                            </div>
                                                             <div className="flex items-center gap-2">
                                                                 <Badge
                                                                     variant={plan.status === 'obsolete' ? 'secondary' : 'outline'}
@@ -725,6 +739,20 @@ export default function Show({ feature, auth }: ShowProps) {
                                                                 </Select>
                                                             </div>
                                                         </div>
+                                                        {plan.dependencies && plan.dependencies.length > 0 && (
+                                                            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+                                                                <span className="text-muted-foreground">Abhängig von:</span>
+                                                                {plan.dependencies.map((dep: any) => (
+                                                                    <Badge
+                                                                        key={dep.id}
+                                                                        variant="secondary"
+                                                                        className={`text-xs ${dep.status === 'implemented' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' : ''}`}
+                                                                    >
+                                                                        {dep.status === 'implemented' ? '✓' : '○'} {dep.title}
+                                                                    </Badge>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </CardHeader>
                                                     <CardContent>
                                                         {editingPlanId === plan.id ? (

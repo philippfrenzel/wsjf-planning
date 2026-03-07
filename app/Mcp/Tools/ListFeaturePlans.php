@@ -39,7 +39,7 @@ class ListFeaturePlans extends Tool
                 return Response::error("Feature {$data['feature_id']} not found.");
             }
 
-            $query = $feature->plans()->with('estimationComponent.latestEstimation');
+            $query = $feature->plans()->with(['estimationComponent.latestEstimation', 'dependencies:id,title,status']);
 
             if (! empty($data['status'])) {
                 $query->where('status', $data['status']);
@@ -54,7 +54,13 @@ class ListFeaturePlans extends Tool
                     'id' => $plan->id,
                     'title' => $plan->title,
                     'status' => $plan->status,
+                    'priority' => $plan->priority,
                     'sort_order' => $plan->sort_order,
+                    'depends_on' => $plan->dependencies->map(fn ($d) => [
+                        'id' => $d->id,
+                        'title' => $d->title,
+                        'status' => $d->status,
+                    ])->values(),
                     'estimation' => $estimation ? [
                         'best_case' => $estimation->best_case,
                         'most_likely' => $estimation->most_likely,
