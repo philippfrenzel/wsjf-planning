@@ -19,16 +19,21 @@ class GetFeature extends Tool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'feature_id' => $schema->integer()->description('The feature ID')->required(),
+            'feature_id' => $schema->integer()->description('The feature ID (numeric). Provide either feature_id or feature_key.'),
+            'feature_key' => $schema->string()->description('The feature key (e.g. WSJF-5). Provide either feature_id or feature_key.'),
         ];
     }
 
     public function handle(Request $request): Response
     {
         try {
-            $data = $request->validate(['feature_id' => 'required|integer']);
+            $data = $request->validate([
+                'feature_id' => 'nullable|integer',
+                'feature_key' => 'nullable|string|max:50',
+            ]);
 
-            $feature = Feature::with([
+            $feature = $this->resolveFeature($data);
+            $feature?->load([
                 'project:id,name',
                 'requester:id,name,email',
                 'team:id,name',
@@ -36,10 +41,10 @@ class GetFeature extends Tool
                 'requiredSkills:id,name,category',
                 'dependencies.related:id,jira_key,name',
                 'dependents.feature:id,jira_key,name',
-            ])->find($data['feature_id']);
+            ]);
 
             if (! $feature) {
-                return Response::error("Feature {$data['feature_id']} not found.");
+                return Response::error('Feature not found. Provide a valid feature_id or feature_key.');
             }
 
             return Response::json([
@@ -61,5 +66,18 @@ class GetFeature extends Tool
         } catch (\Throwable $e) {
             return Response::error('get-feature failed: ' . $e->getMessage());
         }
+    }
+
+    private function resolveFeature(array $data): ?Feature
+    {
+        if (! empty($data['feature_id'])) {
+            return Feature::find($data['feature_id']);
+        }
+
+        if (! empty($data['feature_key'])) {
+            return Feature::where('jira_key', $data['feature_key'])->first();
+        }
+
+        return null;
     }
 }

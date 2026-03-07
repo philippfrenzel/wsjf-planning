@@ -20,7 +20,8 @@ class ListFeaturePlans extends Tool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'feature_id' => $schema->integer()->description('The feature ID')->required(),
+            'feature_id' => $schema->integer()->description('The feature ID (numeric). Provide either feature_id or feature_key.'),
+            'feature_key' => $schema->string()->description('The feature key (e.g. WSJF-5). Provide either feature_id or feature_key.'),
             'status' => $schema->string()->description('Filter by status: open, implemented, obsolete')->enum(['open', 'implemented', 'obsolete']),
         ];
     }
@@ -29,14 +30,15 @@ class ListFeaturePlans extends Tool
     {
         try {
             $data = $request->validate([
-                'feature_id' => 'required|integer',
+                'feature_id' => 'nullable|integer',
+                'feature_key' => 'nullable|string|max:50',
                 'status' => 'nullable|string|in:open,implemented,obsolete',
             ]);
 
-            $feature = Feature::find($data['feature_id']);
+            $feature = $this->resolveFeature($data);
 
             if (! $feature) {
-                return Response::error("Feature {$data['feature_id']} not found.");
+                return Response::error('Feature not found. Provide a valid feature_id or feature_key.');
             }
 
             $query = $feature->plans()->with(['estimationComponent.latestEstimation', 'dependencies:id,title,status']);
@@ -73,5 +75,18 @@ class ListFeaturePlans extends Tool
         } catch (\Throwable $e) {
             return Response::error('list-feature-plans failed: ' . $e->getMessage());
         }
+    }
+
+    private function resolveFeature(array $data): ?Feature
+    {
+        if (! empty($data['feature_id'])) {
+            return Feature::find($data['feature_id']);
+        }
+
+        if (! empty($data['feature_key'])) {
+            return Feature::where('jira_key', $data['feature_key'])->first();
+        }
+
+        return null;
     }
 }

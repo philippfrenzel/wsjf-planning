@@ -24,7 +24,8 @@ class CreateFeaturePlan extends Tool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'feature_id' => $schema->integer()->description('The feature ID')->required(),
+            'feature_id' => $schema->integer()->description('The feature ID (numeric). Provide either feature_id or feature_key.'),
+            'feature_key' => $schema->string()->description('The feature key (e.g. WSJF-5). Provide either feature_id or feature_key.'),
             'generate_from_spec' => $schema->boolean()->description('If true, AI generates multiple plans from the specification. Ignores title/description.'),
             'title' => $schema->string()->description('Plan title. Required if not generating from spec.'),
             'description' => $schema->string()->description('Plan description'),
@@ -38,7 +39,8 @@ class CreateFeaturePlan extends Tool
     {
         try {
             $data = $request->validate([
-                'feature_id' => 'required|integer|exists:features,id',
+                'feature_id' => 'nullable|integer',
+                'feature_key' => 'nullable|string|max:50',
                 'generate_from_spec' => 'nullable|boolean',
                 'title' => 'nullable|string|max:255',
                 'description' => 'nullable|string',
@@ -47,11 +49,12 @@ class CreateFeaturePlan extends Tool
                 'worst_case' => 'nullable|numeric|min:0',
             ]);
 
-            $feature = Feature::with('specification')->find($data['feature_id']);
+            $feature = $this->resolveFeature($data);
 
             if (! $feature) {
-                return Response::error("Feature {$data['feature_id']} not found.");
+                return Response::error('Feature not found. Provide a valid feature_id or feature_key.');
             }
+            $feature->load('specification');
 
             $tenantId = Auth::user()->current_tenant_id;
             $userId = Auth::id();
@@ -181,5 +184,18 @@ class CreateFeaturePlan extends Tool
             'sort_order' => $plan->sort_order,
             'message' => "Plan '{$plan->title}' created for feature '{$feature->name}'.",
         ]);
+    }
+
+    private function resolveFeature(array $data): ?Feature
+    {
+        if (! empty($data['feature_id'])) {
+            return Feature::find($data['feature_id']);
+        }
+
+        if (! empty($data['feature_key'])) {
+            return Feature::where('jira_key', $data['feature_key'])->first();
+        }
+
+        return null;
     }
 }
