@@ -426,7 +426,7 @@ export default function Show({ feature, auth }: ShowProps) {
                                                         ) : (
                                                             <>
                                                                 <Layers className="mr-1 h-4 w-4" />
-                                                                Plan erstellen
+                                                                {feature.plans?.length ? 'Plan aktualisieren' : 'Plan erstellen'}
                                                             </>
                                                         )}
                                                     </Button>
