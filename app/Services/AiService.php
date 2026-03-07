@@ -224,11 +224,26 @@ class AiService
         }
 
         $systemPrompt = "Du bist ein erfahrener Projektplaner für das Projekt \"{$feature->project->name}\".\n";
-        $systemPrompt .= "Zerlege die folgende Feature-Spezifikation in kleinere, umsetzbare Plan-Komponenten.\n";
+        $systemPrompt .= "Zerlege die folgende Feature-Spezifikation in umsetzbare Plan-Komponenten nach dem spec-kit Format.\n\n";
+        $systemPrompt .= "Jede Plan-Komponente soll einer User Story oder einem logischen Arbeitspaket entsprechen.\n";
+        $systemPrompt .= "Orientiere dich an der Priorisierung in der Spezifikation (P1, P2, P3...).\n\n";
         $systemPrompt .= "Für jede Komponente schätze den Aufwand in Story Points (Fibonacci: 1,2,3,5,8,13,21).\n\n";
         $systemPrompt .= "Antworte AUSSCHLIESSLICH mit einem JSON-Array. Kein Markdown, keine Erklärung.\n";
         $systemPrompt .= "Format:\n";
-        $systemPrompt .= "[{\"title\": \"Komponente A\", \"description\": \"Beschreibung...\", \"best_case\": 3, \"most_likely\": 5, \"worst_case\": 8}]\n";
+        $systemPrompt .= "[\n";
+        $systemPrompt .= "  {\n";
+        $systemPrompt .= "    \"title\": \"User Story 1 - [Titel] (Priority: P1)\",\n";
+        $systemPrompt .= "    \"description\": \"## Goal\\n[Was diese Komponente liefert]\\n\\n## Independent Test\\n[Wie man verifiziert, dass es funktioniert]\\n\\n## Acceptance Scenarios\\n1. **Given** ..., **When** ..., **Then** ...\\n\\n## Tasks\\n- [ ] T001 [P] Task description with file path\\n- [ ] T002 Next task\",\n";
+        $systemPrompt .= "    \"best_case\": 3,\n";
+        $systemPrompt .= "    \"most_likely\": 5,\n";
+        $systemPrompt .= "    \"worst_case\": 8\n";
+        $systemPrompt .= "  }\n";
+        $systemPrompt .= "]\n\n";
+        $systemPrompt .= "WICHTIG:\n";
+        $systemPrompt .= "- Jede Komponente muss unabhängig umsetzbar und testbar sein\n";
+        $systemPrompt .= "- Tasks in der description mit Checkbox-Format: - [ ] T001 [P] Beschreibung in datei/pfad.ext\n";
+        $systemPrompt .= "- [P] markiert parallelisierbare Tasks\n";
+        $systemPrompt .= "- Erstelle 3-7 Komponenten, von Setup/Foundation bis Polish\n";
 
         $userPrompt = "Feature: \"{$feature->name}\"\n\n";
         $userPrompt .= "## Spezifikation\n{$feature->specification->content}\n\n";
@@ -288,9 +303,15 @@ class AiService
         $project = Project::with('definitionTemplates')->findOrFail($projectId);
         $templates = $project->definitionTemplates->where('is_active', true)->groupBy('type');
 
-        $systemPrompt = "Du bist ein KI-Assistent, der bei der Verfeinerung einer technischen Spezifikation für das Projekt \"{$project->name}\" hilft.\n";
+        $systemPrompt = "Du bist ein KI-Assistent, der bei der Verfeinerung einer Feature-Spezifikation im spec-kit Format für das Projekt \"{$project->name}\" hilft.\n";
         $systemPrompt .= "Feature: \"{$featureName}\"\n";
-        $systemPrompt .= "Antworte immer in der Sprache der Nutzer-Nachrichten.\n";
+        $systemPrompt .= "Antworte immer in der Sprache der Nutzer-Nachrichten.\n\n";
+        $systemPrompt .= "Die Spezifikation folgt dem spec-kit Format mit Abschnitten:\n";
+        $systemPrompt .= "- User Scenarios & Testing (priorisierte User Stories mit Given/When/Then)\n";
+        $systemPrompt .= "- Requirements (nummerierte FR-xxx mit MUSS/SOLL/KANN)\n";
+        $systemPrompt .= "- Key Entities (falls Daten involviert)\n";
+        $systemPrompt .= "- Success Criteria (messbare SC-xxx)\n";
+        $systemPrompt .= "- Edge Cases\n\n";
         $systemPrompt .= "Formatiere Antworten in Markdown. Wenn du eine überarbeitete Spezifikation vorschlägst, umschließe sie mit:\n";
         $systemPrompt .= "```markdown-suggestion\n...\n```\n\n";
 
@@ -406,15 +427,43 @@ class AiService
 
     private function buildSpecSystemPrompt(Project $project, $templates): string
     {
-        $prompt = "Du bist ein erfahrener Software-Architekt und schreibst technische Spezifikationen für das Projekt \"{$project->name}\".\n";
+        $prompt = "Du bist ein erfahrener Software-Architekt und schreibst Feature-Spezifikationen für das Projekt \"{$project->name}\".\n";
         $prompt .= "Erstelle eine detaillierte, strukturierte Spezifikation in Markdown.\n";
-        $prompt .= "Antworte immer in der Sprache des Feature-Namens.\n\n";
-        $prompt .= "Die Spezifikation soll folgende Abschnitte enthalten:\n";
-        $prompt .= "1. **Zusammenfassung** — Kurzbeschreibung des Features\n";
-        $prompt .= "2. **Anforderungen** — Funktionale und nicht-funktionale Anforderungen\n";
-        $prompt .= "3. **Technisches Design** — Architektur, Datenmodell, API-Endpunkte\n";
-        $prompt .= "4. **Akzeptanzkriterien** — Testbare Kriterien als Checkliste\n";
-        $prompt .= "5. **Abhängigkeiten & Risiken** — Externe Abhängigkeiten und Risiken\n\n";
+        $prompt .= "Antworte immer in der Sprache des Feature-Namens und der Beschreibung.\n\n";
+
+        $prompt .= "Die Spezifikation MUSS dem folgenden spec-kit Format folgen:\n\n";
+
+        $prompt .= "# Feature Specification: [FEATURE NAME]\n\n";
+        $prompt .= "**Feature Key**: [aus dem Feature-Key]\n";
+        $prompt .= "**Created**: [heutiges Datum]\n";
+        $prompt .= "**Status**: Draft\n\n";
+
+        $prompt .= "## User Scenarios & Testing *(mandatory)*\n\n";
+        $prompt .= "Priorisierte User Stories als unabhängig testbare User Journeys.\n";
+        $prompt .= "Jede User Story muss enthalten:\n";
+        $prompt .= "- Titel mit Priorität (P1, P2, P3)\n";
+        $prompt .= "- Beschreibung der User Journey in einfacher Sprache\n";
+        $prompt .= "- **Why this priority**: Begründung der Priorisierung\n";
+        $prompt .= "- **Independent Test**: Wie die Story unabhängig getestet werden kann\n";
+        $prompt .= "- **Acceptance Scenarios**: Given/When/Then Format\n\n";
+
+        $prompt .= "### Edge Cases\n";
+        $prompt .= "- Was passiert bei Grenzfällen?\n";
+        $prompt .= "- Wie behandelt das System Fehler?\n\n";
+
+        $prompt .= "## Requirements *(mandatory)*\n\n";
+        $prompt .= "### Functional Requirements\n";
+        $prompt .= "- **FR-001**: System MUSS [Fähigkeit]\n";
+        $prompt .= "- Nummerierte Anforderungen mit MUSS/SOLL/KANN\n";
+        $prompt .= "- Unklare Anforderungen mit [NEEDS CLARIFICATION: ...] markieren\n\n";
+
+        $prompt .= "### Key Entities *(falls Daten involviert)*\n";
+        $prompt .= "- Entitäten mit Beziehungen beschreiben (ohne Implementierungsdetails)\n\n";
+
+        $prompt .= "## Success Criteria *(mandatory)*\n\n";
+        $prompt .= "### Measurable Outcomes\n";
+        $prompt .= "- **SC-001**: [Messbare Metrik]\n";
+        $prompt .= "- Technologie-agnostische, messbare Erfolgskriterien\n\n";
 
         if ($templates->has(DefinitionTemplate::TYPE_DOR)) {
             $prompt .= "## Definition of Ready (DoR)\nStelle sicher, dass die Spezifikation diese Kriterien erfüllt:\n\n";
