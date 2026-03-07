@@ -27,11 +27,13 @@ class FeatureSpecificationController extends Controller
                 ->with('error', 'Fehler bei der KI-Generierung: ' . $e->getMessage());
         }
 
-        FeatureSpecification::create([
+        $spec = FeatureSpecification::create([
             'feature_id' => $feature->id,
             'content' => $content,
             'created_by' => Auth::id(),
         ]);
+
+        $spec->createVersionSnapshot('Initiale KI-Generierung');
 
         cache()->increment('app.data.version', 1);
 
@@ -46,13 +48,35 @@ class FeatureSpecificationController extends Controller
     {
         $validated = $request->validate([
             'content' => 'required|string',
+            'change_summary' => 'nullable|string|max:255',
         ]);
 
-        $feature->specification->update(['content' => $validated['content']]);
+        $spec = $feature->specification;
+
+        // Snapshot the old content before overwriting
+        $spec->createVersionSnapshot($validated['change_summary'] ?? 'Manuelle Bearbeitung');
+
+        $spec->update(['content' => $validated['content']]);
 
         cache()->increment('app.data.version', 1);
 
         return redirect()->back()
             ->with('success', 'Spezifikation wurde erfolgreich aktualisiert.');
+    }
+
+    /**
+     * Get version history for a feature's specification.
+     */
+    public function versions(Feature $feature)
+    {
+        if (! $feature->specification) {
+            return response()->json(['versions' => []]);
+        }
+
+        $versions = $feature->specification->versions()
+            ->with('creator:id,name')
+            ->get(['id', 'specification_id', 'version_number', 'change_summary', 'content', 'created_by', 'created_at']);
+
+        return response()->json(['versions' => $versions]);
     }
 }

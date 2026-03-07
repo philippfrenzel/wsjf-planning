@@ -273,6 +273,8 @@ class FeatureController extends Controller
             'dependents.feature:id,jira_key,name,project_id',
             // Spec-Driven Development
             'specification',
+            'specification.versions:id,specification_id,version_number,change_summary,created_by,created_at',
+            'specification.versions.creator:id,name',
             'plans.estimationComponent.latestEstimation',
             'plans.creator:id,name',
         ]);

@@ -120,6 +120,7 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     // Feature Specification
     Route::post('features/{feature}/specification', [FeatureSpecificationController::class, 'store'])->name('features.specification.store');
     Route::put('features/{feature}/specification', [FeatureSpecificationController::class, 'update'])->name('features.specification.update');
+    Route::get('features/{feature}/specification/versions', [FeatureSpecificationController::class, 'versions'])->name('features.specification.versions');
 
     // Feature Plans
     Route::post('features/{feature}/plans/generate', [FeaturePlanController::class, 'generate'])->name('features.plans.generate');
