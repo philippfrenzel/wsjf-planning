@@ -275,48 +275,35 @@ export default function Show({ feature, auth }: ShowProps) {
                             </TabsList>
 
                             <TabsContent value="stammdaten" className="space-y-6">
-                                {/* Two-column layout: 60% left, 40% right */}
-                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[60%_1fr]">
-                                    {/* Left Column - Main Content */}
-                                    <div className="space-y-6">
-                                        {/* Feature-Details anzeigen */}
-                                        <FeatureDetails
-                                            jiraKey={feature.jira_key}
-                                            jiraBaseUri={feature.project?.jira_base_uri}
-                                            projectName={feature.project?.name}
-                                            requesterName={feature.requester?.name}
-                                            type={feature.type}
-                                        />
+                                <FeatureDetails
+                                    jiraKey={feature.jira_key}
+                                    jiraBaseUri={feature.project?.jira_base_uri}
+                                    projectName={feature.project?.name}
+                                    requesterName={feature.requester?.name}
+                                    type={feature.type}
+                                />
 
-                                        {/* Abhängigkeiten anzeigen */}
-                                        <DependencyList dependencies={feature.dependencies} dependents={feature.dependents} />
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Beschreibung</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {feature.description ? (
+                                            <MarkdownViewer content={feature.description} className="prose prose-sm max-w-none" />
+                                        ) : (
+                                            <p className="text-muted-foreground">Keine Beschreibung vorhanden.</p>
+                                        )}
+                                    </CardContent>
+                                </Card>
 
-                                        {/* Feature Beschreibung */}
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle>Beschreibung</CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                {feature.description ? (
-                                                    <MarkdownViewer content={feature.description} className="prose prose-sm max-w-none" />
-                                                ) : (
-                                                    <p className="text-muted-foreground">Keine Beschreibung vorhanden.</p>
-                                                )}
-                                            </CardContent>
-                                        </Card>
-                                    </div>
+                                <DependencyList dependencies={feature.dependencies} dependents={feature.dependents} />
 
-                                    {/* Right Column - Status and Comments */}
-                                    <div className="space-y-6">
-                                        {/* Kommentare */}
-                                        <Comments
-                                            entity={{
-                                                type: 'App\\Models\\Feature',
-                                                id: feature.id,
-                                            }}
-                                        />
-                                    </div>
-                                </div>
+                                <Comments
+                                    entity={{
+                                        type: 'App\\Models\\Feature',
+                                        id: feature.id,
+                                    }}
+                                />
                             </TabsContent>
 
                             <TabsContent value="schaetzungen" className="space-y-6">
