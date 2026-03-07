@@ -184,8 +184,8 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                             </TabsList>
 
                             <TabsContent value="stammdaten" className="space-y-6">
+                                {/* Top: form fields (left) + status (right) in 60/40 grid */}
                                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-[60%_1fr]">
-                                    {/* Left — form fields */}
                                     <form id="edit-feature-form" onSubmit={handleSubmit} className="space-y-6">
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <div>
@@ -270,32 +270,9 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                                 <InputError message={errors.requester_id} className="mt-1" />
                                             </div>
                                         </div>
-
-                                        <div>
-                                            <div className="mb-1 flex items-center justify-between">
-                                                <Label htmlFor="description">Beschreibung</Label>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => setChatOpen(true)}
-                                                    disabled={!data.project_id || !data.name}
-                                                    title={!data.project_id || !data.name ? 'Projekt und Name erforderlich' : 'Beschreibung mit KI verfeinern'}
-                                                >
-                                                    <MessageSquareText className="mr-1 h-3.5 w-3.5" />
-                                                    KI Assistent
-                                                </Button>
-                                            </div>
-                                            <MarkdownEditor
-                                                value={data.description}
-                                                onChange={(md) => setData('description', md)}
-                                                placeholder="Feature-Beschreibung …"
-                                            />
-                                            <InputError message={errors.description} className="mt-1" />
-                                        </div>
                                     </form>
 
-                                    {/* Right — Status + Comments */}
+                                    {/* Right — Status */}
                                     <div className="space-y-6">
                                         <Card>
                                             <CardHeader>
@@ -309,14 +286,40 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                                 />
                                             </CardContent>
                                         </Card>
-                                        <Comments
-                                            entity={{
-                                                type: 'App\\Models\\Feature',
-                                                id: feature.id,
-                                            }}
-                                        />
                                     </div>
                                 </div>
+
+                                {/* Full-width: Description */}
+                                <div>
+                                    <div className="mb-1 flex items-center justify-between">
+                                        <Label htmlFor="description">Beschreibung</Label>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setChatOpen(true)}
+                                            disabled={!data.project_id || !data.name}
+                                            title={!data.project_id || !data.name ? 'Projekt und Name erforderlich' : 'Beschreibung mit KI verfeinern'}
+                                        >
+                                            <MessageSquareText className="mr-1 h-3.5 w-3.5" />
+                                            KI Assistent
+                                        </Button>
+                                    </div>
+                                    <MarkdownEditor
+                                        value={data.description}
+                                        onChange={(md) => setData('description', md)}
+                                        placeholder="Feature-Beschreibung …"
+                                    />
+                                    <InputError message={errors.description} className="mt-1" />
+                                </div>
+
+                                {/* Full-width: Comments */}
+                                <Comments
+                                    entity={{
+                                        type: 'App\\Models\\Feature',
+                                        id: feature.id,
+                                    }}
+                                />
                             </TabsContent>
 
                             <TabsContent value="erweitert" className="space-y-6">
