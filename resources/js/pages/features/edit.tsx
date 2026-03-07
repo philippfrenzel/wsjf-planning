@@ -309,6 +309,8 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                         value={data.description}
                                         onChange={(md) => setData('description', md)}
                                         placeholder="Feature-Beschreibung …"
+                                        height={500}
+                                        minHeight={300}
                                     />
                                     <InputError message={errors.description} className="mt-1" />
                                 </div>
