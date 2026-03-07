@@ -76,7 +76,7 @@ class AiService
                 'model' => config('groq.model', 'llama-3.1-8b-instant'),
                 'messages' => $apiMessages,
                 'temperature' => 0.7,
-                'max_tokens' => 2048,
+                'max_tokens' => 4096,
             ]);
 
             return $response['choices'][0]['message']['content'] ?? '';
@@ -170,9 +170,11 @@ class AiService
         }
 
         $prompt .= "Help the user improve, refine, or restructure the feature description. Offer concrete suggestions. ";
-        $prompt .= "When proposing a complete revised description, wrap it in:\n";
-        $prompt .= "```markdown-suggestion\n...\n```\n";
-        $prompt .= "so the user can apply it directly.\n";
+        $prompt .= "WICHTIG: Wenn du eine überarbeitete Beschreibung vorschlägst, gib IMMER das VOLLSTÄNDIGE Dokument zurück — nicht nur den geänderten Abschnitt. ";
+        $prompt .= "Der Vorschlag ersetzt das gesamte Dokument. Kürze oder entferne KEINE bestehenden Abschnitte, es sei denn der Nutzer bittet explizit darum.\n";
+        $prompt .= "Umschließe den vollständigen Vorschlag mit:\n";
+        $prompt .= "```markdown-suggestion\n[VOLLSTÄNDIGES DOKUMENT]\n```\n";
+        $prompt .= "damit der Nutzer es direkt übernehmen kann.\n";
 
         return $prompt;
     }
@@ -333,10 +335,11 @@ class AiService
             }
         }
 
-        $systemPrompt .= "Hilf dem Nutzer, die Spezifikation zu verbessern, zu verfeinern oder umzustrukturieren. ";
-        $systemPrompt .= "Wenn du eine überarbeitete Spezifikation vorschlägst, umschließe sie mit:\n";
-        $systemPrompt .= "```markdown-suggestion\n...\n```\n";
-        $systemPrompt .= "damit der Nutzer sie direkt übernehmen kann.\n";
+        $systemPrompt .= "WICHTIG: Wenn du eine überarbeitete Spezifikation vorschlägst, gib IMMER das VOLLSTÄNDIGE Dokument zurück — nicht nur den geänderten Abschnitt. ";
+        $systemPrompt .= "Der Vorschlag ersetzt das gesamte Dokument. Kürze oder entferne KEINE bestehenden Abschnitte, es sei denn der Nutzer bittet explizit darum.\n";
+        $systemPrompt .= "Umschließe den vollständigen Vorschlag mit:\n";
+        $systemPrompt .= "```markdown-suggestion\n[VOLLSTÄNDIGES DOKUMENT]\n```\n";
+        $systemPrompt .= "damit der Nutzer es direkt übernehmen kann.\n";
 
         $apiMessages = [['role' => 'system', 'content' => $systemPrompt]];
         foreach ($messages as $msg) {
@@ -416,7 +419,7 @@ class AiService
                 'model' => config('groq.model', 'llama-3.1-8b-instant'),
                 'messages' => $apiMessages,
                 'temperature' => 0.7,
-                'max_tokens' => 2048,
+                'max_tokens' => 4096,
             ]);
 
             return $response['choices'][0]['message']['content'] ?? '';

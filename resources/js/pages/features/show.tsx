@@ -22,7 +22,7 @@ import { Comments } from '@/components/comments';
 import { useConfirm } from '@/components/confirm-dialog-provider';
 import { useComponentManagement } from '@/hooks/useComponentManagement';
 import { useEstimationManagement } from '@/hooks/useEstimationManagement';
-import { Edit2, LoaderCircle, MessageSquareText, FileText, Layers, History } from 'lucide-react';
+import { Edit2, LoaderCircle, MessageSquareText, FileText, Layers, History, RefreshCw } from 'lucide-react';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 
 interface EstimationHistory {
@@ -216,6 +216,13 @@ export default function Show({ feature, auth }: ShowProps) {
     const handleGenerateSpec = () => {
         setIsGeneratingSpec(true);
         router.post(route('features.specification.store', feature.id), {}, {
+            onFinish: () => setIsGeneratingSpec(false),
+        });
+    };
+
+    const handleRegenerateSpec = () => {
+        setIsGeneratingSpec(true);
+        router.post(route('features.specification.regenerate', feature.id), {}, {
             onFinish: () => setIsGeneratingSpec(false),
         });
     };
@@ -434,6 +441,20 @@ export default function Show({ feature, auth }: ShowProps) {
                                                     >
                                                         <MessageSquareText className="mr-1 h-4 w-4" />
                                                         KI-Chat
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={handleRegenerateSpec}
+                                                        disabled={isGeneratingSpec}
+                                                        title="Spezifikation auf Basis der Feature-Beschreibung neu erstellen"
+                                                    >
+                                                        {isGeneratingSpec ? (
+                                                            <LoaderCircle className="mr-1 h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <RefreshCw className="mr-1 h-4 w-4" />
+                                                        )}
+                                                        Neu erstellen
                                                     </Button>
                                                     <Button
                                                         size="sm"

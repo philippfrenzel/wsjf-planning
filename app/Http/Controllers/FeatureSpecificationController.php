@@ -65,6 +65,38 @@ class FeatureSpecificationController extends Controller
     }
 
     /**
+     * Regenerate the specification from the feature description via AI.
+     * Snapshots the current content before replacing.
+     */
+    public function regenerate(Request $request, Feature $feature)
+    {
+        $spec = $feature->specification;
+
+        if (! $spec) {
+            return redirect()->back()
+                ->with('error', 'Keine Spezifikation zum Neu-Generieren vorhanden.');
+        }
+
+        // Snapshot current version before regeneration
+        $spec->createVersionSnapshot('Vor Neu-Generierung');
+
+        try {
+            $content = app(AiService::class)->generateSpecification($feature->id);
+        } catch (\Throwable $e) {
+            return redirect()->back()
+                ->with('error', 'Fehler bei der KI-Generierung: ' . $e->getMessage());
+        }
+
+        $spec->update(['content' => $content]);
+        $spec->createVersionSnapshot('KI-Neu-Generierung aus Feature-Beschreibung');
+
+        cache()->increment('app.data.version', 1);
+
+        return redirect()->back()
+            ->with('success', 'Spezifikation wurde neu generiert. Die vorherige Version ist in der Versionshistorie verfügbar.');
+    }
+
+    /**
      * Get version history for a feature's specification.
      */
     public function versions(Feature $feature)
