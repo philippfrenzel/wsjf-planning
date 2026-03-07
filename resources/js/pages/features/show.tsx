@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -166,6 +166,13 @@ export default function Show({ feature, auth }: ShowProps) {
     const [editingPlanId, setEditingPlanId] = useState<number | null>(null);
     const [planEditContent, setPlanEditContent] = useState('');
     const [specChatOpen, setSpecChatOpen] = useState(false);
+
+    // Sync specContent when Inertia refreshes props after spec generation
+    useEffect(() => {
+        if (feature.specification?.content) {
+            setSpecContent(feature.specification.content);
+        }
+    }, [feature.specification?.content]);
 
     const handleGenerateSpec = () => {
         setIsGeneratingSpec(true);
