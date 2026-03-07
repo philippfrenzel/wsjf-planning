@@ -28,6 +28,8 @@ use App\Http\Controllers\SkillController;
 use App\Http\Controllers\RoadmapController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\AiController;
+use App\Http\Controllers\FeatureSpecificationController;
+use App\Http\Controllers\FeaturePlanController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -114,6 +116,16 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     Route::resource('features', FeatureController::class);
     Route::get('api/features/state-history', [FeatureStateHistoryController::class, 'index'])
         ->name('api.features.state-history');
+
+    // Feature Specification
+    Route::post('features/{feature}/specification', [FeatureSpecificationController::class, 'store'])->name('features.specification.store');
+    Route::put('features/{feature}/specification', [FeatureSpecificationController::class, 'update'])->name('features.specification.update');
+
+    // Feature Plans
+    Route::post('features/{feature}/plans/generate', [FeaturePlanController::class, 'generate'])->name('features.plans.generate');
+    Route::put('feature-plans/{plan}', [FeaturePlanController::class, 'update'])->name('feature-plans.update');
+    Route::post('feature-plans/{plan}/status', [FeaturePlanController::class, 'updateStatus'])->name('feature-plans.status');
+
     // Feature-Abhängigkeiten
     Route::post('features/{feature}/dependencies', [FeatureDependencyController::class, 'store'])->name('features.dependencies.store');
     Route::delete('features/{feature}/dependencies/{dependency}', [FeatureDependencyController::class, 'destroy'])->name('features.dependencies.destroy');

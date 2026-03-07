@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\ModelStates\HasStates;
 use App\States\Feature\FeatureState;
 use App\States\Feature\InPlanning;
@@ -199,6 +200,16 @@ class Feature extends Model
     public function team()
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function specification(): HasOne
+    {
+        return $this->hasOne(FeatureSpecification::class);
+    }
+
+    public function plans(): HasMany
+    {
+        return $this->hasMany(FeaturePlan::class)->orderBy('sort_order');
     }
 
     public function iteration()

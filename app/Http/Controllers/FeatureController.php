@@ -255,7 +255,7 @@ class FeatureController extends Controller
     public function show(Feature $feature)
     {
         $feature->load([
-            'project:id,name',
+            'project:id,name,jira_base_uri',
             'requester:id,name',
             // Lade standardmäßig nur aktive Komponenten, es sei denn, show_archived ist true
             'estimationComponents' => function ($query) {
@@ -271,6 +271,10 @@ class FeatureController extends Controller
             // Abhängigkeiten
             'dependencies.related:id,jira_key,name,project_id',
             'dependents.feature:id,jira_key,name,project_id',
+            // Spec-Driven Development
+            'specification',
+            'plans.estimationComponent.latestEstimation',
+            'plans.creator:id,name',
         ]);
 
         return Inertia::render('features/show', [
