@@ -172,6 +172,7 @@ export default function Show({ feature, auth }: ShowProps) {
     // Spec-Driven Development States
     const [isGeneratingSpec, setIsGeneratingSpec] = useState(false);
     const [isGeneratingPlans, setIsGeneratingPlans] = useState(false);
+    const [planStatusFilter, setPlanStatusFilter] = useState<string>('active');
     const [isEditingSpec, setIsEditingSpec] = useState(false);
     const [specContent, setSpecContent] = useState(feature.specification?.content || '');
     const [editingPlanId, setEditingPlanId] = useState<number | null>(null);
@@ -666,7 +667,41 @@ export default function Show({ feature, auth }: ShowProps) {
                                 <div className="pt-2">
                                     {feature.plans && feature.plans.length > 0 ? (
                                         <div className="space-y-4">
-                                            {feature.plans.map((plan) => (
+                                            {/* Status Filter */}
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-muted-foreground text-sm">Filter:</span>
+                                                {[
+                                                    { value: 'active', label: 'Aktive' },
+                                                    { value: 'all', label: 'Alle' },
+                                                    { value: 'open', label: 'Offen' },
+                                                    { value: 'implemented', label: 'Implementiert' },
+                                                    { value: 'obsolete', label: 'Obsolet' },
+                                                ].map((opt) => {
+                                                    const count = opt.value === 'active'
+                                                        ? feature.plans!.filter(p => p.status !== 'obsolete').length
+                                                        : opt.value === 'all'
+                                                        ? feature.plans!.length
+                                                        : feature.plans!.filter(p => p.status === opt.value).length;
+                                                    return (
+                                                        <Button
+                                                            key={opt.value}
+                                                            size="sm"
+                                                            variant={planStatusFilter === opt.value ? 'default' : 'outline'}
+                                                            onClick={() => setPlanStatusFilter(opt.value)}
+                                                        >
+                                                            {opt.label} ({count})
+                                                        </Button>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {feature.plans
+                                                .filter((plan) => {
+                                                    if (planStatusFilter === 'all') return true;
+                                                    if (planStatusFilter === 'active') return plan.status !== 'obsolete';
+                                                    return plan.status === planStatusFilter;
+                                                })
+                                                .map((plan) => (
                                                 <Card key={plan.id}>
                                                     <CardHeader>
                                                         <div className="flex items-center justify-between">
