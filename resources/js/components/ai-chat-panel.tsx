@@ -67,7 +67,7 @@ export default function AiChatPanel({ open, onOpenChange, featureName, projectId
         setError('');
 
         try {
-            const res = await axios.post('/api/ai/chat', {
+            const res = await axios.post('/ai/chat', {
                 messages: updatedMessages,
                 feature_name: featureName,
                 project_id: typeof projectId === 'string' ? parseInt(projectId) : projectId,

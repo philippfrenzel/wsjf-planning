@@ -54,7 +54,7 @@ export default function Create({ projects, users, skills }: CreateProps) {
         setAiLoading(true);
         setAiError('');
         try {
-            const res = await axios.post('/api/ai/generate-description', {
+            const res = await axios.post('/ai/generate-description', {
                 feature_name: data.name,
                 project_id: parseInt(data.project_id),
                 existing_description: data.description,

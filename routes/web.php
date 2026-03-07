@@ -27,6 +27,7 @@ use App\Http\Controllers\DefinitionTemplateController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\RoadmapController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\AiController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -67,6 +68,10 @@ Route::get('/sitemap.xml', function () {
 Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     // Dashboard-Route auf den neuen DashboardController umleiten
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+
+    // AI Assistant routes
+    Route::post('/ai/generate-description', [AiController::class, 'generateDescription'])->name('ai.generate-description');
+    Route::post('/ai/chat', [AiController::class, 'chat'])->name('ai.chat');
 
     // Weiterleitung, wenn keine Planning-ID übergeben wird
     Route::get('votes/session', function () {
