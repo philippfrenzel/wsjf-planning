@@ -649,11 +649,12 @@ export default function Show({ feature, auth }: ShowProps) {
                                                                 onOpenChange={setSpecChatOpen}
                                                                 featureName={feature.name}
                                                                 projectId={feature.project?.id?.toString() || ''}
-                                                                currentDescription={specContent}
-                                                                onApplyDescription={(md) => {
+                                                                currentContent={specContent}
+                                                                onApplyContent={(md) => {
                                                                     setSpecContent(md);
                                                                     setIsEditingSpec(true);
                                                                 }}
+                                                                context="specification"
                                                             />
                                                         </Card>
                                                     </div>

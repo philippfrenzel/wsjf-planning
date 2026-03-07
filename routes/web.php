@@ -79,6 +79,7 @@ Route::middleware(['auth', 'verified', 'subscribed'])->group(function () {
     // AI Assistant routes
     Route::post('/ai/generate-description', [AiController::class, 'generateDescription'])->name('ai.generate-description');
     Route::post('/ai/chat', [AiController::class, 'chat'])->name('ai.chat');
+    Route::post('/ai/chat-specification', [AiController::class, 'chatSpecification'])->name('ai.chat-specification');
 
     // Weiterleitung, wenn keine Planning-ID übergeben wird
     Route::get('votes/session', function () {

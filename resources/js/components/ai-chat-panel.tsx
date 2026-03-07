@@ -1,7 +1,7 @@
 import MarkdownViewer from '@/components/markdown-viewer';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
-import { Check, Copy, LoaderCircle, Send, Sparkles, Trash2, X } from 'lucide-react';
+import { Check, Copy, FileText, LoaderCircle, Send, Sparkles, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ChatMessage {
@@ -9,14 +9,34 @@ interface ChatMessage {
     content: string;
 }
 
+export type AiChatContext = 'description' | 'specification';
+
 interface AiChatPanelProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     featureName: string;
     projectId: number | string;
-    currentDescription: string;
-    onApplyDescription: (markdown: string) => void;
+    currentContent: string;
+    onApplyContent: (markdown: string) => void;
+    context?: AiChatContext;
 }
+
+const contextConfig: Record<AiChatContext, { label: string; color: string; endpoint: string; placeholder: string; emptyHint: string }> = {
+    description: {
+        label: 'Beschreibung',
+        color: 'bg-blue-500/10 text-blue-600 border-blue-200 dark:border-blue-800 dark:text-blue-400',
+        endpoint: '/ai/chat',
+        placeholder: 'z.B. „Kannst du die User Stories ergänzen?"',
+        emptyHint: 'Stelle eine Frage zur Beschreibung',
+    },
+    specification: {
+        label: 'Spezifikation',
+        color: 'bg-purple-500/10 text-purple-600 border-purple-200 dark:border-purple-800 dark:text-purple-400',
+        endpoint: '/ai/chat-specification',
+        placeholder: 'z.B. „Kannst du die Akzeptanzkriterien verbessern?"',
+        emptyHint: 'Stelle eine Frage zur Spezifikation',
+    },
+};
 
 /** Extract fenced ```markdown-suggestion blocks from AI response */
 function extractSuggestions(content: string): string[] {
@@ -29,7 +49,7 @@ function extractSuggestions(content: string): string[] {
     return suggestions;
 }
 
-export default function AiChatPanel({ open, onOpenChange, featureName, projectId, currentDescription, onApplyDescription }: AiChatPanelProps) {
+export default function AiChatPanel({ open, onOpenChange, featureName, projectId, currentContent, onApplyContent, context = 'description' }: AiChatPanelProps) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -37,6 +57,8 @@ export default function AiChatPanel({ open, onOpenChange, featureName, projectId
     const [appliedIdx, setAppliedIdx] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
+
+    const cfg = contextConfig[context];
 
     const scrollToBottom = useCallback(() => {
         setTimeout(() => {
@@ -66,12 +88,17 @@ export default function AiChatPanel({ open, onOpenChange, featureName, projectId
         setError('');
 
         try {
-            const res = await axios.post('/ai/chat', {
+            const payload: Record<string, any> = {
                 messages: updatedMessages,
                 feature_name: featureName,
                 project_id: typeof projectId === 'string' ? parseInt(projectId) : projectId,
-                current_description: currentDescription,
-            });
+            };
+            if (context === 'specification') {
+                payload.current_content = currentContent;
+            } else {
+                payload.current_description = currentContent;
+            }
+            const res = await axios.post(cfg.endpoint, payload);
             setMessages([...updatedMessages, { role: 'assistant', content: res.data.reply }]);
         } catch (e: any) {
             setError(e.response?.data?.error ?? 'Chat request failed');
@@ -88,7 +115,7 @@ export default function AiChatPanel({ open, onOpenChange, featureName, projectId
     }
 
     function handleApply(suggestion: string, key: string) {
-        onApplyDescription(suggestion);
+        onApplyContent(suggestion);
         setAppliedIdx(key);
         setTimeout(() => setAppliedIdx(null), 2000);
     }
@@ -108,6 +135,10 @@ export default function AiChatPanel({ open, onOpenChange, featureName, projectId
                     <div className="flex items-center gap-2">
                         <Sparkles className="text-primary h-5 w-5" />
                         <h3 className="text-sm font-semibold">KI Assistent</h3>
+                        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${cfg.color}`}>
+                            <FileText className="h-3 w-3" />
+                            {cfg.label}
+                        </span>
                     </div>
                     <div className="flex items-center gap-1">
                         {messages.length > 0 && (
@@ -120,7 +151,6 @@ export default function AiChatPanel({ open, onOpenChange, featureName, projectId
                         </Button>
                     </div>
                 </div>
-                <p className="text-muted-foreground mt-0.5 text-xs">Dokument verfeinern mit KI-Unterstützung</p>
             </div>
 
             {/* Message area */}
@@ -129,8 +159,8 @@ export default function AiChatPanel({ open, onOpenChange, featureName, projectId
                     <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-3 text-center text-sm">
                         <Sparkles className="text-muted-foreground/50 h-10 w-10" />
                         <div>
-                            <p className="font-medium">Stelle eine Frage zum Dokument</p>
-                            <p className="mt-1 text-xs">z.B. &quot;Kannst du die Akzeptanzkriterien verbessern?&quot;</p>
+                            <p className="font-medium">{cfg.emptyHint}</p>
+                            <p className="mt-1 text-xs">{cfg.placeholder}</p>
                         </div>
                     </div>
                 )}

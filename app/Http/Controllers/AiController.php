@@ -59,4 +59,29 @@ class AiController extends Controller
             return response()->json(['error' => $e->getMessage()], 502);
         }
     }
+
+    public function chatSpecification(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'messages' => 'required|array|min:1',
+            'messages.*.role' => 'required|in:user,assistant',
+            'messages.*.content' => 'required|string',
+            'feature_name' => 'required|string|max:255',
+            'project_id' => 'required|integer|exists:projects,id',
+            'current_content' => 'nullable|string',
+        ]);
+
+        try {
+            $reply = $this->aiService->chatSpecification(
+                messages: $validated['messages'],
+                featureName: $validated['feature_name'],
+                projectId: $validated['project_id'],
+                currentSpecification: $validated['current_content'] ?? '',
+            );
+
+            return response()->json(['reply' => $reply]);
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 502);
+        }
+    }
 }

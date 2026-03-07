@@ -289,30 +289,48 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                                     </div>
                                 </div>
 
-                                {/* Full-width: Description */}
-                                <div>
-                                    <div className="mb-1 flex items-center justify-between">
-                                        <Label htmlFor="description">Beschreibung</Label>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setChatOpen(true)}
-                                            disabled={!data.project_id || !data.name}
-                                            title={!data.project_id || !data.name ? 'Projekt und Name erforderlich' : 'Beschreibung mit KI verfeinern'}
-                                        >
-                                            <MessageSquareText className="mr-1 h-3.5 w-3.5" />
-                                            KI Assistent
-                                        </Button>
+                                {/* Full-width: Description + AI Chat side-by-side */}
+                                <div className={`flex gap-4 ${chatOpen ? 'items-stretch' : ''}`}>
+                                    <div className={`min-w-0 ${chatOpen ? 'w-3/5' : 'w-full'}`}>
+                                        <div className="mb-1 flex items-center justify-between">
+                                            <Label htmlFor="description">Beschreibung</Label>
+                                            <Button
+                                                type="button"
+                                                variant={chatOpen ? 'default' : 'outline'}
+                                                size="sm"
+                                                onClick={() => setChatOpen(!chatOpen)}
+                                                disabled={!data.project_id || !data.name}
+                                                title={!data.project_id || !data.name ? 'Projekt und Name erforderlich' : 'Beschreibung mit KI verfeinern'}
+                                            >
+                                                <MessageSquareText className="mr-1 h-3.5 w-3.5" />
+                                                KI Assistent
+                                            </Button>
+                                        </div>
+                                        <MarkdownEditor
+                                            value={data.description}
+                                            onChange={(md) => setData('description', md)}
+                                            placeholder="Feature-Beschreibung …"
+                                            height={chatOpen ? 500 : 500}
+                                            minHeight={300}
+                                        />
+                                        <InputError message={errors.description} className="mt-1" />
                                     </div>
-                                    <MarkdownEditor
-                                        value={data.description}
-                                        onChange={(md) => setData('description', md)}
-                                        placeholder="Feature-Beschreibung …"
-                                        height={500}
-                                        minHeight={300}
-                                    />
-                                    <InputError message={errors.description} className="mt-1" />
+
+                                    {chatOpen && (
+                                        <div className="w-2/5 min-w-[320px]">
+                                            <div className="bg-background sticky top-0 h-[560px] overflow-hidden rounded-lg border">
+                                                <AiChatPanel
+                                                    open={chatOpen}
+                                                    onOpenChange={setChatOpen}
+                                                    featureName={data.name}
+                                                    projectId={data.project_id}
+                                                    currentContent={data.description}
+                                                    onApplyContent={(md) => setData('description', md)}
+                                                    context="description"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Full-width: Comments */}
@@ -351,15 +369,6 @@ export default function Edit({ feature, projects, users, skills, statusOptions, 
                     </CardContent>
                 </Card>
             </div>
-
-            <AiChatPanel
-                open={chatOpen}
-                onOpenChange={setChatOpen}
-                featureName={data.name}
-                projectId={data.project_id}
-                currentDescription={data.description}
-                onApplyDescription={(md) => setData('description', md)}
-            />
         </AppLayout>
     );
 }
